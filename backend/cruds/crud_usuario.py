@@ -10,7 +10,7 @@ import sqlite3
 def obter_usuario_por_nome(db, nome):
     pass
 
-def criar_usuario(db, usuario: Usuario, senha_hashed: str):
+def criar_usuario(db, usuario: Usuario):
     pass
 
 def remover_usuario():

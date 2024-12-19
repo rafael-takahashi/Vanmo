@@ -5,7 +5,6 @@ from pydantic import BaseModel
 from classes.classe_calendario import Calendario
 from decimal import *
 from datetime import date
-from PIL import Image
 
 class Veiculo(BaseModel):
     def __init__(self, id_veiculo: int, id_empresa: int, nome_veiculo: str, placa_veiculo: str):
@@ -19,7 +18,7 @@ class Veiculo(BaseModel):
         self.custo_por_km = custo_por_km
         self.custo_base = custo_base
 
-    def adicionar_dados(self, foto: Image.Image, cor: str, ano_fabricacao: date):
+    def adicionar_dados(self, foto: bytes, cor: str, ano_fabricacao: date):
         self.foto = foto
         self.cor = cor
         self.ano_fabricacao = ano_fabricacao

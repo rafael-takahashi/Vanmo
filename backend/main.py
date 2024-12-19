@@ -21,18 +21,34 @@ app.add_middleware(
 # Esquema de autenticação OAuth2 com senha
 oauth2_esquema = OAuth2PasswordBearer(tokenUrl="/login")
 
-@app.post("/registrar", response_model=classe_usuario.Usuario)
-def registrar_novo_usuario(usuario: classe_usuario.Usuario, db = database.conectar_bd()):
+# @app.post("/registrar", response_model=classe_usuario.Usuario)
+# def registrar_novo_usuario(usuario: classe_usuario.Usuario = Depends()):
+#     db = database.conectar_bd()
+#     if crud_usuario.obter_usuario_por_nome(db, usuario.email):
+#         raise HTTPException(status_code=400, detail="Usuario já existe")
+    
+#     senha_hashed = auth.gerar_hash_senha(usuario.senha)
+#     crud_usuario.criar_usuario(db, usuario, senha_hashed)
+#     token_acesso = auth.criar_token_acesso(dados={"sub": usuario.username})
+#     return {"access_token": token_acesso, "token_type": "bearer"}
+
+
+@app.post("/registrar")
+def registrar_novo_usuario(email: str, senha: str, tipo_conta: str, foto: bytes | None = None):
+    usuario = classe_usuario.Usuario(email, senha, tipo_conta, foto)
+    db = database.conectar_bd()
     if crud_usuario.obter_usuario_por_nome(db, usuario.email):
         raise HTTPException(status_code=400, detail="Usuario já existe")
     
-    senha_hashed = auth.gerar_hash_senha(usuario.senha)
-    crud_usuario.criar_usuario(db, usuario, senha_hashed)
-    token_acesso = auth.criar_token_acesso(dados={"sub": usuario.username})
+    usuario.senha_hashed = auth.gerar_hash_senha(usuario.senha_hashed)
+    crud_usuario.criar_usuario(db, usuario)
+    token_acesso = auth.criar_token_acesso(dados={"sub": usuario.email})
     return {"access_token": token_acesso, "token_type": "bearer"}
 
+
 @app.post("/login")
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db = database.conectar_bd()):
+def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    db = database.conectar_bd()
     usuario = auth.autenticar_usuario(db, form_data.username, form_data.password)
     if not usuario:
         raise HTTPException(status_code=400, detail="Usuário ou senha incorretos")
