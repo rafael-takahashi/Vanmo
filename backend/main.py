@@ -55,6 +55,72 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
     token_acesso = auth.criar_token_acesso(dados={"sub": usuario.username})
     return {"access_token": token_acesso, "token_type": "bearer"}
 
+
+@app.delete("/usuario/{id_usuario}")
+def apagar_usuario(id_usuario: int, token: str = Depends(oauth2_esquema)):
+    pass
+
+@app.put("/usuario/{id_usuario}")
+def editar_dados_cadastrais(email: str, senha: str, tipo_conta: str, 
+                            foto: bytes | None = None, token: str = Depends(oauth2_esquema)):
+    pass
+
+@app.post("/empresa/propostas/{id_proposta}")
+def alterar_proposta(id_proposta: int, opcao: bool, token: str = Depends(oauth2_esquema)):
+    pass
+
+@app.get("/propostas_usuario/{id_usuario}")
+def buscar_todas_propostas_usuario(id_usuario: int, token: str = Depends(oauth2_esquema)):
+    pass
+
+@app.get("/propostas/{id_proposta}")
+def buscar_dados_proposta(id_proposta: int, token: str = Depends(oauth2_esquema)):
+    pass
+
+@app.post("/propostas/criar_proposta/")
+def criar_proposta(dados_para_a_proposta_vem_aqui: str, token: str = Depends(oauth2_esquema)):
+    pass
+
+@app.post("/veiculos/")
+def cadastrar_veiculo(dados_veiculo_aqui: str, token: str = Depends(oauth2_esquema)):
+    pass
+
+@app.put("/veiculos/{id_veiculo}")
+def editar_veiculo(id_veiculo: int, dados_veiculo_aqui: str, token: str = Depends(oauth2_esquema)):
+    pass
+
+@app.get("/veiculos_empresa/{id_empresa}")
+def buscar_todos_veiculos_empresa(id_empresa: int, token: str = Depends(oauth2_esquema)):
+    pass
+
+@app.get("/veiculos/{id_veiculo}")
+def buscar_dados_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):
+    pass
+
+@app.delete("/veiculos/{id_veiculo}")
+def apagar_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):
+    pass
+
+@app.get("/empresa/{id_empresa}")
+def buscar_dados_empresa(id_empresa: int, token: str = Depends(oauth2_esquema)):
+    pass
+
+@app.put("/empresa/{id_empresa}/avaliar_empresa")
+def avaliar_empresa(id_empresa: int, avaliacao: float, token: str = Depends(oauth2_esquema)):
+    pass
+
+@app.put("/cliente/cancelar_proposta/{id_proposta}")
+def cancelar_proposta(id_proposta: int, token: str = Depends(oauth2_esquema)):
+    pass
+
+@app.get("/busca/buscar_empresas/nome/{nome_empresa}")
+def buscar_empresas_nome(token: str = Depends(oauth2_esquema)):
+    pass
+
+@app.get("/busca/buscar_empresas/filtros/")
+def buscar_empresas_filtros(filtros_vem_aqui: str, token: str = Depends(oauth2_esquema)):
+    pass
+
 # TODO: Converter esses exemplos aqui para sqlite3 e formato com pastas
 
 # @app.post("/tarefas", response_model=schemas.Tarefa)
