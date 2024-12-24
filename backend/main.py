@@ -2,12 +2,20 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
+from contextlib import asynccontextmanager
 
 import database, auth
 from classes import classe_aluguel, classe_calendario, classe_endereco, classe_local, classe_usuario, classe_veiculo
 from cruds import crud_aluguel, crud_usuario, crud_veiculo
 
-app = FastAPI()
+@asynccontextmanager
+async def iniciar_app(app: FastAPI):
+    # Criar tabelas no banco de dados caso elas não existam
+    conexao = database.conectar_bd()
+    database.criar_tabelas(conexao)
+    yield
+
+app = FastAPI(lifespan=iniciar_app)
 
 # Configuração do CORS
 app.add_middleware(
@@ -21,17 +29,10 @@ app.add_middleware(
 # Esquema de autenticação OAuth2 com senha
 oauth2_esquema = OAuth2PasswordBearer(tokenUrl="/login")
 
-# @app.post("/registrar", response_model=classe_usuario.Usuario)
-# def registrar_novo_usuario(usuario: classe_usuario.Usuario = Depends()):
+# @app.get("/teste")
+# def teste():
 #     db = database.conectar_bd()
-#     if crud_usuario.obter_usuario_por_nome(db, usuario.email):
-#         raise HTTPException(status_code=400, detail="Usuario já existe")
-    
-#     senha_hashed = auth.gerar_hash_senha(usuario.senha)
-#     crud_usuario.criar_usuario(db, usuario, senha_hashed)
-#     token_acesso = auth.criar_token_acesso(dados={"sub": usuario.username})
-#     return {"access_token": token_acesso, "token_type": "bearer"}
-
+#     return crud_usuario.obter_todos_usuarios(db)
 
 @app.post("/registrar")
 def registrar_novo_usuario(email: str, senha: str, tipo_conta: str, foto: bytes | None = None):
@@ -120,6 +121,7 @@ def buscar_empresas_nome(token: str = Depends(oauth2_esquema)):
 @app.get("/busca/buscar_empresas/filtros/")
 def buscar_empresas_filtros(filtros_vem_aqui: str, token: str = Depends(oauth2_esquema)):
     pass
+
 
 # TODO: Converter esses exemplos aqui para sqlite3 e formato com pastas
 

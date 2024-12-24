@@ -18,16 +18,21 @@ def criar_tabelas(conexao: sqlite3.Connection):
 
     cursor: sqlite3.Cursor = conexao.cursor()
 
-    # TODO: Esse exemplo eu peguei de outro teste, tenho que trocar a tabela depois
+    cursor.execute("CREATE TABLE IF NOT EXISTS Usuario(id_usuario integer primary key, email, senha_hashed, tipo_conta, path_foto)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS Cliente(id_usuario, nome_completo, cpf)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS Empresa(id_usuario, cnpj, nome_fantasia, id_endereco, num_avaliacoes, soma_avaliacoes)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS Endereco(id_endereco integer primary key, cep, rua, numero, bairro, cidade, estado)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS Local(id_local integer primary key, latitude, longitude, nome)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS Aluguel(id_aluguel integer primary key, id_empresa, id_cliente, id_veiculo, valor_total, estado_aluguel, data_inicio, data_fim, distancia_trajeto, distancia_extra, id_local_partida, id_local_chegada)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS Calendario(id_veiculo, data_indisponivel)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS Veiculo(id_veiculo integer primary key, nome_veiculo, placa_veiculo, custo_por_km, custo_base, path_foto, cor, ano_de_fabricacao)")
 
-    cursor.execute("CREATE TABLE IF NOT EXISTS Cliente(id, nome, estado_civil, profissao, "
-                   "nacionalidade, rg, cpf, sexo, rua, numero_residencia, bairro, cidade, estado, cep, telefone, celular, email, "
-                   "data_nascimento)")
-    
     conexao.commit()
 
 @dataclass
 class QueriesDB:
+    query_buscar_todos_usuarios = "SELECT * FROM Usuario"
+    query_inserir_usuario_novo = "INSERT INTO Usuario (email, senha_hashed, tipo_conta, path_foto) VALUES (?, ?, ?, ?)"
     query_insercao_usuario = "INSERT ..."
     query_insercao_veiculo = "INSERT ..."
     query_insercao_aluguel = "INSERT ..."

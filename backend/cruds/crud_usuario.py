@@ -6,12 +6,24 @@ from classes.classe_usuario import *
 from database import *
 import sqlite3
 
+# def obter_todos_usuarios(db):
+#     respota = db.cursor().execute(QueriesDB.query_buscar_todos_usuarios).fetchall()
+#     return list(respota)
+
 # Usada no auth.py
 def obter_usuario_por_nome(db, nome):
     pass
 
 def criar_usuario(db, usuario: Usuario):
-    pass
+    # Guardar fotos em um diretório a parte e obter o path dela
+    path_foto = "teste/path/foto"
+
+    cursor: sqlite3.Cursor = db.cursor()
+
+    dados = (usuario.email, usuario.senha_hashed, usuario.tipo_conta, path_foto)
+    cursor.execute(QueriesDB.query_inserir_usuario_novo, dados)
+    
+    db.commit()
 
 def remover_usuario():
     pass
