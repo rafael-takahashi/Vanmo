@@ -1,6 +1,7 @@
 import sys
 sys.path.append("..")
 
+from PIL import Image
 from decimal import *
 from classes.classe_usuario import *
 from database import *
@@ -12,11 +13,20 @@ import sqlite3
 
 # Usada no auth.py
 def obter_usuario_por_nome(db, nome):
-    pass
+
+    cursor: sqlite3.Cursor = db.cursor()
+
+    return cursor.execute(QueriesDB.query_buscar_usuario_por_email, (nome,)).fetchone()
 
 def criar_usuario(db, usuario: Usuario):
-    # Guardar fotos em um diretório a parte e obter o path dela
-    path_foto = "teste/path/foto"
+
+    path_foto = ""
+    
+    if usuario.foto is not None:
+        path_foto = f"imagens/{usuario.email}.png"
+
+        with open(path_foto, "wb+") as arquivo:
+            arquivo.write(usuario.foto.file.read())
 
     cursor: sqlite3.Cursor = db.cursor()
 

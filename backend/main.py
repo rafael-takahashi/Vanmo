@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, File, UploadFile
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
@@ -35,7 +35,9 @@ oauth2_esquema = OAuth2PasswordBearer(tokenUrl="/login")
 #     return crud_usuario.obter_todos_usuarios(db)
 
 @app.post("/registrar")
-def registrar_novo_usuario(email: str, senha: str, tipo_conta: str, foto: bytes | None = None):
+def registrar_novo_usuario(email: str, senha: str, tipo_conta: str, foto: UploadFile | None = None):
+    # A fazer: checar se o tamanho e o tipo de arquivo da foto são permitidos
+
     usuario = classe_usuario.Usuario(email, senha, tipo_conta, foto)
     db = database.conectar_bd()
     if crud_usuario.obter_usuario_por_nome(db, usuario.email):

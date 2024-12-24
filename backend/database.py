@@ -31,8 +31,8 @@ def criar_tabelas(conexao: sqlite3.Connection):
 
 @dataclass
 class QueriesDB:
-    query_buscar_todos_usuarios = "SELECT * FROM Usuario"
+    # query_buscar_todos_usuarios = "SELECT * FROM Usuario"
     query_inserir_usuario_novo = "INSERT INTO Usuario (email, senha_hashed, tipo_conta, path_foto) VALUES (?, ?, ?, ?)"
-    query_insercao_usuario = "INSERT ..."
+    query_buscar_usuario_por_email = "SELECT * FROM Usuario WHERE email = ?"
     query_insercao_veiculo = "INSERT ..."
     query_insercao_aluguel = "INSERT ..."
