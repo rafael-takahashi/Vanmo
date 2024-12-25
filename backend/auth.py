@@ -4,7 +4,7 @@ from jose import jwt, JWTError
 import sqlite3
 from cruds.crud_usuario import obter_usuario_por_nome
 
-CHAVE_SECRETA = ""  # Altere para uma chave secreta em produção
+CHAVE_SECRETA = ""  # Alterar para uma chave secreta na hora da implementação do embiente
 ALGORITMO = "HS256"
 TEMPO_EXPIRACAO_TOKEN_MINUTOS = 30
 

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import sqlite3
 
+
 def conectar_bd() -> sqlite3.Connection:
     """
     Cria uma conexão com o banco de dados SQLite
@@ -8,6 +9,7 @@ def conectar_bd() -> sqlite3.Connection:
     :return: Uma instância de Connection
     """
     return sqlite3.connect("app.db")
+
 
 def criar_tabelas(conexao: sqlite3.Connection):
     """
@@ -29,8 +31,12 @@ def criar_tabelas(conexao: sqlite3.Connection):
 
     conexao.commit()
 
+
 @dataclass
 class QueriesDB:
+    """
+        Classe utilizada para agrupar todas as queries puras em SQL
+    """
     # query_buscar_todos_usuarios = "SELECT * FROM Usuario"
     query_inserir_usuario_novo = "INSERT INTO Usuario (email, senha_hashed, tipo_conta, path_foto) VALUES (?, ?, ?, ?)"
     query_buscar_usuario_por_email = "SELECT * FROM Usuario WHERE email = ?"
