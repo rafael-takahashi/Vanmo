@@ -12,13 +12,13 @@ import sqlite3
 #     return list(respota)
 
 # Usada no auth.py
-def obter_usuario_por_nome(db, nome):
+def obter_usuario_por_nome(db: sqlite3.Connection, nome: str):
 
     cursor: sqlite3.Cursor = db.cursor()
 
     return cursor.execute(QueriesDB.query_buscar_usuario_por_email, (nome,)).fetchone()
 
-def criar_usuario(db, usuario: Usuario):
+def criar_usuario(db: sqlite3.Connection, usuario: Usuario):
 
     path_foto = ""
     
@@ -38,7 +38,6 @@ def criar_usuario(db, usuario: Usuario):
 def remover_usuario():
     pass
 
-# Uso interno
 def buscar_usuario():
     pass
 
