@@ -16,7 +16,16 @@ def obter_usuario_por_nome(db: sqlite3.Connection, nome: str):
 
     cursor: sqlite3.Cursor = db.cursor()
 
-    return cursor.execute(QueriesDB.query_buscar_usuario_por_email, (nome,)).fetchone()
+    # usuario = Usuario()
+
+    resultados = cursor.execute(QueriesDB.query_buscar_usuario_por_email, (nome,)).fetchone()
+
+    if not resultados:
+        return None
+
+    (id_usuario, email_usuario, senha_usuario, tipo_conta, path_foto) = resultados
+
+    return Usuario(email_usuario, senha_usuario, tipo_conta, path_foto, id=id_usuario)
 
 def criar_usuario(db: sqlite3.Connection, usuario: Usuario):
 

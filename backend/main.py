@@ -38,7 +38,7 @@ oauth2_esquema = OAuth2PasswordBearer(tokenUrl="/login")
 # Métodos de usuário ----------------------------------------
 
 @app.post("/usuario/registrar")
-async def registrar_novo_usuario(email: str, senha: str, tipo_conta: str, foto: UploadFile | None = None):
+async def registrar_novo_usuario(email: str, senha: str, tipo_conta: str, foto: UploadFile | str = ""):
     """
     Registra um novo usuário no sistema
 
@@ -56,6 +56,9 @@ async def registrar_novo_usuario(email: str, senha: str, tipo_conta: str, foto: 
 
     usuario = classe_usuario.Usuario(email, senha, tipo_conta, foto)
     db = database.conectar_bd()
+
+    if usuario.foto == "":
+        usuario.foto = None
 
     if crud_usuario.obter_usuario_por_nome(db, usuario.email):
         raise HTTPException(status_code=400, detail="Usuario já existe")
@@ -82,7 +85,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     if not usuario:
         raise HTTPException(status_code=400, detail="Usuário ou senha incorretos")
 
-    token_acesso = auth.criar_token_acesso(dados={"sub": usuario.username})
+    token_acesso = auth.criar_token_acesso(dados={"sub": usuario.email})
     return {"access_token": token_acesso, "token_type": "bearer"}
 
 
