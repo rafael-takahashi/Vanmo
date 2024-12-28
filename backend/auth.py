@@ -1,5 +1,5 @@
 from passlib.context import CryptContext
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
 import sqlite3
 from cruds.crud_usuario import obter_usuario_por_nome
@@ -50,7 +50,8 @@ def criar_token_acesso(dados: dict):
     @return: O token codificado de acesso
     """
     dados_a_codificar = dados.copy()
-    expira = datetime.now() + timedelta(minutes=TEMPO_EXPIRACAO_TOKEN_MINUTOS)
+    expira = datetime.now(timezone.utc) + timedelta(minutes=TEMPO_EXPIRACAO_TOKEN_MINUTOS)
+    print(f"Token codificado: dados: {str(dados)} expira: {expira}")
     dados_a_codificar.update({"exp": expira})
     return jwt.encode(dados_a_codificar, CHAVE_SECRETA, algorithm=ALGORITMO)
 
@@ -67,12 +68,14 @@ def obter_usuario_atual(db, token: str):
     from fastapi import HTTPException, status
     try:
         payload = jwt.decode(token, CHAVE_SECRETA, algorithms=[ALGORITMO])
+        print(f"payload: {payload}")
         username = payload.get("sub")
         if username is None:
             raise HTTPException(status_code=401, detail="Token inválido")
-        usuario = obter_usuario_por_nome(db, username=username)
+        usuario = obter_usuario_por_nome(db, username)
         if usuario is None:
             raise HTTPException(status_code=401, detail="Usuário não encontrado")
         return usuario
-    except JWTError:
+    except JWTError as e:
+        print(str(e))
         raise HTTPException(status_code=401, detail="Token inválido")

@@ -40,5 +40,6 @@ class QueriesDB:
     # query_buscar_todos_usuarios = "SELECT * FROM Usuario"
     query_inserir_usuario_novo = "INSERT INTO Usuario (email, senha_hashed, tipo_conta, path_foto) VALUES (?, ?, ?, ?)"
     query_buscar_usuario_por_email = "SELECT * FROM Usuario WHERE email = ?"
+    query_remover_usuario = "DELETE FROM Usuario WHERE id_usuario = ?"
     query_insercao_veiculo = "INSERT ..."
     query_insercao_aluguel = "INSERT ..."

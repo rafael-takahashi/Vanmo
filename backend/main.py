@@ -33,7 +33,7 @@ app.add_middleware(
 )
 
 # Esquema de autenticação OAuth2 com senha
-oauth2_esquema = OAuth2PasswordBearer(tokenUrl="/login")
+oauth2_esquema = OAuth2PasswordBearer(tokenUrl="/usuario/login")
 
 # Métodos de usuário ----------------------------------------
 
@@ -98,11 +98,11 @@ async def apagar_usuario(token: str = Depends(oauth2_esquema)):
     """
 
     # Buscar o usuário pelo token e validar ele
+    db = database.conectar_bd()
 
-    # Apagar conta
+    usuario_atual = auth.obter_usuario_atual(db, token)
 
-    # Revogar token
-    pass
+    crud_usuario.remover_usuario(db, usuario_atual)
 
 @app.put("/usuario/alterar_dados")
 async def editar_dados_cadastrais(email: str | None = None, senha: str | None = None,

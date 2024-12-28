@@ -1,3 +1,4 @@
+import os
 import sys
 sys.path.append("..")
 
@@ -12,7 +13,7 @@ import sqlite3
 #     return list(respota)
 
 # Usada no auth.py
-def obter_usuario_por_nome(db: sqlite3.Connection, nome: str):
+def obter_usuario_por_nome(db: sqlite3.Connection, nome: str) -> Usuario:
 
     cursor: sqlite3.Cursor = db.cursor()
 
@@ -44,8 +45,19 @@ def criar_usuario(db: sqlite3.Connection, usuario: Usuario):
     
     db.commit()
 
-def remover_usuario():
-    pass
+def remover_usuario(db: sqlite3.Connection, usuario: Usuario):
+
+    if usuario.foto != "":
+        if os.path.exists(usuario.foto):
+            os.remove(usuario.foto)
+
+    dados = (usuario.id,)
+
+    cursor: sqlite3.Cursor = db.cursor()
+
+    cursor.execute(QueriesDB.query_remover_usuario, dados)
+
+    db.commit()
 
 def buscar_usuario():
     pass
