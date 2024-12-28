@@ -47,15 +47,41 @@ def criar_usuario(db: sqlite3.Connection, usuario: Usuario):
 
 def remover_usuario(db: sqlite3.Connection, usuario: Usuario):
 
-    if usuario.foto != "":
-        if os.path.exists(usuario.foto):
-            os.remove(usuario.foto)
-
     dados = (usuario.id,)
 
     cursor: sqlite3.Cursor = db.cursor()
 
+    if usuario.tipo_conta == "empresa":
+        empresa: Empresa = buscar_dados_empresa(usuario)
+
+        # Ver se a empresa tem alugueis ativos, se não, prosseguir
+
+        # Buscar todos os veiculos da empresa
+
+        # Para cada veiculo:
+
+        #   Apagar seu calendario
+
+        #   Apagar o veiculo em si
+
+        # Apagar os aluguéis que estão apenas propostos
+
+        # Apagar o endereço da empresa
+
+        # Apagar o local da empresa
+
+        cursor.execute(QueriesDB.query_remover_empresa)
+    
+    if usuario.tipo_conta == "cliente":
+        cliente: Cliente = buscar_dados_cliente(usuario)
+
+        cursor.execute(QueriesDB.query_remover_cliente)
+
     cursor.execute(QueriesDB.query_remover_usuario, dados)
+
+    if usuario.foto != "":
+        if os.path.exists(usuario.foto):
+            os.remove(usuario.foto)
 
     db.commit()
 
@@ -87,6 +113,26 @@ def cadastrar_empresa(db: sqlite3.Connection, empresa: Empresa):
     cursor.execute(QueriesDB.query_inserir_empresa_nova, dados)
     
     db.commit()
+
+# cursor.execute("CREATE TABLE IF NOT EXISTS Cliente(id_usuario, nome_completo, cpf)")
+# cursor.execute("CREATE TABLE IF NOT EXISTS Empresa(id_usuario, cnpj, nome_fantasia, id_endereco, id_local, num_avaliacoes, soma_avaliacoes)")
+    
+
+def buscar_dados_cliente(db: sqlite3.Connection, usuario: Usuario) -> Cliente:
+    cursor: sqlite3.Cursor = db.cursor()
+
+    dados = (usuario.id,)
+    resultados = cursor.execute(QueriesDB.query_buscar_cliente, dados).fetchone()
+
+    print(f"RESULTADOS: {resultados}")
+
+    return Cliente(usuario.id, usuario.email, usuario.senha_hashed, usuario.tipo_conta, usuario.foto, "nome", "cpf")
+
+def buscar_dados_empresa(db: sqlite3.Connection, usuario: Usuario) -> Empresa:
+    cursor: sqlite3.Cursor = db.cursor()
+
+    dados = (usuario.id,)
+    resultados = cursor.execute(QueriesDB.query_buscar_empresa, dados).fetchone()
 
 def buscar_usuario():
     pass
