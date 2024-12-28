@@ -3,6 +3,7 @@ sys.path.append("..")
 
 from pydantic import BaseModel
 from classes.classe_endereco import Endereco
+from classes.classe_local import Local
 
 class Usuario():
     def __init__(self, email: str, senha_hashed: str, tipo_conta: str, foto: bytes | None = None, id: int | None = None):
@@ -19,10 +20,11 @@ class Cliente(Usuario):
         self.cpf: str = cpf
 
 class Empresa(Usuario):
-    def __init__(self, id, email, senha_hashed, tipo_conta, foto, nome_fantasia: str, cnpj: str, endereco: Endereco):
+    def __init__(self, id, email, senha_hashed, tipo_conta, foto, nome_fantasia: str, cnpj: str, endereco: Endereco, local: Local):
         super().__init__(id, email, senha_hashed, tipo_conta, foto)
         self.nome_fantasia: str = nome_fantasia
         self.cnpj: str = cnpj
         self.endereco: Endereco = endereco
+        self.local: Local = local
         self.num_avaliacoes = 0
         self.soma_avaliacos = 0

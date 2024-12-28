@@ -1,6 +1,4 @@
-from pydantic import BaseModel
-
-class Endereco(BaseModel):
+class Endereco():
     def __init__(self, uf: str, cidade: str, bairro: str, cep: str, rua: str, numero: int):
         self.uf: str = uf
         self.cidade: str = cidade

@@ -1,12 +1,11 @@
 import sys
 sys.path.append("..")
 
-from pydantic import BaseModel
 from classes.classe_local import Local
 from decimal import *
 from datetime import date
 
-class Aluguel(BaseModel):
+class Aluguel():
     def __init__(self, id_aluguel: int, id_cliente: int, id_empresa: int, id_veiculo: int):
         self.id_aluguel = id_aluguel
         self.id_cliente = id_cliente

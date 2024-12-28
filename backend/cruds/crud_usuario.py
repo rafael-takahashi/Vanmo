@@ -59,6 +59,35 @@ def remover_usuario(db: sqlite3.Connection, usuario: Usuario):
 
     db.commit()
 
+def cadastrar_cliente(db: sqlite3.Connection, cliente: Cliente):
+    cursor: sqlite3.Cursor = db.cursor()
+
+    dados = (cliente.id, cliente.nome_completo, cliente.cpf)
+    cursor.execute(QueriesDB.query_inserir_cliente_novo, dados)
+    
+    db.commit()
+
+def cadastrar_empresa(db: sqlite3.Connection, empresa: Empresa):
+    cursor: sqlite3.Cursor = db.cursor()
+
+    dados_local = (empresa.local.latitude, empresa.local.longitude, "sede")
+
+    id_local = cursor.execute(QueriesDB.query_inserir_local_novo, dados_local).fetchone()
+    id_local = id_local[0]
+
+    # cep, rua, numero, bairro, cidade, estado
+    dados_endereco = (empresa.endereco.cep, empresa.endereco.rua, empresa.endereco.numero, 
+                      empresa.endereco.bairro, empresa.endereco.cidade, empresa.endereco.uf)
+    
+    id_endereco = cursor.execute(QueriesDB.query_inserir_endereco_novo, dados_endereco).fetchone()
+    id_endereco = id_endereco[0]
+
+    dados = (empresa.id, empresa.cnpj, empresa.nome_fantasia, id_endereco, id_local, 0, 0)
+
+    cursor.execute(QueriesDB.query_inserir_empresa_nova, dados)
+    
+    db.commit()
+
 def buscar_usuario():
     pass
 

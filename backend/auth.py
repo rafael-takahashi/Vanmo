@@ -68,7 +68,6 @@ def obter_usuario_atual(db, token: str):
     from fastapi import HTTPException, status
     try:
         payload = jwt.decode(token, CHAVE_SECRETA, algorithms=[ALGORITMO])
-        print(f"payload: {payload}")
         username = payload.get("sub")
         if username is None:
             raise HTTPException(status_code=401, detail="Token inválido")

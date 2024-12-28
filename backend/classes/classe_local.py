@@ -1,8 +1,7 @@
-from pydantic import BaseModel
 from decimal import *
 
-class Local(BaseModel):
-    def __init__(self, latitude: float, longitude: float, nome: str | None = None):
-        self.latitude = latitude
-        self.longitude = longitude
+class Local():
+    def __init__(self, lat: float, lon: float, nome: str | None = None):
+        self.latitude = lat
+        self.longitude = lon
         self.nome = nome

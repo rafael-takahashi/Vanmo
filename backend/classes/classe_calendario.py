@@ -1,8 +1,7 @@
-from pydantic import BaseModel
 from typing import List
 from datetime import date
 
-class Calendario(BaseModel):
+class Calendario():
     def __init__(self, datas_indisponiveis: List[date]):
         self.datas_indisponiveis = datas_indisponiveis
     

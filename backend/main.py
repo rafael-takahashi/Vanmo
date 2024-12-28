@@ -88,6 +88,54 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     token_acesso = auth.criar_token_acesso(dados={"sub": usuario.email})
     return {"access_token": token_acesso, "token_type": "bearer"}
 
+@app.post("/usuario/cadastrar_dados_empresa")
+async def cadastrar_dados_empresa(nome_fantasia: str, cnpj: str, uf: str, cidade: str, bairro: str, 
+                                  cep: str, rua: str, numero: int, latitude: float, longitude: float, 
+                                  token: str = Depends(oauth2_esquema)):
+    """
+    Continuação do cadastro para os dados da empresa
+    """
+    db = database.conectar_bd()
+
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+
+    if usuario.tipo_conta != "empresa":
+        raise HTTPException(status_code=400, detail="Tipo de usuário não é empresa")
+
+    latitude = float(latitude)
+    longitude = float(longitude)
+    
+    endereco: classe_endereco.Endereco = classe_endereco.Endereco(uf, cidade, bairro, cep, rua, numero)
+    
+    local: classe_local.Local = classe_local.Local(0,0)
+    local.latitude = latitude
+    local.longitude = longitude
+
+
+    empresa: classe_usuario.Empresa = classe_usuario.Empresa(usuario.id, usuario.email, usuario.senha_hashed, 
+                                                             "empresa", usuario.foto, nome_fantasia, cnpj, 
+                                                             endereco, local)
+
+    crud_usuario.cadastrar_empresa(db, empresa)
+
+
+@app.post("/usuario/cadastrar_dados_cliente")
+async def cadastrar_dados_cliente(nome_completo: str, cpf: str, token: str = Depends(oauth2_esquema)):
+    """
+    Continuação do cadastro para os dados do cliente
+    """
+
+    db = database.conectar_bd()
+
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+
+    if usuario.tipo_conta != "cliente":
+        raise HTTPException(status_code=400, detail="Tipo de usuário não é cliente")
+
+    cliente: classe_usuario.Cliente = classe_usuario.Cliente(usuario.id, usuario.email, usuario.senha_hashed,
+                                                             "cliente", usuario.foto, nome_completo, cpf)
+    
+    crud_usuario.cadastrar_cliente(db, cliente)
 
 @app.delete("/usuario/apagar_conta")
 async def apagar_usuario(token: str = Depends(oauth2_esquema)):
