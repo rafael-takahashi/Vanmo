@@ -6,6 +6,7 @@ from PIL import Image
 from decimal import *
 from classes.classe_usuario import *
 from database import *
+from fastapi import HTTPException
 import sqlite3
 
 # def obter_todos_usuarios(db):
@@ -45,37 +46,65 @@ def criar_usuario(db: sqlite3.Connection, usuario: Usuario):
     
     db.commit()
 
+def __remover_empresa(db: sqlite3.Connection, usuario: Usuario):
+    cursor = db.cursor()
+
+    empresa: Empresa = buscar_dados_empresa(db, usuario)
+
+    print(str(empresa))
+
+    dados = (empresa.id,)
+
+    alugueis: list[tuple] = cursor.execute(QueriesDB.query_buscar_alugueis_empresa, dados).fetchall()
+
+    for aluguel in alugueis:
+        if aluguel[5] == "ativo":
+            raise HTTPException(status_code=400, detail="Empresa possui aluguel ativo, não pode ser excluída")
+    
+    for aluguel in alugueis:
+        id_aluguel = aluguel[0]
+
+        dados = (id_aluguel,)
+
+        cursor.execute(QueriesDB.query_remover_aluguel, dados)
+
+    lista_veiculos: list[tuple] = cursor.execute(QueriesDB.query_buscar_veiculos_empresa, dados).fetchall()
+    
+    for veiculo in lista_veiculos:
+        id_veiculo = veiculo[0]
+
+        dados = (id_veiculo,)
+
+        cursor.execute(QueriesDB.query_remover_calendario, dados)
+        cursor.execute(QueriesDB.query_remover_veiculo, dados)
+
+    cursor.execute(QueriesDB.query_remover_endereco, (empresa.endereco,))
+    cursor.execute(QueriesDB.query_remover_local, (empresa.local,))
+    cursor.execute(QueriesDB.query_remover_empresa, (usuario.id,))
+
+    db.commit()
+
+def __remover_cliente(db: sqlite3.Connection, usuario: Usuario):
+    cursor: sqlite3.Cursor = db.cursor()
+
+    cliente: Cliente = buscar_dados_cliente(db, usuario)
+
+    # TODO: Ver se o cliente tem alugueis ativos
+
+    cursor.execute(QueriesDB.query_remover_cliente, (usuario.id,))
+
+    db.commit()
+
 def remover_usuario(db: sqlite3.Connection, usuario: Usuario):
 
     dados = (usuario.id,)
-
     cursor: sqlite3.Cursor = db.cursor()
-
+    
     if usuario.tipo_conta == "empresa":
-        empresa: Empresa = buscar_dados_empresa(usuario)
-
-        # Ver se a empresa tem alugueis ativos, se não, prosseguir
-
-        # Buscar todos os veiculos da empresa
-
-        # Para cada veiculo:
-
-        #   Apagar seu calendario
-
-        #   Apagar o veiculo em si
-
-        # Apagar os aluguéis que estão apenas propostos
-
-        # Apagar o endereço da empresa
-
-        # Apagar o local da empresa
-
-        cursor.execute(QueriesDB.query_remover_empresa)
+        __remover_empresa(db, usuario)
     
     if usuario.tipo_conta == "cliente":
-        cliente: Cliente = buscar_dados_cliente(usuario)
-
-        cursor.execute(QueriesDB.query_remover_cliente)
+        __remover_cliente(db, usuario)
 
     cursor.execute(QueriesDB.query_remover_usuario, dados)
 
@@ -114,28 +143,20 @@ def cadastrar_empresa(db: sqlite3.Connection, empresa: Empresa):
     
     db.commit()
 
-# cursor.execute("CREATE TABLE IF NOT EXISTS Cliente(id_usuario, nome_completo, cpf)")
-# cursor.execute("CREATE TABLE IF NOT EXISTS Empresa(id_usuario, cnpj, nome_fantasia, id_endereco, id_local, num_avaliacoes, soma_avaliacoes)")
-    
-
 def buscar_dados_cliente(db: sqlite3.Connection, usuario: Usuario) -> Cliente:
     cursor: sqlite3.Cursor = db.cursor()
 
     dados = (usuario.id,)
     resultados = cursor.execute(QueriesDB.query_buscar_cliente, dados).fetchone()
 
-    print(f"RESULTADOS: {resultados}")
-
-    return Cliente(usuario.id, usuario.email, usuario.senha_hashed, usuario.tipo_conta, usuario.foto, "nome", "cpf")
+    return Cliente(usuario.id, usuario.email, usuario.senha_hashed, usuario.tipo_conta, usuario.foto, resultados[1], resultados[2])
 
 def buscar_dados_empresa(db: sqlite3.Connection, usuario: Usuario) -> Empresa:
     cursor: sqlite3.Cursor = db.cursor()
 
     dados = (usuario.id,)
     resultados = cursor.execute(QueriesDB.query_buscar_empresa, dados).fetchone()
-
-def buscar_usuario():
-    pass
-
-def atualizar_usuario():
-    pass
+    empresa = Empresa(usuario.id, usuario.email, usuario.senha_hashed, usuario.tipo_conta, usuario.foto, 
+                     resultados[2], resultados[1], resultados[3], resultados[4])
+    
+    return empresa

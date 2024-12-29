@@ -27,7 +27,7 @@ def criar_tabelas(conexao: sqlite3.Connection):
     cursor.execute("CREATE TABLE IF NOT EXISTS Local(id_local integer primary key, latitude, longitude, nome)")
     cursor.execute("CREATE TABLE IF NOT EXISTS Aluguel(id_aluguel integer primary key, id_empresa, id_cliente, id_veiculo, valor_total, estado_aluguel, data_inicio, data_fim, distancia_trajeto, distancia_extra, id_local_partida, id_local_chegada)")
     cursor.execute("CREATE TABLE IF NOT EXISTS Calendario(id_veiculo, data_indisponivel)")
-    cursor.execute("CREATE TABLE IF NOT EXISTS Veiculo(id_veiculo integer primary key, nome_veiculo, placa_veiculo, capacidade, custo_por_km, custo_base, path_foto, cor, ano_de_fabricacao)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS Veiculo(id_veiculo integer primary key, id_empresa, nome_veiculo, placa_veiculo, capacidade, custo_por_km, custo_base, path_foto, cor, ano_de_fabricacao)")
     cursor.execute("CREATE TABLE IF NOT EXISTS RegistrosLocacao(id_registro integer primary key, nome_cliente, cpf_cliente, nome_fantasia_empresa, cnpj_empresa, nome_veiculo, placa_veiculo, custo_total, data_inicio, data_fim)")
 
     conexao.commit()
@@ -57,8 +57,11 @@ class QueriesDB:
     query_inserir_endereco_novo = "INSERT INTO Endereco (cep, rua, numero, bairro, cidade, estado) VALUES (?, ?, ?, ?, ?, ?) RETURNING id_endereco"
     query_remover_endereco = "DELETE FROM Endereco WHERE id_endereco = ?"
 
+    query_buscar_veiculos_empresa = "SELECT * FROM Veiculo WHERE id_empresa = ?"
     query_remover_veiculo = "DELETE FROM Veiculo WHERE id_veiculo = ?"
 
+    query_buscar_alugueis_empresa = "SELECT * FROM Aluguel WHERE id_empresa = ?"
+    query_buscar_alugueis_cliente = "SELECT * FROM Aluguel WHERE id_cliente = ?"
     query_remover_aluguel = "DELETE FROM Aluguel WHERE id_aluguel = ?"
 
-    query_remover_calendario = "DELETE FROM Calendario WHERE id_calendario = ?"
+    query_remover_calendario = "DELETE FROM Calendario WHERE id_veiculo = ?"

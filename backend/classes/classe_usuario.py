@@ -19,6 +19,9 @@ class Cliente(Usuario):
         self.nome_completo: str = nome_completo
         self.cpf: str = cpf
 
+    def __repr__(self):
+        return f"[Cliente] Id: {self.id} email: {self.email} nome: {self.nome_completo} cpf: {self.cpf}"
+    
 class Empresa(Usuario):
     def __init__(self, id, email, senha_hashed, tipo_conta, foto, nome_fantasia: str, cnpj: str, endereco: Endereco, local: Local):
         super().__init__(id, email, senha_hashed, tipo_conta, foto)
@@ -27,4 +30,7 @@ class Empresa(Usuario):
         self.endereco: Endereco = endereco
         self.local: Local = local
         self.num_avaliacoes = 0
-        self.soma_avaliacos = 0
+        self.soma_avaliacoes = 0
+
+    def __repr__(self):
+        return f"[Empresa] Id: {self.id} email: {self.email} nome fantasia: {self.nome_fantasia} cnpj: {self.cnpj} endereco: {self.endereco} local: {self.local} num avls {self.num_avaliacoes} soma avls {self.soma_avaliacoes}"
