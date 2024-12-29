@@ -235,10 +235,20 @@ async def buscar_todas_propostas_usuario(token: str = Depends(oauth2_esquema)):
     """
 
     # Obter o usuário a partir do token
+    db = database.conectar_bd()
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+
+    if usuario.tipo_conta != "cliente":
+        raise HTTPException(status_code=400, detail="Tipo de usuário não é cliente")
 
     # Buscar as propostas desse usuário e retornar
-    pass
-
+    alugueis = crud_aluguel.buscar_alugueis_cliente(db, usuario.id)
+    if alugueis:
+        return alugueis
+    else:
+        return {"detail" : "Nenhuma proposta encontrada para o cliente.",
+                "data" : []}
+    
 @app.get("/propostas/dados_proposta")
 async def buscar_dados_proposta(id_proposta: int, token: str = Depends(oauth2_esquema)):
     """

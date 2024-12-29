@@ -2,7 +2,7 @@ import sqlite3
 
 if __name__ == "__main__":
 
-    conexao = sqlite3.connect("backend/app.db")
+    conexao = sqlite3.connect("app.db")
 
     cursor = conexao.cursor()
 
