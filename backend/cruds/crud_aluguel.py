@@ -4,13 +4,15 @@ sys.path.append("..")
 from decimal import *
 from classes.classe_aluguel import Aluguel
 from classes.classe_usuario import Cliente
+from classes.classe_local import Local
 from database import *
 import sqlite3
 
-def criar_aluguel(db: sqlite3.Cursor, aluguel: Aluguel): #... outros argumentos vêm aqui ):
+def criar_aluguel(db: sqlite3.Cursor, aluguel: Aluguel, local_partida: Local, local_chegada: Local): #... outros argumentos vêm aqui ):
+    cursor: sqlite3.Cursor = db.cursor()
     query = QueriesDB.query_insercao_aluguel
-    # Formatar query, etc ...
-    pass
+    dados = (aluguel.id_aluguel, aluguel.id_empresa, aluguel.id_cliente, aluguel.id_veiculo, aluguel.valor_total, aluguel.estado_aluguel,
+             aluguel.data_inicio, aluguel.data_fim, aluguel.distancia_extra, local_partida.id, local_chegada.id)
 
 def buscar_alugueis_cliente(db: sqlite3.Cursor, cliente: Cliente) -> list[Aluguel]:
     cursor: sqlite3.Cursor = db.cursor()

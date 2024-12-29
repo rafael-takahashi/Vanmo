@@ -12,7 +12,7 @@ class Aluguel():
         self.id_empresa = id_empresa
         self.id_veiculo = id_veiculo
         self.distancia_trajeto: Decimal = Decimal(0)
-        self.estado_alugues = "proposta"
+        self.estado_aluguel = "proposta"
         self.valor_total: Decimal = Decimal(0)
     
     def adicionar_locais(self, local_partida: Local, local_chegada: Local):
