@@ -41,6 +41,7 @@ class QueriesDB:
     # query_buscar_todos_usuarios = "SELECT * FROM Usuario"
     query_inserir_usuario_novo = "INSERT INTO Usuario (email, senha_hashed, tipo_conta, path_foto) VALUES (?, ?, ?, ?)"
     query_buscar_usuario_por_email = "SELECT * FROM Usuario WHERE email = ?"
+    query_buscar_usuario_por_id = "SELECT * FROM Usuario WHERE id_usuario = ?"
     query_remover_usuario = "DELETE FROM Usuario WHERE id_usuario = ?"
     
     query_inserir_cliente_novo = "INSERT INTO Cliente (id_usuario, nome_completo, cpf) VALUES (?, ?, ?)"
@@ -52,14 +53,17 @@ class QueriesDB:
     query_buscar_empresa = "SELECT * FROM Empresa WHERE id_usuario = ?"
 
     query_inserir_local_novo = "INSERT INTO Local (latitude, longitude, nome) VALUES (?, ?, ?) RETURNING id_local"
+    query_buscar_local_por_id = "SELECT * FROM Local WHERE id_local = ?"
     query_remover_local = "DELETE FROM Local WHERE id_local = ?"
 
     query_inserir_endereco_novo = "INSERT INTO Endereco (cep, rua, numero, bairro, cidade, estado) VALUES (?, ?, ?, ?, ?, ?) RETURNING id_endereco"
+    query_buscar_endereco_por_id = "SELECT * FROM Endereco WHERE id_endereco = ?"
     query_remover_endereco = "DELETE FROM Endereco WHERE id_endereco = ?"
 
     query_buscar_veiculos_empresa = "SELECT * FROM Veiculo WHERE id_empresa = ?"
     query_remover_veiculo = "DELETE FROM Veiculo WHERE id_veiculo = ?"
 
+    query_inserir_aluguel_novo = "INSERT INTO Aluguel (id_aluguel, id_empresa, id_cliente, id_veiculo, valor_total, estado_aluguel, data_inicio, data_fim, distancia_trajeto, distancia_extra, id_local_partida, id_local_chegada) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     query_buscar_alugueis_empresa = "SELECT * FROM Aluguel WHERE id_empresa = ?"
     query_buscar_alugueis_cliente = "SELECT * FROM Aluguel WHERE id_cliente = ?"
     query_remover_aluguel = "DELETE FROM Aluguel WHERE id_aluguel = ?"
