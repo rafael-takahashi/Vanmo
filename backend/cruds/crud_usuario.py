@@ -5,6 +5,10 @@ sys.path.append("..")
 from PIL import Image
 from decimal import *
 from classes.classe_usuario import *
+from classes.classe_endereco import Endereco
+from classes.classe_local import Local
+from crud_local import *
+from crud_endereco import *
 from database import *
 from fastapi import HTTPException
 import sqlite3
@@ -176,7 +180,29 @@ def buscar_dados_empresa(db: sqlite3.Connection, usuario: Usuario) -> Empresa:
 
     dados = (usuario.id,)
     resultados = cursor.execute(QueriesDB.query_buscar_empresa, dados).fetchone()
+
+    local : Local =  buscar_local_por_id(db, resultados[4])
+    endereco : Endereco = buscar_endereco_por_id(db, resultados[3])
+
+    # TODO: Não esquecer de recuperar as avaliações quando forem implementadas
+
     empresa = Empresa(usuario.id, usuario.email, usuario.senha_hashed, usuario.tipo_conta, usuario.foto, 
-                     resultados[2], resultados[1], resultados[3], resultados[4])
+                     resultados[2], resultados[1], endereco, local)
 
     return empresa
+
+def buscar_empresa_por_id (db: sqlite3.Connection, id_empresa: int) -> Empresa:
+    cursor: sqlite3.Cursor = db.cursor()
+
+    dados = (id_empresa,)
+    resultado_usuario = cursor.execute(QueriesDB.query_buscar_usuario_por_id, dados).fetchone()
+    resultado_empresa = cursor.execute(QueriesDB.query_buscar_empresa, dados).fetchone()
+
+    local : Local =  buscar_local_por_id(db, resultado_empresa[4])
+    endereco : Endereco = buscar_endereco_por_id(db, resultado_empresa[3])
+
+    # TODO: Não esquecer de recuperar as avaliações quando forem implementadas
+    
+    empresa = Empresa(resultado_usuario[0], resultado_usuario[1], resultado_usuario[2], resultado_usuario[3], resultado_usuario[4],
+                      resultado_empresa[2], resultado_empresa[1], endereco, local)
+
