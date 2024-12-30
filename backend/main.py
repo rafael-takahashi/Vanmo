@@ -19,6 +19,10 @@ async def iniciar_app(app: FastAPI):
     # Criar tabelas no banco de dados caso elas não existam
     conexao = database.conectar_bd()
     database.criar_tabelas(conexao)
+
+    # TODO: Função que roda na inicialização do sistema e uma vez ao dia atualizando os status dos aluguéis
+    # que já passaram das datas de vencimento
+
     yield
 
 app = FastAPI(lifespan=iniciar_app)
@@ -437,14 +441,26 @@ async def apagar_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):
     @param token: O token de acesso do usuário
     """
 
-    # Buscar o usuário a partir do token de acesso
+    db = database.conectar_bd()
+
+    usuario_atual = auth.obter_usuario_atual(db, token)
 
     # Validar se o usuário é uma empresa e o veículo pertence a ela
+    if usuario_atual.tipo_conta != "empresa":
+        raise HTTPException(status_code=400, detail="Usuário não é uma empresa para apagar veículo")
+    
+    if not crud_veiculo.verificar_veiculo_empresa(db, id_veiculo, usuario_atual.id):
+        raise HTTPException(status_code=400, detail="Veículo pertence a outra empresa")
+    
+    if crud_veiculo.verificar_alugueis_veiculo(db, id_veiculo):
+        raise HTTPException(status_code=400, detail="Veículo possui aluguéis ativos")
+    
+    if crud_veiculo.buscar_veiculo(db, id_veiculo) is None:
+        raise HTTPException(status_code=400, detail="Veículo não encontrado no banco de dados")
 
-    # Verificar se não há nenhum aluguel ativo com aquele veículo
+    crud_veiculo.remover_veiculo(id_veiculo)
 
-    # Caso não, apagar o veículo no banco de dados
-    pass
+    return {"detail": "Veículo removido com sucesso"}
 
 # Métodos extras cliente/empresa ----------------------------------------
 

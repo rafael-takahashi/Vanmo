@@ -17,8 +17,9 @@ class Veiculo():
         self.custo_por_km = custo_por_km
         self.custo_base = custo_base
 
-    def adicionar_dados(self, foto: bytes, cor: str, ano_fabricacao: date):
+    def adicionar_dados(self, foto: bytes, cor: str, ano_fabricacao: date, capacidade: int):
         self.foto = foto
         self.cor = cor
         self.ano_fabricacao = ano_fabricacao
+        self.capacidade = capacidade
     

@@ -60,7 +60,9 @@ class QueriesDB:
     query_buscar_endereco_por_id = "SELECT * FROM Endereco WHERE id_endereco = ?"
     query_remover_endereco = "DELETE FROM Endereco WHERE id_endereco = ?"
 
+    query_buscar_veiculo = "SELECT * FROM Veiculo WHERE id_veiculo = ?"
     query_buscar_veiculos_empresa = "SELECT * FROM Veiculo WHERE id_empresa = ?"
+    query_buscar_alugueis_veiculo = "SELECT * FROM Aluguel WHERE id_veiculo = ?"
     query_remover_veiculo = "DELETE FROM Veiculo WHERE id_veiculo = ?"
     query_verificar_veiculo_empresa = "SELECT id_veiculo FROM Veiculo WHERE id_veiculo = ? AND id_empresa = ?"
     query_verificar_disponibilidade_veiculo = "SELECT data_indisponivel FROM Calendario WHERE id_veiculo = ? AND (data_indisponivel BETWEEN ? AND ?)"
