@@ -62,10 +62,13 @@ class QueriesDB:
 
     query_buscar_veiculos_empresa = "SELECT * FROM Veiculo WHERE id_empresa = ?"
     query_remover_veiculo = "DELETE FROM Veiculo WHERE id_veiculo = ?"
+    query_verificar_veiculo_empresa = "SELECT id_veiculo FROM Veiculo WHERE id_veiculo = ? AND id_empresa = ?"
+    query_verificar_disponibilidade_veiculo = "SELECT data_indisponivel FROM Calendario WHERE id_veiculo = ? AND (data_indisponivel BETWEEN ? AND ?)"
 
     query_inserir_aluguel_novo = "INSERT INTO Aluguel (id_aluguel, id_empresa, id_cliente, id_veiculo, valor_total, estado_aluguel, data_inicio, data_fim, distancia_trajeto, distancia_extra, id_local_partida, id_local_chegada) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     query_buscar_alugueis_empresa = "SELECT * FROM Aluguel WHERE id_empresa = ?"
     query_buscar_alugueis_cliente = "SELECT * FROM Aluguel WHERE id_cliente = ?"
     query_remover_aluguel = "DELETE FROM Aluguel WHERE id_aluguel = ?"
 
+    query_inserir_calendario = "INSERT INTO Calendario (id_veiculo, data_indisponivel) VALUES (?, ?)"
     query_remover_calendario = "DELETE FROM Calendario WHERE id_veiculo = ?"

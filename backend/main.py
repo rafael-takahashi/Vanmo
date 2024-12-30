@@ -240,11 +240,9 @@ async def buscar_todas_propostas_usuario(token: str = Depends(oauth2_esquema)):
     db = database.conectar_bd()
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
-    if usuario.tipo_conta != "cliente":
-        raise HTTPException(status_code=400, detail="Tipo de usuário não é cliente")
-
     # Buscar as propostas desse usuário e retornar
-    alugueis = crud_aluguel.buscar_alugueis_cliente(db, usuario.id)
+    alugueis = crud_aluguel.buscar_alugueis_usuario(db, usuario.id)
+
     if alugueis:
         return alugueis
     else:
@@ -288,20 +286,39 @@ async def criar_proposta(id_empresa: int, id_veiculo: int, latitude_partida: flo
     """
 
     # Obter o usuário a partir do token
+    db = database.conectar_bd()
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
     # Ver se o usuário é um cliente
-
+    if usuario.tipo_conta != "cliente":
+        raise HTTPException(status_code=400, detail="Tipo de usuário não é cliente")
+    
     # Obter a empresa a partir do ID
-
     # Obter o veículo a partir do ID
-
     # Validar que o veículo é de fato da empresa e está disponível entre as datas necessárias
+    if not crud_veiculo.verificar_veiculo_empresa(db, id_veiculo, id_empresa):
+        raise HTTPException(status_code=400, detail="Veículo não pertence a empresa")
+    
+    if not crud_veiculo.verificar_disponibilidade_veiculo(db, id_veiculo, data_saida, data_chegada):
+        raise HTTPException(status_code=400, detail="Veículo não disponível para o período escolhido")
 
     # Montar a classe Aluguel necessária, calcular os valores de custo e distância total
+    aluguel: classe_aluguel.Aluguel = classe_aluguel.Aluguel(123, usuario.id, id_empresa, id_veiculo)
+    aluguel.adicionar_datas(data_saida, data_chegada)
+
+    # TODO: verficar se o local já existe? e o nome?
+    local_partida: classe_local.Local = classe_local.Local(123, latitude_partida, longitude_partida)
+    local_chegada: classe_local.Local = classe_local.Local(456, latitude_chegada, longitude_chegada)
+
+    aluguel.adicionar_locais(local_partida, local_chegada)
+    aluguel.adicionar_distancia_extra(distancia_extra_km)
+
+    # TODO: implementar o método a seguir
+    aluguel.calcular_distancia_trajeto()
 
     # Armazenar a classe no banco de dados
+    crud_aluguel.criar_aluguel(db, aluguel)
 
-    pass
 
 @app.put("/propostas/cancelar_proposta/")
 async def cancelar_proposta(id_proposta: int, token: str = Depends(oauth2_esquema)):
