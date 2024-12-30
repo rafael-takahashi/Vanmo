@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from decimal import *
 from classes.classe_usuario import *
 from database import *
+from copy import deepcopy
 from classes import classe_veiculo
 import sqlite3
 import datetime
@@ -36,7 +37,23 @@ def buscar_veiculo(db: sqlite3.Connection, id_veiculo: int) -> classe_veiculo.Ve
 
 # Todos os veículos da empresa
 def listar_veiculos(db: sqlite3.Connection, id_empresa: int) -> list[classe_veiculo.Veiculo]:
-    pass
+    cursor = db.cursor()
+    dados = (id_empresa,)
+
+    lista_resultados = cursor.execute(QueriesDB.query_buscar_veiculos_empresa, dados).fetchall()
+
+    print(f"Resultados: {lista_resultados}")
+
+    veiculos = []
+
+    for resultado in lista_resultados:
+        veiculo = classe_veiculo.Veiculo(resultado[0], resultado[1], resultado[2], resultado[3])
+        veiculo.adicionar_custos(resultado[5], resultado[6])
+        veiculo.adicionar_dados(resultado[7], resultado[8], resultado[9], resultado[4])
+
+        veiculos.append(deepcopy(veiculo))
+
+    return veiculos
 
 def atualizar_veiculo():
     pass

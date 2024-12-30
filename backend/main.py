@@ -411,12 +411,11 @@ async def buscar_todos_veiculos_empresa(id_empresa: int, token: str = Depends(oa
     @param token: O token de acesso do usuário
     """
 
-    # Buscar o usuário pelo token de acesso
+    db = database.conectar_bd()
 
-    # Ver se é um cliente ou empresa válido
+    auth.obter_usuario_atual(db, token)
 
-    # Buscar os dados da empresa no banco de dados e retorná-los
-    pass
+    return crud_veiculo.listar_veiculos(db, id_empresa)
 
 @app.get("/veiculos/buscar_dados_veiculo")
 async def buscar_dados_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):

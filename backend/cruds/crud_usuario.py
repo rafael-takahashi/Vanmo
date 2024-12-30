@@ -7,8 +7,8 @@ from decimal import *
 from classes.classe_usuario import *
 from classes.classe_endereco import Endereco
 from classes.classe_local import Local
-from crud_local import *
-from crud_endereco import *
+from cruds.crud_local import *
+from cruds.crud_endereco import *
 from database import *
 from fastapi import HTTPException
 import sqlite3
