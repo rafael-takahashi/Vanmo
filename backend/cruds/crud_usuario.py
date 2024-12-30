@@ -9,10 +9,6 @@ from database import *
 from fastapi import HTTPException
 import sqlite3
 
-# def obter_todos_usuarios(db):
-#     respota = db.cursor().execute(QueriesDB.query_buscar_todos_usuarios).fetchall()
-#     return list(respota)
-
 # Usada no auth.py
 def obter_usuario_por_nome(db: sqlite3.Connection, nome: str) -> Usuario:
 
@@ -34,7 +30,7 @@ def criar_usuario(db: sqlite3.Connection, usuario: Usuario):
     path_foto = ""
     
     if usuario.foto is not None:
-        path_foto = f"imagens/{usuario.email}.png"
+        path_foto = f"imagens/perfis/{usuario.id}.png"
 
         with open(path_foto, "wb+") as arquivo:
             arquivo.write(usuario.foto.file.read())
@@ -50,8 +46,6 @@ def __remover_empresa(db: sqlite3.Connection, usuario: Usuario):
     cursor = db.cursor()
 
     empresa: Empresa = buscar_dados_empresa(db, usuario)
-
-    print(str(empresa))
 
     dados = (empresa.id,)
 
@@ -89,7 +83,20 @@ def __remover_cliente(db: sqlite3.Connection, usuario: Usuario):
 
     cliente: Cliente = buscar_dados_cliente(db, usuario)
 
-    # TODO: Ver se o cliente tem alugueis ativos
+    dados = (cliente.id,)
+
+    alugueis: list[tuple] = cursor.execute(QueriesDB.query_buscar_alugueis_cliente, dados).fetchall()
+
+    for aluguel in alugueis:
+        if aluguel[5] == "ativo":
+            raise HTTPException(status_code=400, detail="Cliente possui aluguel ativo, não pode ser excluído")
+    
+    for aluguel in alugueis:
+        id_aluguel = aluguel[0]
+
+        dados = (id_aluguel,)
+
+        cursor.execute(QueriesDB.query_remover_aluguel, dados)
 
     cursor.execute(QueriesDB.query_remover_cliente, (usuario.id,))
 
@@ -114,6 +121,20 @@ def remover_usuario(db: sqlite3.Connection, usuario: Usuario):
 
     db.commit()
 
+def verificar_se_dados_ja_cadastrados(db: sqlite3.Connection, email: str, tipo_conta: str) -> bool:
+    cursor: sqlite3.Cursor = db.cursor()
+
+    dados = (email,)
+    query = QueriesDB.query_buscar_empresa
+    if tipo_conta == "cliente":
+        query = QueriesDB.query_buscar_cliente
+
+    resultado = cursor.execute(query, dados).fetchone()
+
+    if resultado is None:
+        return False
+    return True
+
 def cadastrar_cliente(db: sqlite3.Connection, cliente: Cliente):
     cursor: sqlite3.Cursor = db.cursor()
 
@@ -130,7 +151,6 @@ def cadastrar_empresa(db: sqlite3.Connection, empresa: Empresa):
     id_local = cursor.execute(QueriesDB.query_inserir_local_novo, dados_local).fetchone()
     id_local = id_local[0]
 
-    # cep, rua, numero, bairro, cidade, estado
     dados_endereco = (empresa.endereco.cep, empresa.endereco.rua, empresa.endereco.numero, 
                       empresa.endereco.bairro, empresa.endereco.cidade, empresa.endereco.uf)
     
@@ -158,5 +178,5 @@ def buscar_dados_empresa(db: sqlite3.Connection, usuario: Usuario) -> Empresa:
     resultados = cursor.execute(QueriesDB.query_buscar_empresa, dados).fetchone()
     empresa = Empresa(usuario.id, usuario.email, usuario.senha_hashed, usuario.tipo_conta, usuario.foto, 
                      resultados[2], resultados[1], resultados[3], resultados[4])
-    
+
     return empresa

@@ -104,7 +104,8 @@ async def cadastrar_dados_empresa(nome_fantasia: str, cnpj: str, uf: str, cidade
     if usuario.tipo_conta != "empresa":
         raise HTTPException(status_code=400, detail="Tipo de usuário não é empresa")
 
-    # TODO: Ver se a empresa já tem cadastro, se sim, cancelar
+    if crud_usuario.verificar_se_dados_ja_cadastrados(db, usuario.email, "empresa"):
+        raise HTTPException(status_code=400, detail="Empresa já possui cadastro")
 
     latitude = float(latitude)
     longitude = float(longitude)
@@ -144,7 +145,8 @@ async def cadastrar_dados_cliente(nome_completo: str, cpf: str, token: str = Dep
     if usuario.tipo_conta != "cliente":
         raise HTTPException(status_code=400, detail="Tipo de usuário não é cliente")
     
-    # TODO: Validar se o cliente já não possui cadastro
+    if crud_usuario.verificar_se_dados_ja_cadastrados(db, usuario.email, "cliente"):
+        raise HTTPException(status_code=400, detail="Cliente já possui cadastro")
     
     # TODO: Validar CPF
 
