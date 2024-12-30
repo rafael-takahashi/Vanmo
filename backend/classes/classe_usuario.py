@@ -1,17 +1,18 @@
 import sys
 sys.path.append("..")
 
+from fastapi import UploadFile
 from pydantic import BaseModel
 from classes.classe_endereco import Endereco
 from classes.classe_local import Local
 
 class Usuario():
-    def __init__(self, email: str, senha_hashed: str, tipo_conta: str, foto: bytes | None = None, id: int | None = None):
+    def __init__(self, email: str, senha_hashed: str, tipo_conta: str, foto:UploadFile | str | None = None, id: int | None = None):
         self.id: int | None = id
         self.email: str = email
         self.senha_hashed: str = senha_hashed
         self.tipo_conta: str = tipo_conta
-        self.foto: bytes | None = foto
+        self.foto: UploadFile | str | None = foto
 
 class Cliente(Usuario):
     def __init__(self, id, email, senha_hashed, tipo_conta, foto, nome_completo: str, cpf: str):

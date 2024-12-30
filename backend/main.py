@@ -1,6 +1,8 @@
 import datetime
+import os
 
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile
+from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
@@ -207,8 +209,29 @@ async def buscar_dados_cadastrais(token: str = Depends(oauth2_esquema)):
     @param token: O token de acesso do usuário
     """
 
-    # Busca o usuário a partir do token e retorna os seus dados
-    pass
+    db = database.conectar_bd()
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+
+    return usuario
+
+@app.get("/usuario/buscar_foto_perfil")
+async def buscar_foto_perfil(token: str = Depends(oauth2_esquema)):
+    """
+    Busca a foto de perfil de um usuário
+
+    @param token: O token de acesso do usuário
+    """
+
+    db = database.conectar_bd()
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+
+    if usuario.foto == "" or usuario.foto is None:
+        return FileResponse("imagens/imagem_perfil_padrao.png")
+    
+    if os.path.isfile(usuario.foto):
+        return FileResponse(usuario.foto)
+    
+    return FileResponse("imagens/imagem_perfil_padrao.png")
 
 # Métodos de propostas ----------------------------------------
 

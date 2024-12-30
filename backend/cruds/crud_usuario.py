@@ -34,7 +34,7 @@ def criar_usuario(db: sqlite3.Connection, usuario: Usuario):
     path_foto = ""
     
     if usuario.foto is not None:
-        path_foto = f"imagens/perfis/{usuario.id}.png"
+        path_foto = f"imagens/perfis/{usuario.email}.png"
 
         with open(path_foto, "wb+") as arquivo:
             arquivo.write(usuario.foto.file.read())
