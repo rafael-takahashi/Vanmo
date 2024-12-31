@@ -10,7 +10,7 @@ from contextlib import asynccontextmanager
 
 import database, auth
 from classes import classe_aluguel, classe_calendario, classe_endereco, classe_local, classe_usuario, classe_veiculo
-from cruds import crud_aluguel, crud_usuario, crud_veiculo
+from cruds import crud_aluguel, crud_usuario, crud_veiculo, crud_local
 
 @asynccontextmanager
 async def iniciar_app(app: FastAPI):
@@ -312,38 +312,33 @@ async def criar_proposta(id_empresa: int, id_veiculo: int, latitude_partida: flo
     @param token: O token de acesso do usuário
     """
 
-    # Obter o usuário a partir do token
     db = database.conectar_bd()
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
-    # Ver se o usuário é um cliente
     if usuario.tipo_conta != "cliente":
         raise HTTPException(status_code=400, detail="Tipo de usuário não é cliente")
     
-    # Obter a empresa a partir do ID
-    # Obter o veículo a partir do ID
-    # Validar que o veículo é de fato da empresa e está disponível entre as datas necessárias
     if not crud_veiculo.verificar_veiculo_empresa(db, id_veiculo, id_empresa):
         raise HTTPException(status_code=400, detail="Veículo não pertence a empresa")
     
     if not crud_veiculo.verificar_disponibilidade_veiculo(db, id_veiculo, data_saida, data_chegada):
         raise HTTPException(status_code=400, detail="Veículo não disponível para o período escolhido")
 
-    # Montar a classe Aluguel necessária, calcular os valores de custo e distância total
     aluguel: classe_aluguel.Aluguel = classe_aluguel.Aluguel(123, usuario.id, id_empresa, id_veiculo)
     aluguel.adicionar_datas(data_saida, data_chegada)
 
-    # TODO: verficar se o local já existe? e o nome?
-    local_partida: classe_local.Local = classe_local.Local(123, latitude_partida, longitude_partida)
-    local_chegada: classe_local.Local = classe_local.Local(456, latitude_chegada, longitude_chegada)
+    # TODO: verficar se o local já existe
+    # TODO: pensar numa forma para adicionar o nome no local
+    local_partida: classe_local.Local = classe_local.Local(latitude_partida, longitude_partida)
+    crud_local.criar_local(db, local_partida)
+    local_chegada: classe_local.Local = classe_local.Local(latitude_chegada, longitude_chegada)
+    crud_local.criar_local(db, local_chegada)
 
     aluguel.adicionar_locais(local_partida, local_chegada)
     aluguel.adicionar_distancia_extra(distancia_extra_km)
 
-    # TODO: implementar o método a seguir
     aluguel.calcular_distancia_trajeto()
 
-    # Armazenar a classe no banco de dados
     crud_aluguel.criar_aluguel(db, aluguel)
 
 
