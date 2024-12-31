@@ -68,3 +68,10 @@ if __name__ == "__main__":
 
     for resultado in resultados:
         print(f"> {resultado}")
+
+    print("AVALIACOES")
+
+    resultados = cursor.execute("SELECT * FROM Avaliacao;").fetchall()
+
+    for resultado in resultados:
+        print(f"> {resultado}")

@@ -68,11 +68,11 @@ async def inserir_dados(db: sqlite3.Connection):
         INSERT INTO Empresa (id_usuario, cnpj, nome_fantasia, id_endereco, id_local, num_avaliacoes, soma_avaliacoes)
         VALUES (?, ?, ?, ?, ?, ?, ?)
     """, [
-        (2, '12345678000123', 'Loja A', 1, 1, 10, 45),
-        (4, '23456789000145', 'Loja B', 2, 2, 20, 95),
-        (5, '34567890000167', 'Loja C', 3, 3, 15, 70),
-        (1, '45678901234567', 'Loja D', 4, 4, 30, 150),
-        (3, '56789012345678', 'Loja E', 5, 5, 5, 20)
+        (2, '12345678000123', 'Loja A', 1, 1, 0, 0),
+        (4, '23456789000145', 'Loja B', 2, 2, 0, 0),
+        (5, '34567890000167', 'Loja C', 3, 3, 0, 0),
+        (1, '45678901234567', 'Loja D', 4, 4, 0, 0),
+        (3, '56789012345678', 'Loja E', 5, 5, 0, 0)
     ])
 
     # Inserir dados na tabela Veiculo

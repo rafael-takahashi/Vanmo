@@ -201,8 +201,63 @@ def buscar_empresa_por_id (db: sqlite3.Connection, id_empresa: int) -> Empresa:
     local : Local =  buscar_local_por_id(db, resultado_empresa[4])
     endereco : Endereco = buscar_endereco_por_id(db, resultado_empresa[3])
 
-    # TODO: Não esquecer de recuperar as avaliações quando forem implementadas
-    
     empresa = Empresa(resultado_usuario[0], resultado_usuario[1], resultado_usuario[2], resultado_usuario[3], resultado_usuario[4],
                       resultado_empresa[2], resultado_empresa[1], endereco, local)
+    
+    empresa.num_avaliacoes = resultado_empresa[5]
+    empresa.soma_avaliacoes = resultado_empresa[6]
 
+    return empresa
+
+def verificar_se_avaliacao_ja_feita(db: sqlite3.Connection, id_usuario: int, id_empresa: int) -> bool:
+    cursor = db.cursor()
+
+    dados = (id_usuario, id_empresa)
+
+    resultado = cursor.execute(QueriesDB.query_buscar_avaliacao, dados).fetchone()
+
+    if resultado is None:
+        return False
+    return True
+
+def avaliar_empresa(db: sqlite3.Connection, id_usuario: int, id_empresa: int, nota: float):
+    cursor = db.cursor()
+
+    dados = (id_usuario, id_empresa, nota)
+
+    cursor.execute(QueriesDB.query_inserir_avaliacao_nova, dados)
+    
+    empresa: Empresa = buscar_empresa_por_id(db, id_empresa)
+
+    empresa.num_avaliacoes += 1
+    empresa.soma_avaliacoes += nota
+
+    dados = (empresa.num_avaliacoes, empresa.soma_avaliacoes, id_empresa)
+
+    cursor.execute(QueriesDB.query_atualizar_avaliacoes_empresa, dados)
+
+    db.commit()
+
+
+def atualizar_avaliacao(db: sqlite3.Connection, id_usuario: int, id_empresa: int, nota_nova: float):
+    cursor = db.cursor()
+
+    nota_antiga = cursor.execute(QueriesDB.query_buscar_avaliacao, (id_usuario, id_empresa)).fetchone()
+
+    if nota_antiga is None:
+        avaliar_empresa(db, id_usuario, id_empresa, nota_nova)
+        return
+
+    dados = (nota_nova, id_usuario, id_empresa)
+    cursor.execute(QueriesDB.query_atualizar_avaliacao, dados)
+    
+    empresa: Empresa = buscar_empresa_por_id(db, id_empresa)
+
+    empresa.soma_avaliacoes -= nota_antiga[2]
+    empresa.soma_avaliacoes += nota_nova
+
+    dados = (empresa.num_avaliacoes, empresa.soma_avaliacoes, id_empresa)
+    print(f"Atualizando empresa: {dados}")
+    cursor.execute(QueriesDB.query_atualizar_avaliacoes_empresa, dados)
+
+    db.commit()

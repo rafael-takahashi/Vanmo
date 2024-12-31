@@ -29,6 +29,7 @@ def criar_tabelas(conexao: sqlite3.Connection):
     cursor.execute("CREATE TABLE IF NOT EXISTS Calendario(id_veiculo, data_indisponivel)")
     cursor.execute("CREATE TABLE IF NOT EXISTS Veiculo(id_veiculo integer primary key, id_empresa, nome_veiculo, placa_veiculo, capacidade, custo_por_km, custo_base, path_foto, cor, ano_de_fabricacao)")
     cursor.execute("CREATE TABLE IF NOT EXISTS RegistrosLocacao(id_registro integer primary key, nome_cliente, cpf_cliente, nome_fantasia_empresa, cnpj_empresa, nome_veiculo, placa_veiculo, custo_total, data_inicio, data_fim)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS Avaliacao(id_cliente, id_empresa, nota)")
 
     conexao.commit()
 
@@ -51,6 +52,7 @@ class QueriesDB:
     query_inserir_empresa_nova = "INSERT INTO Empresa (id_usuario, cnpj, nome_fantasia, id_endereco, id_local, num_avaliacoes, soma_avaliacoes) VALUES (?, ?, ?, ?, ?, ?, ?)"
     query_remover_empresa = "DELETE FROM Empresa WHERE id_usuario = ?"
     query_buscar_empresa = "SELECT * FROM Empresa WHERE id_usuario = ?"
+    query_atualizar_avaliacoes_empresa = "UPDATE Empresa SET num_avaliacoes = ?, soma_avaliacoes = ? WHERE id_usuario = ?"
 
     query_inserir_local_novo = "INSERT INTO Local (latitude, longitude, nome) VALUES (?, ?, ?) RETURNING id_local"
     query_buscar_local_por_id = "SELECT * FROM Local WHERE id_local = ?"
@@ -74,3 +76,7 @@ class QueriesDB:
 
     query_inserir_calendario = "INSERT INTO Calendario (id_veiculo, data_indisponivel) VALUES (?, ?)"
     query_remover_calendario = "DELETE FROM Calendario WHERE id_veiculo = ?"
+
+    query_buscar_avaliacao = "SELECT * FROM Avaliacao WHERE id_cliente = ? AND id_empresa = ?"
+    query_inserir_avaliacao_nova = "INSERT INTO Avaliacao (id_cliente, id_empresa, nota) VALUES (?, ?, ?)"
+    query_atualizar_avaliacao = "UPDATE Avaliacao SET nota = ? WHERE id_cliente = ? AND id_empresa = ?"

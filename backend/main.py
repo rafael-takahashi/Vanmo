@@ -508,13 +508,24 @@ async def avaliar_empresa(id_empresa: int, avaliacao: float, token: str = Depend
     @param token: O token de acesso do usuário
     """
 
-    # Obter o usuário a partir do token
+    db = database.conectar_bd()
 
-    # Validar se ele não já avaliou a empresa antes (e uma empresa não pode avaliar a si mesma)
+    usuario = auth.obter_usuario_atual(db, token)
 
-    # Buscar os dados da empresa e alterar a soma e a quantidade de avaliações
-    pass
+    if usuario.tipo_conta != "cliente":
+        raise HTTPException(status_code=400, detail="Apenas clientes podem avaliar empresas")
+    
+    if avaliacao <= 0 or avaliacao >= 5:
+        raise HTTPException(status_code=400, detail="Nota deve estar entre 0 e 5")
 
+    if crud_usuario.verificar_se_avaliacao_ja_feita(db, usuario.id, id_empresa):
+        crud_usuario.atualizar_avaliacao(db, usuario.id, id_empresa, avaliacao)
+        return {"detail": "Avaliação atualizada com sucesso"}
+
+    crud_usuario.avaliar_empresa(db, usuario.id, id_empresa, avaliacao)
+
+    return {"detail": "Avaliação feita com sucesso"}
+    
 @app.get("/busca/buscar_empresas/nome")
 async def buscar_empresas_nome(nome_busca: str, token: str = Depends(oauth2_esquema)):
     """
