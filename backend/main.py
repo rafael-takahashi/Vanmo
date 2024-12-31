@@ -245,15 +245,31 @@ async def aceitar_ou_rejeitar_proposta(id_proposta: int, opcao: bool, token: str
     @param token: O token de acesso do usuário
     """
 
-    # Obter o usuário a partir do token
+    db = database.conectar_bd()
 
-    # Ver se o usuário é uma empresa
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
-    # Ver se a proposta está vinculada aquela empresa em específico
+    if usuario.tipo_conta != "empresa":
+        raise HTTPException(status_code=400, detail="Apenas empresas podem aceitar ou rejeitar propostas")
 
-    # Caso a proposta seja rejeitada, alterar o status para rejeitada, caso contrário, passe para ativa
+    aluguel = crud_aluguel.buscar_aluguel(db, id_proposta)
 
-    pass
+    if aluguel is None:
+        raise HTTPException(status_code=404, detail="Proposta não encontrada")
+    
+    if aluguel.id_empresa != usuario.id:
+        raise HTTPException(status_code=400, detail="Proposta não pertence ao usuário")
+    
+    if aluguel.estado_aluguel != "proposto":
+        raise HTTPException(status_code=400, detail="Status do aluguel não é 'proposta'")
+    
+    novo_status = "rejeitado"
+    if opcao:
+        novo_status = "ativo"
+
+    crud_aluguel.alterar_status_aluguel(db, id_proposta, novo_status)
+
+    return {"detail": f"Status alterado para '{novo_status}' com sucesso!"}
 
 @app.get("/propostas/buscar_propostas")
 async def buscar_todas_propostas_usuario(token: str = Depends(oauth2_esquema)):
@@ -276,7 +292,7 @@ async def buscar_todas_propostas_usuario(token: str = Depends(oauth2_esquema)):
         return {"detail" : "Nenhuma proposta encontrada para o cliente.",
                 "data" : []}
     
-@app.get("/propostas/dados_proposta")
+@app.get("/propostas/buscar_dados_proposta")
 async def buscar_dados_proposta(id_proposta: int, token: str = Depends(oauth2_esquema)):
     """
     Busca os dados específicos de uma proposta única
@@ -285,12 +301,19 @@ async def buscar_dados_proposta(id_proposta: int, token: str = Depends(oauth2_es
     @param token: O token de acesso daquele usuário
     """
 
-    # Buscar o usuário a partir do token
+    db = database.conectar_bd()
 
-    # Ver se o usuário está envolvido com a proposta específica
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
-    # Se sim, retornar os dados dela, caso contrário, retornar erro de autenticação
-    pass
+    aluguel = crud_aluguel.buscar_aluguel(db, id_proposta)
+
+    if aluguel is None:
+        raise HTTPException(status_code=404, detail="Proposta não encontrada")
+    
+    if aluguel.id_empresa != usuario.id and aluguel.id_cliente != usuario.id:
+        raise HTTPException(status_code=400, detail="Proposta não pertence ao usuário")
+    
+    return aluguel
 
 @app.post("/propostas/criar_proposta/")
 async def criar_proposta(id_empresa: int, id_veiculo: int, latitude_partida: float, longitude_partida: float,
@@ -324,7 +347,7 @@ async def criar_proposta(id_empresa: int, id_veiculo: int, latitude_partida: flo
     if not crud_veiculo.verificar_disponibilidade_veiculo(db, id_veiculo, data_saida, data_chegada):
         raise HTTPException(status_code=400, detail="Veículo não disponível para o período escolhido")
 
-    aluguel: classe_aluguel.Aluguel = classe_aluguel.Aluguel(123, usuario.id, id_empresa, id_veiculo)
+    aluguel: classe_aluguel.Aluguel = classe_aluguel.Aluguel(None, usuario.id, id_empresa, id_veiculo)
     aluguel.adicionar_datas(data_saida, data_chegada)
 
     # TODO: verficar se o local já existe
@@ -338,9 +361,9 @@ async def criar_proposta(id_empresa: int, id_veiculo: int, latitude_partida: flo
     aluguel.adicionar_distancia_extra(distancia_extra_km)
 
     aluguel.calcular_distancia_trajeto()
+    aluguel.estado_aluguel = "proposto"
 
     crud_aluguel.criar_aluguel(db, aluguel)
-
 
 @app.put("/propostas/cancelar_proposta/")
 async def cancelar_proposta(id_proposta: int, token: str = Depends(oauth2_esquema)):
@@ -351,13 +374,28 @@ async def cancelar_proposta(id_proposta: int, token: str = Depends(oauth2_esquem
     @param token: O token de acesso do usuário
     """
 
-    # Obter o usuário a partir do token
+    db = database.conectar_bd()
 
-    # Verificar se a proposta é de fato dele e se ela não foi aceitada ou rejeitada ainda
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(token)
 
-    # Apagar a proposta
-    pass
+    if usuario.tipo_conta != "cliente":
+        raise HTTPException(status_code=400, detail="Apenas clientes podem cancelar propostas")
 
+    aluguel = crud_aluguel.buscar_aluguel(db, id_proposta)
+
+    if aluguel is None:
+        raise HTTPException(status_code=404, detail="Proposta não encontrada")
+    
+    if aluguel.id_cliente != usuario.id:
+        raise HTTPException(status_code=400, detail="Proposta não pertence ao cliente")
+    
+    if aluguel.estado_aluguel != "proposto":
+        raise HTTPException(status_code=400, detail="Status do aluguel não é 'proposto'")
+
+    crud_aluguel.remover_aluguel(db, id_proposta)
+
+    return {"detail": "Proposta cancelada com sucesso!"}    
+    
 # Métodos de veículos ----------------------------------------
 
 @app.post("/veiculos/cadastrar_veiculo/")
@@ -532,9 +570,16 @@ async def buscar_empresas_nome(nome_busca: str, token: str = Depends(oauth2_esqu
 
     # Obter o usuário a partir do token
 
-    # Buscar as empresas cujo nome inicia com a string passada
-    # OBS: Aqui daria pra usar alguma outra coisa mas adicionaria complexidade desnecessária
-    pass
+    db = database.conectar_bd()
+
+    # Validação apenas
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+
+    nome_busca = nome_busca + "%"
+
+    # TODO: Ver formato necessário para retornar para o frontend
+
+    return crud_usuario.buscador_empresas_nome(db, nome_busca)
 
 @app.get("/busca/buscar_empresas/criterio")
 async def buscar_empresas_criterio(criterio: str, token: str = Depends(oauth2_esquema)):

@@ -27,4 +27,4 @@ def buscar_local_por_id (db: sqlite3.Connection, id_local: int) -> Local:
 
     resultado = cursor.execute(QueriesDB.query_buscar_local_por_id, dados).fetchone()
 
-    return Local(resultado[0], resultado[1], resultado[2], resultado[3])
+    return Local(resultado[1], resultado[2], resultado[3], resultado[0])

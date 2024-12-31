@@ -184,10 +184,12 @@ def buscar_dados_empresa(db: sqlite3.Connection, usuario: Usuario) -> Empresa:
     local : Local =  buscar_local_por_id(db, resultados[4])
     endereco : Endereco = buscar_endereco_por_id(db, resultados[3])
 
-    # TODO: Não esquecer de recuperar as avaliações quando forem implementadas
+    empresa = Empresa(id=usuario.id, email=usuario.email, senha_hashed=usuario.senha_hashed, 
+                      tipo_conta=usuario.tipo_conta, foto=usuario.foto, 
+                      nome_fantasia=resultados[2], cnpj=resultados[1], endereco=endereco, local=local)
 
-    empresa = Empresa(usuario.id, usuario.email, usuario.senha_hashed, usuario.tipo_conta, usuario.foto, 
-                     resultados[2], resultados[1], endereco, local)
+    empresa.num_avaliacoes = resultados[5]
+    empresa.soma_avaliacoes = resultados[6]
 
     return empresa
 
@@ -195,15 +197,40 @@ def buscar_empresa_por_id (db: sqlite3.Connection, id_empresa: int) -> Empresa:
     cursor: sqlite3.Cursor = db.cursor()
 
     dados = (id_empresa,)
+    # (0id, 1email, 2senha_hashed, 3tipo_conta, 4path_foto)
     resultado_usuario = cursor.execute(QueriesDB.query_buscar_usuario_por_id, dados).fetchone()
     resultado_empresa = cursor.execute(QueriesDB.query_buscar_empresa, dados).fetchone()
+
+    id_usuario = resultado_usuario[0]
+    email = resultado_usuario[1]
+    senha = resultado_usuario[2]
+    tipo = resultado_usuario[3]
+    foto = resultado_usuario[4]
+
+    # print(f"AA \nid {id} \nemail {email} \nsenha {senha} \ntipo {tipo} \nfoto {foto}")
 
     local : Local =  buscar_local_por_id(db, resultado_empresa[4])
     endereco : Endereco = buscar_endereco_por_id(db, resultado_empresa[3])
 
-    empresa = Empresa(resultado_usuario[0], resultado_usuario[1], resultado_usuario[2], resultado_usuario[3], resultado_usuario[4],
-                      resultado_empresa[2], resultado_empresa[1], endereco, local)
+    # TODO: Wtf???? Todos atributos ficam defasados por algum motivo que eu não consegui descobri ainda
+
+    # empresa = Empresa(id=id_usuario, email=email, senha_hashed=senha, 
+    #                   tipo_conta=tipo, foto=foto,
+    #                   nome_fantasia=resultado_empresa[2], cnpj=resultado_empresa[1], 
+    #                   endereco=endereco, local=local)
     
+    empresa = Empresa(None, None, None, None, None, None, None, None, None)
+    # print(empresa)
+    
+    empresa.id = id_empresa
+    empresa.email = email
+    empresa.senha_hashed = senha
+    empresa.tipo_conta = tipo
+    empresa.foto = foto
+    empresa.cnpj = resultado_empresa[1]
+    empresa.nome_fantasia = resultado_empresa[2]
+    empresa.endereco = endereco
+    empresa.local = local
     empresa.num_avaliacoes = resultado_empresa[5]
     empresa.soma_avaliacoes = resultado_empresa[6]
 
@@ -261,3 +288,20 @@ def atualizar_avaliacao(db: sqlite3.Connection, id_usuario: int, id_empresa: int
     cursor.execute(QueriesDB.query_atualizar_avaliacoes_empresa, dados)
 
     db.commit()
+
+
+def buscador_empresas_nome(db: sqlite3.Connection, string_busca):
+    cursor = db.cursor()
+
+    resultados = cursor.execute(QueriesDB.query_buscador_por_nome, (string_busca,)).fetchall()
+
+    empresas: list[Empresa] = []
+
+    for resultado in resultados:
+        item: Empresa = buscar_empresa_por_id(db, resultado[0])
+        item.senha_hashed = ''
+        item.email = ''
+        # print(item)
+        empresas.append(item)
+
+    return empresas
