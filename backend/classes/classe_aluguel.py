@@ -45,3 +45,11 @@ class Aluguel():
         distancia = round((raio_da_terra * c), 3) # em kilômetros
 
         return distancia 
+
+    def calcular_valor_total(self, custo_por_km: float, custo_base: float) -> float:
+        if (not self.distancia_trajeto) or (not self.distancia_extra):
+            self.valor_total = -1.0
+        distancia_total = self.distancia_trajeto + self.distancia_extra
+        self.valor_total = custo_base + distancia_total * custo_por_km
+        
+        return self.valor_total

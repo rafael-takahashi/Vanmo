@@ -354,11 +354,17 @@ async def criar_proposta(id_empresa: int, id_veiculo: int, latitude_partida: flo
     if (data_chegada > data_saida):
         raise HTTPException(status_code=400, detail="Datas inválidas: data de chegada anterior a data de saída")
 
+    veiculo: classe_veiculo.Veiculo = crud_veiculo.buscar_veiculo(db, id_veiculo)
+    if not veiculo:
+        raise HTTPException(status_code=400, detail="Veículo não encontrado")
+
     aluguel: classe_aluguel.Aluguel = classe_aluguel.Aluguel(None, usuario.id, id_empresa, id_veiculo)
     aluguel.adicionar_datas(data_saida, data_chegada)
 
     # TODO: verficar se o local já existe
     # TODO: pensar numa forma para adicionar o nome no local
+    # TODO: verificar se veículo tem valor por km
+
     local_partida: classe_local.Local = classe_local.Local(latitude_partida, longitude_partida)
     local_partida.id = crud_local.criar_local(db, local_partida)
     local_chegada: classe_local.Local = classe_local.Local(latitude_chegada, longitude_chegada)
@@ -366,8 +372,10 @@ async def criar_proposta(id_empresa: int, id_veiculo: int, latitude_partida: flo
 
     aluguel.adicionar_locais(local_partida, local_chegada)
     aluguel.adicionar_distancia_extra(distancia_extra_km)
+    aluguel.calcular_valor_total(veiculo.custo_por_km, veiculo.custo_base)
 
     aluguel.estado_aluguel = "proposto"
+
     crud_aluguel.criar_aluguel(db, aluguel)
 
     return {"detail": "Proposta criada com sucesso"}
