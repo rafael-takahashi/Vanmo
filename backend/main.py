@@ -328,6 +328,7 @@ async def criar_proposta(id_empresa: int, id_veiculo: int, latitude_partida: flo
     aluguel.adicionar_datas(data_saida, data_chegada)
 
     # TODO: verficar se o local já existe
+    # TODO: validar latitude e longitude
     # TODO: pensar numa forma para adicionar o nome no local
     local_partida: classe_local.Local = classe_local.Local(latitude_partida, longitude_partida)
     crud_local.criar_local(db, local_partida)
