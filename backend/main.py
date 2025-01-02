@@ -538,7 +538,7 @@ async def buscar_dados_empresa(id_empresa: int, token: str = Depends(oauth2_esqu
     db = database.conectar_bd()
     usuario_atual = auth.obter_usuario_atual(db, token)
 
-    return crud_usuario.buscar_dados_empresa(db, id_empresa)
+    return crud_usuario.buscar_empresa_por_id(db, id_empresa)
 
 @app.put("/empresa/avaliar_empresa")
 async def avaliar_empresa(id_empresa: int, avaliacao: float, token: str = Depends(oauth2_esquema)):
