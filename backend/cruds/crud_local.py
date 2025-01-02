@@ -13,8 +13,10 @@ def criar_local(db: sqlite3.Connection, local: Local):
     dados = (local.latitude, local.longitude, local.nome)
 
     cursor.execute(QueriesDB.query_inserir_local_novo, dados)
+    id_local: int = cursor.lastrowid
     
     db.commit()
+    return id_local
 
 def remover_local():
     pass
