@@ -10,12 +10,11 @@ import sqlite3
 def criar_aluguel(db: sqlite3.Connection, aluguel: Aluguel): #... outros argumentos vêm aqui ):
     cursor: sqlite3.Cursor = db.cursor()
 
-    dados = (aluguel.id_empresa, aluguel.id_cliente, aluguel.id_veiculo, float(aluguel.valor_total), aluguel.estado_aluguel,
-             aluguel.data_inicio.strftime('%Y-%m-%d'), aluguel.data_fim.strftime('%Y-%m-%d'), float(aluguel.distancia_trajeto), float(aluguel.distancia_extra), aluguel.local_partida.id, aluguel.local_chegada.id)
+    dados = (aluguel.id_empresa, aluguel.id_cliente, aluguel.id_veiculo, aluguel.valor_total, aluguel.estado_aluguel, 
+             aluguel.data_inicio.strftime('%Y-%m-%d'), aluguel.data_fim.strftime('%Y-%m-%d'), aluguel.distancia_trajeto, aluguel.distancia_extra, aluguel.local_partida.id, aluguel.local_chegada.id)
     
     print(dados)
     cursor.execute(QueriesDB.query_inserir_aluguel_novo, dados)
-    # cursor.execute(QueriesDB.query_inserir_aluguel_novo, (2, 1, 1, 150.3, 'ativo', '2024-01-01', '2024-01-05', 200.3, 10.1, 1, 2))
     db.commit()
 
 def buscar_alugueis_usuario(db: sqlite3.Connection, usuario: Usuario) -> list[Aluguel]:

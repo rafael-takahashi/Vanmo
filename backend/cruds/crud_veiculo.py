@@ -84,4 +84,4 @@ def verificar_disponibilidade_veiculo(db: sqlite3.Connection, id_veiculo: int, d
 
     resultado = cursor.execute(QueriesDB.query_verificar_disponibilidade_veiculo, dados).fetchone()
 
-    return resultado is not None
+    return resultado is None

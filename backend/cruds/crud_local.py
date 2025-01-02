@@ -7,12 +7,13 @@ from database import *
 import sqlite3
 
 def criar_local(db: sqlite3.Connection, local: Local):
-    cursor = db.curso()
+    cursor = db.cursor()
     if not local.nome:
         local.nome = ""
     dados = (local.latitude, local.longitude, local.nome)
 
     cursor.execute(QueriesDB.query_inserir_local_novo, dados)
+    
     db.commit()
 
 def remover_local():

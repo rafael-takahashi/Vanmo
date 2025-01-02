@@ -54,7 +54,7 @@ class QueriesDB:
     query_buscar_empresa = "SELECT * FROM Empresa WHERE id_usuario = ?"
     query_atualizar_avaliacoes_empresa = "UPDATE Empresa SET num_avaliacoes = ?, soma_avaliacoes = ? WHERE id_usuario = ?"
 
-    query_inserir_local_novo = "INSERT INTO Local (latitude, longitude, nome) VALUES (?, ?, ?) RETURNING id_local"
+    query_inserir_local_novo = "INSERT INTO Local (latitude, longitude, nome) VALUES (?, ?, ?)"
     query_buscar_local_por_id = "SELECT * FROM Local WHERE id_local = ?"
     query_remover_local = "DELETE FROM Local WHERE id_local = ?"
 
@@ -69,7 +69,7 @@ class QueriesDB:
     query_verificar_veiculo_empresa = "SELECT id_veiculo FROM Veiculo WHERE id_veiculo = ? AND id_empresa = ?"
     query_verificar_disponibilidade_veiculo = "SELECT data_indisponivel FROM Calendario WHERE id_veiculo = ? AND (data_indisponivel BETWEEN ? AND ?)"
 
-    query_inserir_aluguel_novo = "INSERT INTO Aluguel (id_aluguel, id_empresa, id_cliente, id_veiculo, valor_total, estado_aluguel, data_inicio, data_fim, distancia_trajeto, distancia_extra, id_local_partida, id_local_chegada) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    query_inserir_aluguel_novo = "INSERT INTO Aluguel (id_empresa, id_cliente, id_veiculo, valor_total, estado_aluguel, data_inicio, data_fim, distancia_trajeto, distancia_extra, id_local_partida, id_local_chegada) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     query_buscar_alugueis_empresa = "SELECT * FROM Aluguel WHERE id_empresa = ?"
     query_buscar_alugueis_cliente = "SELECT * FROM Aluguel WHERE id_cliente = ?"
     query_remover_aluguel = "DELETE FROM Aluguel WHERE id_aluguel = ?"
