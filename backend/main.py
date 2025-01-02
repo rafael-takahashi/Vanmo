@@ -323,7 +323,7 @@ async def criar_proposta(id_empresa: int, id_veiculo: int, latitude_partida: flo
     
     if not crud_veiculo.verificar_disponibilidade_veiculo(db, id_veiculo, data_saida, data_chegada):
         raise HTTPException(status_code=400, detail="Veículo não disponível para o período escolhido")
-
+    
     aluguel: classe_aluguel.Aluguel = classe_aluguel.Aluguel(123, usuario.id, id_empresa, id_veiculo)
     aluguel.adicionar_datas(data_saida, data_chegada)
 
@@ -338,10 +338,8 @@ async def criar_proposta(id_empresa: int, id_veiculo: int, latitude_partida: flo
     aluguel.adicionar_locais(local_partida, local_chegada)
     aluguel.adicionar_distancia_extra(distancia_extra_km)
 
-    aluguel.calcular_distancia_trajeto()
-
+    aluguel.estado_aluguel = "proposta"
     crud_aluguel.criar_aluguel(db, aluguel)
-
 
 @app.put("/propostas/cancelar_proposta/")
 async def cancelar_proposta(id_proposta: int, token: str = Depends(oauth2_esquema)):
@@ -491,8 +489,10 @@ async def buscar_dados_empresa(id_empresa: int, token: str = Depends(oauth2_esqu
     @param token: O token de acesso do usuário
     """
 
-    # Obter o usuário a partir do token
-    pass
+    db = database.conectar_bd()
+    usuario_atual = auth.obter_usuario_atual(db, token)
+
+    return crud_usuario.buscar_dados_empresa(db, id_empresa)
 
 @app.put("/empresa/avaliar_empresa")
 async def avaliar_empresa(id_empresa: int, avaliacao: float, token: str = Depends(oauth2_esquema)):
