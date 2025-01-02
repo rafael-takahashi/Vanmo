@@ -11,6 +11,7 @@ from contextlib import asynccontextmanager
 import database, auth
 from classes import classe_aluguel, classe_calendario, classe_endereco, classe_local, classe_usuario, classe_veiculo
 from cruds import crud_aluguel, crud_usuario, crud_veiculo, crud_local
+from utils import *
 
 @asynccontextmanager
 async def iniciar_app(app: FastAPI):
@@ -284,7 +285,7 @@ async def buscar_todas_propostas_usuario(token: str = Depends(oauth2_esquema)):
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
     # Buscar as propostas desse usuário e retornar
-    alugueis = crud_aluguel.buscar_alugueis_usuario(db, usuario.id)
+    alugueis = crud_aluguel.buscar_alugueis_usuario_id(db, usuario.id)
 
     if alugueis:
         return alugueis
@@ -347,22 +348,29 @@ async def criar_proposta(id_empresa: int, id_veiculo: int, latitude_partida: flo
     if not crud_veiculo.verificar_disponibilidade_veiculo(db, id_veiculo, data_saida, data_chegada):
         raise HTTPException(status_code=400, detail="Veículo não disponível para o período escolhido")
 
+    if (not valida_coordendas(latitude_partida, longitude_partida)) or (not valida_coordendas(latitude_chegada, longitude_chegada)):
+        raise HTTPException(status_code=400, detail="Coordenadas inválidas")
+    
+    if (data_chegada > data_saida):
+        raise HTTPException(status_code=400, detail="Datas inválidas: data de chegada anterior a data de saída")
+
     aluguel: classe_aluguel.Aluguel = classe_aluguel.Aluguel(None, usuario.id, id_empresa, id_veiculo)
     aluguel.adicionar_datas(data_saida, data_chegada)
 
     # TODO: verficar se o local já existe
-    # TODO: validar latitude e longitude
     # TODO: pensar numa forma para adicionar o nome no local
     local_partida: classe_local.Local = classe_local.Local(latitude_partida, longitude_partida)
-    crud_local.criar_local(db, local_partida)
+    local_partida.id = crud_local.criar_local(db, local_partida)
     local_chegada: classe_local.Local = classe_local.Local(latitude_chegada, longitude_chegada)
-    crud_local.criar_local(db, local_chegada)
+    local_chegada.id = crud_local.criar_local(db, local_chegada)
 
     aluguel.adicionar_locais(local_partida, local_chegada)
     aluguel.adicionar_distancia_extra(distancia_extra_km)
 
-    aluguel.estado_aluguel = "proposta"
+    aluguel.estado_aluguel = "proposto"
     crud_aluguel.criar_aluguel(db, aluguel)
+
+    return {"detail": "Proposta criada com sucesso"}
 
 @app.put("/propostas/cancelar_proposta/")
 async def cancelar_proposta(id_proposta: int, token: str = Depends(oauth2_esquema)):
