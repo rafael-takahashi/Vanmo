@@ -28,6 +28,8 @@ def criar_tabelas(conexao: sqlite3.Connection):
     cursor.execute("CREATE TABLE IF NOT EXISTS Aluguel(id_aluguel integer primary key, id_empresa, id_cliente, id_veiculo, valor_total, estado_aluguel, data_inicio, data_fim, distancia_trajeto, distancia_extra, id_local_partida, id_local_chegada)")
     cursor.execute("CREATE TABLE IF NOT EXISTS Calendario(id_veiculo, data_indisponivel)")
     cursor.execute("CREATE TABLE IF NOT EXISTS Veiculo(id_veiculo integer primary key, id_empresa, nome_veiculo, placa_veiculo, capacidade, custo_por_km, custo_base, path_foto, cor, ano_de_fabricacao)")
+    
+    # OBS: Registros de locação são criados quando um aluguel deixa de ser ativo e passa a ser histórico
     cursor.execute("CREATE TABLE IF NOT EXISTS RegistrosLocacao(id_registro integer primary key, nome_cliente, cpf_cliente, nome_fantasia_empresa, cnpj_empresa, nome_veiculo, placa_veiculo, custo_total, data_inicio, data_fim)")
     cursor.execute("CREATE TABLE IF NOT EXISTS Avaliacao(id_cliente, id_empresa, nota)")
 
@@ -70,9 +72,11 @@ class QueriesDB:
     query_verificar_disponibilidade_veiculo = "SELECT data_indisponivel FROM Calendario WHERE id_veiculo = ? AND (data_indisponivel BETWEEN ? AND ?)"
 
     query_inserir_aluguel_novo = "INSERT INTO Aluguel (id_empresa, id_cliente, id_veiculo, valor_total, estado_aluguel, data_inicio, data_fim, distancia_trajeto, distancia_extra, id_local_partida, id_local_chegada) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    query_buscar_aluguel = "SELECT * FROM Aluguel WHERE id_aluguel = ?"
     query_buscar_alugueis_empresa = "SELECT * FROM Aluguel WHERE id_empresa = ?"
     query_buscar_alugueis_cliente = "SELECT * FROM Aluguel WHERE id_cliente = ?"
     query_remover_aluguel = "DELETE FROM Aluguel WHERE id_aluguel = ?"
+    query_alterar_status_aluguel = "UPDATE Aluguel SET estado_aluguel = ? WHERE id_aluguel = ?"
 
     query_inserir_calendario = "INSERT INTO Calendario (id_veiculo, data_indisponivel) VALUES (?, ?)"
     query_remover_calendario = "DELETE FROM Calendario WHERE id_veiculo = ?"
@@ -80,3 +84,5 @@ class QueriesDB:
     query_buscar_avaliacao = "SELECT * FROM Avaliacao WHERE id_cliente = ? AND id_empresa = ?"
     query_inserir_avaliacao_nova = "INSERT INTO Avaliacao (id_cliente, id_empresa, nota) VALUES (?, ?, ?)"
     query_atualizar_avaliacao = "UPDATE Avaliacao SET nota = ? WHERE id_cliente = ? AND id_empresa = ?"
+
+    query_buscador_por_nome = "SELECT * FROM Empresa WHERE nome_fantasia LIKE ?"

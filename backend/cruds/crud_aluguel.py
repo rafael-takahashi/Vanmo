@@ -36,8 +36,36 @@ def buscar_alugueis_usuario(db: sqlite3.Connection, usuario: Usuario) -> list[Al
             resultado_busca.append(item)
         return resultado_busca
 
-def remover_aluguel():
-    pass
+def buscar_aluguel(db: sqlite3.Connection, id_aluguel: int) -> Aluguel | None:
+    cursor: sqlite3.Cursor = db.cursor()
+    query = QueriesDB.query_buscar_aluguel
+    
+    resultado = cursor.execute(query, (id_aluguel,)).fetchone()
+
+    if resultado is None:
+        return None
+    
+    aluguel = Aluguel(id_aluguel, resultado[2], resultado[1], resultado[3])
+    aluguel.adicionar_datas(resultado[6], resultado[7])
+    aluguel.adicionar_locais(resultado[10], resultado[11])
+    aluguel.adicionar_distancia_extra(resultado[9])
+
+    return aluguel
+
+def alterar_status_aluguel(db: sqlite3.Connection, id_aluguel: int, novo_status: str):
+    cursor: sqlite3.Cursor = db.cursor()
+    query = QueriesDB.query_alterar_status_aluguel
+
+    cursor.execute(query, (novo_status, id_aluguel))
+
+    db.commit()
+
+def remover_aluguel(db: sqlite3.Connection, id_aluguel: int):
+    cursor = db.cursor()
+
+    cursor.execute(QueriesDB.query_remover_aluguel, (id_aluguel,))
+
+    db.commit()
 
 def atualizar_aluguel():
     pass
