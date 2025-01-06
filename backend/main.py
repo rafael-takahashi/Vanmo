@@ -469,7 +469,7 @@ async def cadastrar_veiculo(nome_veiculo: str, placa_veiculo: str, custo_por_km:
 @app.put("/veiculos/editar_veiculo")
 async def editar_veiculo(id_veiculo: int, nome_veiculo: str | None = None, placa_veiculo: str | None = None,
                    custo_por_km: float | None = None, custo_base: float | None = None, foto: UploadFile | None = None,
-                   cor: str | None = None, ano_fabricacao: datetime.date | None = None,
+                   cor: str | None = None, ano_fabricacao: int | None = None,
                    token: str = Depends(oauth2_esquema)):
     """
     Altera o veículo de uma empresa
@@ -484,19 +484,50 @@ async def editar_veiculo(id_veiculo: int, nome_veiculo: str | None = None, placa
     @param ano_fabricacao: O ano de fabricação do veículo
     @param token: O token de acesso do usuário
     """
-    # Obter o usuário a partir do token
+    db = database.conectar_bd()
 
-    # Verificar se é de fato uma empresa e se o veículo pertence a ela
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
-    # Copiar o veículo atualmente armazenado
+    if usuario.tipo_conta != "empresa":
+        raise HTTPException(status_code=400, detail="Tipo de usuário não é empresa")
 
-    # Alterar os campos alterados (!= None)
+    if not crud_veiculo.verificar_veiculo_empresa(db, id_veiculo, usuario.id):
+        raise HTTPException(status_code=400, detail="O veículo não pertence à empresa")
 
-    # Caso haja alteração na foto, validar seus dados também e atualizá-la na pasta de imagens
+    veiculo: classe_veiculo.Veiculo = crud_veiculo.buscar_veiculo(db, id_veiculo)
 
-    # Alterar o veículo no banco de dados
-    pass
+    # tentando fugir de criar vários if's
+    novos_valores: dict[str, any | None] = {
+        "nome_veiculo": nome_veiculo,
+        "placa_veiculo": placa_veiculo,
+        "custo_por_km": custo_por_km,
+        "custo_base": custo_base,
+        "cor": cor,
+        "ano_fabricacao": ano_fabricacao
+    }
 
+    for atributo, valor in novos_valores.items():
+        if valor is not None:
+            setattr(veiculo, atributo, valor)
+
+    if foto:
+        # remover a foto antiga e salvar a nova
+        try:
+            os.remove(veiculo.caminho_foto)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Erro ao deletar foto antiga: {e}")
+        
+        try:
+            caminho_da_nova_foto = f"imagens/veiculos/{foto.filename}"
+            with open(caminho_da_nova_foto, "wb") as arquivo_foto:
+                arquivo_foto.write(foto.file.read())
+                veiculo.caminho_foto = caminho_da_nova_foto
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Falha ao salvar a foto do veículo: {e.args}")
+
+    crud_veiculo.atualizar_veiculo(db, veiculo)
+
+    return {"detail": "Veículo editado com sucesso!"}
 
 @app.get("/veiculos/buscar_veiculos_empresa")
 async def buscar_todos_veiculos_empresa(id_empresa: int, token: str = Depends(oauth2_esquema)):

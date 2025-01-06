@@ -63,8 +63,13 @@ def listar_veiculos(db: sqlite3.Connection, id_empresa: int) -> list[classe_veic
 
     return veiculos
 
-def atualizar_veiculo():
-    pass
+def atualizar_veiculo(db: sqlite3.Connection, veiculo: classe_veiculo.Veiculo):
+    cursor = db.cursor()
+    dados = (veiculo.id_empresa, veiculo.nome_veiculo, veiculo.placa_veiculo, veiculo.capacidade, veiculo.custo_por_km, veiculo.custo_base, veiculo.caminho_foto, veiculo.cor, veiculo.ano_fabricacao, veiculo.id_veiculo)
+
+    cursor.execute(QueriesDB.query_atualizar_veiculo, dados)
+
+    db.commit()
 
 def verificar_alugueis_veiculo(db: sqlite3.Connection, id_veiculo: int) -> bool:
     cursor = db.cursor()
