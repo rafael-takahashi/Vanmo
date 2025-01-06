@@ -414,8 +414,8 @@ async def cancelar_proposta(id_proposta: int, token: str = Depends(oauth2_esquem
 # Métodos de veículos ----------------------------------------
 
 @app.post("/veiculos/cadastrar_veiculo/")
-async def cadastrar_veiculo(nome_veiculo: str, placa_veiculo: str, custo_por_km: float, custo_base: float,
-                      foto: UploadFile, cor: str, ano_fabricacao: datetime.date, token: str = Depends(oauth2_esquema)):
+async def cadastrar_veiculo(nome_veiculo: str, placa_veiculo: str, custo_por_km: float, custo_base: float, cor: str, 
+                            ano_fabricacao: int, capacidade: int, foto: UploadFile, token: str = Depends(oauth2_esquema)):
     """
     Cadastra um veículo para uma empresa
 
@@ -428,18 +428,41 @@ async def cadastrar_veiculo(nome_veiculo: str, placa_veiculo: str, custo_por_km:
     @param ano_fabricacao: O ano de fabricação do veículo
     @param token: O token de acesso do usuário
     """
+    db = database.conectar_bd()
 
-    # Obter o usuário a partir do token
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
-    # Verificar se é de fato uma empresa
+    if usuario.tipo_conta != "empresa":
+        raise HTTPException(status_code=400, detail="Tipo de usuário não é empresa")
+    
+    if foto == "":
+        raise HTTPException(status_code=400, detail="Foto inválida")
+    
+    if (custo_por_km <= 0) or (custo_base <= 0):
+        raise HTTPException(status_code=400, detail="Valores de custo negativos")
+    
+    if capacidade < 1:
+        raise HTTPException(status_code=400, detail="Capacidade do veículo inválida")
+    
+    if (ano_fabricacao < 1990) or (ano_fabricacao > datetime.date.today().year):
+        raise HTTPException(status_code=400, detail="Ano de fabricação inválido")
+    
+    placa_veiculo = placa_veiculo.upper()
+    if not valida_placa(placa_veiculo):
+        raise HTTPException(status_code=400, detail="Placa do veículo inválida")
 
-    # Validar dados da foto enviada
+    try:
+        caminho_da_foto = f"imagens/veiculos/{foto.filename}"
+        with open(caminho_da_foto, "wb") as arquivo_foto:
+            arquivo_foto.write(foto.file.read())
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Falha ao salvar a foto do veículo: {e.args}")
 
-    # Armazenar a foto na pasta de imagens/veiculos/
+    veiculo: classe_veiculo.Veiculo = classe_veiculo.Veiculo(None, usuario.id, nome_veiculo, placa_veiculo)
+    veiculo.adicionar_custos(custo_por_km, custo_base)
+    veiculo.adicionar_dados(caminho_da_foto, cor, ano_fabricacao, capacidade)
 
-    # OBS: No BD se armazena apenas o path da imagem
-    # Montar a classe Veiculo correspondente e armazenar no banco de dados
-    pass
+    return {"detail": "Veículo cadastrado com sucesso!"}
 
 @app.put("/veiculos/editar_veiculo")
 async def editar_veiculo(id_veiculo: int, nome_veiculo: str | None = None, placa_veiculo: str | None = None,
