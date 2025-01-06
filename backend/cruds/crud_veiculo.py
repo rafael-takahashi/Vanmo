@@ -6,7 +6,7 @@ from decimal import *
 from classes.classe_usuario import *
 from database import *
 from copy import deepcopy
-from classes import classe_veiculo
+from classes import classe_veiculo, classe_calendario
 import sqlite3
 import datetime
 
@@ -93,3 +93,21 @@ def verificar_disponibilidade_veiculo(db: sqlite3.Connection, id_veiculo: int, d
     resultado = cursor.execute(QueriesDB.query_verificar_disponibilidade_veiculo, dados).fetchone()
 
     return resultado is None
+
+def atualizar_calendario(db: sqlite3.Connection, id_veiculo: int, calendario: classe_calendario.Calendario):
+    # TODO: talvez refazer o método, implementação provisória
+    # OBS: assume-se que o objeto calendario já foi validado previamente
+    cursor = db.cursor()
+
+    try:
+        cursor.execute(QueriesDB.query_remover_calendario, (id_veiculo,))
+
+        # cria uma lista com todos os valores a serem inseridos
+        dados = [(id_veiculo, data.strftime('%Y-%m-%d')) for data in calendario.datas_indisponiveis]
+        cursor.executemany(QueriesDB.query_inserir_calendario, dados)
+        
+        db.commit()
+    
+    except Exception as e:
+        db.rollback()
+        raise e

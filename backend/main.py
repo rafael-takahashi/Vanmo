@@ -521,11 +521,12 @@ async def buscar_dados_veiculo(id_veiculo: int, token: str = Depends(oauth2_esqu
     @param id_veiculo: O ID do veículo a se buscar os dados
     @param token: O token de acesso do usuário
     """
+    db = database.conectar_bd()
 
-    # Buscar o usuário a partir do token e validá-lo
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
     # Buscar os dados do veículo no banco de dados
-    pass
+    return crud_veiculo.buscar_veiculo(db, id_veiculo)
 
 @app.delete("/veiculos/apagar_veiculo")
 async def apagar_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):
