@@ -10,8 +10,16 @@ from classes import classe_veiculo
 import sqlite3
 import datetime
 
-def criar_veiculo():
-    pass
+def criar_veiculo(db: sqlite3.Connection, veiculo: classe_veiculo.Veiculo) -> int:
+    cursor = db.cursor()
+    dados = (veiculo.id_empresa, veiculo.nome_veiculo, veiculo.placa_veiculo, veiculo.capacidade, veiculo.custo_por_km, veiculo.custo_base, veiculo.caminho_foto, veiculo.cor, veiculo.ano_fabricacao)
+
+    cursor.execute(QueriesDB.query_inserir_veiculo_novo, dados)
+
+    id_veiculo: int = cursor.lastrowid
+    db.commit()
+
+    return id_veiculo
 
 def remover_veiculo(db: sqlite3.Connection, id_veiculo: int):
     cursor = db.cursor()

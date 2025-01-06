@@ -8,8 +8,8 @@ def valida_coordendas(latitude: float, longitude: float) -> bool:
     return validacao_lat and validacao_long
 
 def valida_placa(placa: str) -> bool:
-    # formato ABC-1234
-    placa_antiga = r"^[A-Z]{3}-\d{4}$"
+    # formato ABC1234
+    placa_antiga = r"^[A-Z]{3}\d{4}$"
     # formato ABC1D23
     placa_mercosul = r"^[A-Z]{3}\d{1}[A-Z]{1}\d{2}$"
 

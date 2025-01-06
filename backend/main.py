@@ -462,6 +462,8 @@ async def cadastrar_veiculo(nome_veiculo: str, placa_veiculo: str, custo_por_km:
     veiculo.adicionar_custos(custo_por_km, custo_base)
     veiculo.adicionar_dados(caminho_da_foto, cor, ano_fabricacao, capacidade)
 
+    crud_veiculo.criar_veiculo(db, veiculo)
+
     return {"detail": "Veículo cadastrado com sucesso!"}
 
 @app.put("/veiculos/editar_veiculo")

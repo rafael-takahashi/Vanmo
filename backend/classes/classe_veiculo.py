@@ -17,8 +17,8 @@ class Veiculo():
         self.custo_por_km: float = custo_por_km
         self.custo_base: float = custo_base
 
-    def adicionar_dados(self, foto: str | None, cor: str, ano_fabricacao: int, capacidade: int):
-        self.foto: str | None = foto
+    def adicionar_dados(self, caminho_foto: str | None, cor: str, ano_fabricacao: int, capacidade: int):
+        self.caminho_foto: str | None = caminho_foto
         self.cor: str = cor
         self.ano_fabricacao: int = ano_fabricacao
         self.capacidade: int = capacidade
