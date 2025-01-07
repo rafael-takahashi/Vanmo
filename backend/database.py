@@ -46,6 +46,7 @@ class QueriesDB:
     query_buscar_usuario_por_email = "SELECT * FROM Usuario WHERE email = ?"
     query_buscar_usuario_por_id = "SELECT * FROM Usuario WHERE id_usuario = ?"
     query_remover_usuario = "DELETE FROM Usuario WHERE id_usuario = ?"
+    query_atualizar_usuario = "UPDATE Usuario SET email=?, senha_hashed=?, path_foto=? WHERE id_usuario=?"
     
     query_inserir_cliente_novo = "INSERT INTO Cliente (id_usuario, nome_completo, cpf) VALUES (?, ?, ?)"
     query_remover_cliente = "DELETE FROM Cliente WHERE id_usuario = ?"
@@ -64,12 +65,14 @@ class QueriesDB:
     query_buscar_endereco_por_id = "SELECT * FROM Endereco WHERE id_endereco = ?"
     query_remover_endereco = "DELETE FROM Endereco WHERE id_endereco = ?"
 
+    query_inserir_veiculo_novo = "INSERT INTO Veiculo (id_empresa, nome_veiculo, placa_veiculo, capacidade, custo_por_km, custo_base, path_foto, cor, ano_de_fabricacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
     query_buscar_veiculo = "SELECT * FROM Veiculo WHERE id_veiculo = ?"
     query_buscar_veiculos_empresa = "SELECT * FROM Veiculo WHERE id_empresa = ?"
     query_buscar_alugueis_veiculo = "SELECT * FROM Aluguel WHERE id_veiculo = ?"
     query_remover_veiculo = "DELETE FROM Veiculo WHERE id_veiculo = ?"
     query_verificar_veiculo_empresa = "SELECT id_veiculo FROM Veiculo WHERE id_veiculo = ? AND id_empresa = ?"
     query_verificar_disponibilidade_veiculo = "SELECT data_indisponivel FROM Calendario WHERE id_veiculo = ? AND (data_indisponivel BETWEEN ? AND ?)"
+    query_atualizar_veiculo = "UPDATE Veiculo SET id_empresa=?, nome_veiculo=?, placa_veiculo=?, capacidade=?, custo_por_km=?, custo_base=?, path_foto=?, cor=?, ano_de_fabricacao=? WHERE id_veiculo = ?"
 
     query_inserir_aluguel_novo = "INSERT INTO Aluguel (id_empresa, id_cliente, id_veiculo, valor_total, estado_aluguel, data_inicio, data_fim, distancia_trajeto, distancia_extra, id_local_partida, id_local_chegada) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     query_buscar_aluguel = "SELECT * FROM Aluguel WHERE id_aluguel = ?"
