@@ -305,3 +305,11 @@ def buscador_empresas_nome(db: sqlite3.Connection, string_busca):
         empresas.append(item)
 
     return empresas
+
+def atualizar_usuario(db: sqlite3.Connection, usuario: Usuario):
+    cursor = db.cursor()
+    dados = (usuario.email, usuario.senha_hashed, usuario.foto, usuario.id)
+
+    cursor.execute(QueriesDB.query_atualizar_usuario, dados)
+
+    db.commit()

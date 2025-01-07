@@ -194,12 +194,38 @@ async def editar_dados_cadastrais(email: str | None = None, senha: str | None = 
     @param token: O token de acesso daquele usuário
     """
 
-    # Buscar usuário pelo token e validar ele
+    db = database.conectar_bd()
 
-    # Caso o email seja alterado, ver se não há outro usuário com o mesmo email
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
-    # Alterar os dados
-    pass
+    if email:
+        if crud_usuario.obter_usuario_por_nome(db, email):
+            raise HTTPException(status_code=400, detail="E-mail já cadastrado")
+        else:
+            usuario.email = email
+    
+    if senha:
+        usuario.senha_hashed = auth.gerar_hash_senha(senha)
+    
+    if foto:
+        if (os.path.isfile(usuario.foto)):
+            # remover a foto antiga e salvar a nova
+            try:
+                os.remove(usuario.foto)
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=f"Erro ao deletar foto antiga: {e}")
+        
+        try:
+            caminho_da_nova_foto = f"imagens/usuarios/{foto.filename}"
+            with open(caminho_da_nova_foto, "wb") as arquivo_foto:
+                arquivo_foto.write(foto.file.read())
+                usuario.foto = caminho_da_nova_foto
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Falha ao salvar a foto do usuário: {e.args}")
+
+    crud_usuario.atualizar_usuario(db, usuario)
+    
+    return {"detail": "Dados alterados com sucesso"}
 
 
 @app.get("/usuario/buscar_dados_cadastrais")
@@ -511,11 +537,12 @@ async def editar_veiculo(id_veiculo: int, nome_veiculo: str | None = None, placa
             setattr(veiculo, atributo, valor)
 
     if foto:
-        # remover a foto antiga e salvar a nova
-        try:
-            os.remove(veiculo.caminho_foto)
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=f"Erro ao deletar foto antiga: {e}")
+        if (os.path.isfile(veiculo.caminho_foto)):
+            # remover a foto antiga e salvar a nova
+            try:
+                os.remove(veiculo.caminho_foto)
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=f"Erro ao deletar foto antiga: {e}")
         
         try:
             caminho_da_nova_foto = f"imagens/veiculos/{foto.filename}"
