@@ -5,6 +5,7 @@ from fastapi import FastAPI, Depends, HTTPException, File, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from typing import List
 from contextlib import asynccontextmanager
 
@@ -43,9 +44,14 @@ app.add_middleware(
 oauth2_esquema = OAuth2PasswordBearer(tokenUrl="/usuario/login")
 
 # Métodos de usuário ----------------------------------------
+class UsuarioRegistro(BaseModel):
+    email: str
+    senha: str
+    tipo_conta: str
+    foto: str = ""
 
 @app.post("/usuario/registrar")
-async def registrar_novo_usuario(email: str, senha: str, tipo_conta: str, foto: UploadFile | str = ""):
+async def registrar_novo_usuario(dados: UsuarioRegistro):
     """
     Registra um novo usuário no sistema
 
@@ -63,6 +69,11 @@ async def registrar_novo_usuario(email: str, senha: str, tipo_conta: str, foto: 
 
     # TODO: Validar email
 
+    email = dados.email
+    senha = dados.senha
+    tipo_conta = dados.tipo_conta
+    foto = dados.foto
+
     usuario = classe_usuario.Usuario(email, senha, tipo_conta, foto)
     db = database.conectar_bd()
 
@@ -77,9 +88,12 @@ async def registrar_novo_usuario(email: str, senha: str, tipo_conta: str, foto: 
     token_acesso = auth.criar_token_acesso(dados={"sub": usuario.email})
     return {"access_token": token_acesso, "token_type": "bearer"}
 
+class UsuarioLogin(BaseModel):
+    email: str
+    senha: str
 
 @app.post("/usuario/login")
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+async def login(dados: UsuarioLogin):
     """
     Realiza o login de um usuário no sistema
 
@@ -88,8 +102,9 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         Caso sucesso, retorna o token de acesso para aquele usuário
         Caso algum dos dados estejam errados, retorna o código 400
     """
+
     db = database.conectar_bd()
-    usuario = auth.autenticar_usuario(db, form_data.username, form_data.password)
+    usuario = auth.autenticar_usuario(db, dados.email, dados.senha)
 
     if not usuario:
         raise HTTPException(status_code=400, detail="Usuário ou senha incorretos")
