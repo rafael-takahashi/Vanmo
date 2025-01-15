@@ -41,14 +41,14 @@ app.add_middleware(
 )
 
 # Esquema de autenticação OAuth2 com senha
-oauth2_esquema = OAuth2PasswordBearer(tokenUrl="/usuario/login")
+oauth2_esquema = OAuth2PasswordBearer(tokenUrl="/usuario/login_legacy")
 
 # Métodos de usuário ----------------------------------------
 class UsuarioRegistro(BaseModel):
     email: str
     senha: str
     tipo_conta: str
-    foto: str = ""
+    foto: UploadFile | str = ""
 
 @app.post("/usuario/registrar")
 async def registrar_novo_usuario(dados: UsuarioRegistro):
@@ -112,10 +112,32 @@ async def login(dados: UsuarioLogin):
     token_acesso = auth.criar_token_acesso(dados={"sub": usuario.email})
     return {"access_token": token_acesso, "token_type": "bearer"}
 
+@app.post("/usuario/login_legacy")
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    """
+    Login legado para teste com o /docs do FastAPI
+    """
+    db = database.conectar_bd()
+    usuario = auth.autenticar_usuario(db, form_data.username, form_data.password)
+    if not usuario:
+        raise HTTPException(status_code=400, detail="Usuário ou senha incorretos")
+    token_acesso = auth.criar_token_acesso(dados={"sub": usuario.email})
+    return {"access_token": token_acesso, "token_type": "bearer"}
+
+class EmpresaCadastro(BaseModel):
+    nome_fantasia: str
+    cnpj: str
+    uf: str
+    cidade: str
+    bairro: str
+    cep: str
+    rua: str
+    numero: int
+    latitude: float
+    longitude: float
+
 @app.post("/usuario/cadastrar_dados_empresa")
-async def cadastrar_dados_empresa(nome_fantasia: str, cnpj: str, uf: str, cidade: str, bairro: str, 
-                                  cep: str, rua: str, numero: int, latitude: float, longitude: float, 
-                                  token: str = Depends(oauth2_esquema)):
+async def cadastrar_dados_empresa(empresa: EmpresaCadastro, token: str = Depends(oauth2_esquema)):
     """
     Continuação do cadastro para os dados da empresa
     """
@@ -126,26 +148,26 @@ async def cadastrar_dados_empresa(nome_fantasia: str, cnpj: str, uf: str, cidade
     if usuario.tipo_conta != "empresa":
         raise HTTPException(status_code=400, detail="Tipo de usuário não é empresa")
 
-    if crud_usuario.verificar_se_dados_ja_cadastrados(db, usuario.email, "empresa"):
+    if crud_usuario.verificar_se_dados_ja_cadastrados(db, usuario.email):
         raise HTTPException(status_code=400, detail="Empresa já possui cadastro")
 
-    latitude = float(latitude)
-    longitude = float(longitude)
+    empresa.latitude = float(empresa.latitude)
+    empresa.longitude = float(empresa.longitude)
     
     # TODO: Validar latitude e longitude
 
-    endereco: classe_endereco.Endereco = classe_endereco.Endereco(uf, cidade, bairro, cep, rua, numero)
+    endereco: classe_endereco.Endereco = classe_endereco.Endereco(empresa.uf, empresa.cidade, empresa.bairro, empresa.cep, empresa.rua, empresa.numero)
     
     # TODO: Validar UF e outros dados do endereço
 
     local: classe_local.Local = classe_local.Local(0,0)
-    local.latitude = latitude
-    local.longitude = longitude
+    local.latitude = empresa.latitude
+    local.longitude = empresa.longitude
 
     # TODO: Validar CNPJ
 
     empresa: classe_usuario.Empresa = classe_usuario.Empresa(id=usuario.id, email=usuario.email, senha_hashed=usuario.senha_hashed, 
-                                                             tipo_conta="empresa", foto=usuario.foto, nome_fantasia=nome_fantasia, cnpj=cnpj, 
+                                                             tipo_conta="empresa", foto=usuario.foto, nome_fantasia=empresa.nome_fantasia, cnpj=empresa.cnpj, 
                                                              endereco=endereco, local=local)
     
     empresa.id = usuario.id
@@ -167,7 +189,7 @@ async def cadastrar_dados_cliente(nome_completo: str, cpf: str, token: str = Dep
     if usuario.tipo_conta != "cliente":
         raise HTTPException(status_code=400, detail="Tipo de usuário não é cliente")
     
-    if crud_usuario.verificar_se_dados_ja_cadastrados(db, usuario.email, "cliente"):
+    if crud_usuario.verificar_se_dados_ja_cadastrados(db, usuario.email):
         raise HTTPException(status_code=400, detail="Cliente já possui cadastro")
     
     # TODO: Validar CPF
