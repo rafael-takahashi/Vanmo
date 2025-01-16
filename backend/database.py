@@ -57,7 +57,7 @@ class QueriesDB:
     query_buscar_empresa = "SELECT * FROM Empresa WHERE id_usuario = ?"
     query_atualizar_avaliacoes_empresa = "UPDATE Empresa SET num_avaliacoes = ?, soma_avaliacoes = ? WHERE id_usuario = ?"
 
-    query_inserir_local_novo = "INSERT INTO Local (latitude, longitude, nome) VALUES (?, ?, ?)"
+    query_inserir_local_novo = "INSERT INTO Local (latitude, longitude, nome) VALUES (?, ?, ?) RETURNING id_local"
     query_buscar_local_por_id = "SELECT * FROM Local WHERE id_local = ?"
     query_remover_local = "DELETE FROM Local WHERE id_local = ?"
 

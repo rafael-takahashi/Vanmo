@@ -125,13 +125,11 @@ def remover_usuario(db: sqlite3.Connection, usuario: Usuario):
 
     db.commit()
 
-def verificar_se_dados_ja_cadastrados(db: sqlite3.Connection, email: str, tipo_conta: str) -> bool:
+def verificar_se_dados_ja_cadastrados(db: sqlite3.Connection, email: str) -> bool:
     cursor: sqlite3.Cursor = db.cursor()
 
     dados = (email,)
-    query = QueriesDB.query_buscar_empresa
-    if tipo_conta == "cliente":
-        query = QueriesDB.query_buscar_cliente
+    query = QueriesDB.query_buscar_usuario_por_email
 
     resultado = cursor.execute(query, dados).fetchone()
 
@@ -265,7 +263,6 @@ def avaliar_empresa(db: sqlite3.Connection, id_usuario: int, id_empresa: int, no
 
     db.commit()
 
-
 def atualizar_avaliacao(db: sqlite3.Connection, id_usuario: int, id_empresa: int, nota_nova: float):
     cursor = db.cursor()
 
@@ -288,7 +285,6 @@ def atualizar_avaliacao(db: sqlite3.Connection, id_usuario: int, id_empresa: int
     cursor.execute(QueriesDB.query_atualizar_avaliacoes_empresa, dados)
 
     db.commit()
-
 
 def buscador_empresas_nome(db: sqlite3.Connection, string_busca):
     cursor = db.cursor()
