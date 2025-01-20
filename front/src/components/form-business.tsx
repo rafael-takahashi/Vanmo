@@ -1,10 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
 import { z } from 'zod'
 
 import { registerBusiness } from '@/api/registerBusiness'
+import { searchCEP, searchCepResponse } from '@/api/searchCEP'
 
 import { Button } from './ui/button'
 import { Input } from './ui/input'
@@ -31,13 +33,31 @@ export default function FormBusiness() {
   const {
     register: registerUserBusiness,
     handleSubmit: handleSubmitUserBusiness,
+    watch,
+    setValue,
   } = useForm<RegisterUserBusinessForm>({
     resolver: zodResolver(registerUserBusinessSchema),
   })
 
+  const cep = watch('cepAddress')
+
   const { mutateAsync } = useMutation({
     mutationFn: registerBusiness,
   })
+
+  const { data } = useQuery<searchCepResponse, Error>({
+    queryKey: ['searchCEP', cep], // Chave única baseada no CEP
+    queryFn: () => searchCEP({ cep }), // Função para buscar o CEP
+    enabled: !!cep && cep.length === 8, // Só executa se o CEP tiver 8 dígitos
+  })
+
+  useEffect(() => {
+    if (data) {
+      setValue('cityAddress', data.localidade)
+      setValue('stateAddress', data.estado)
+      setValue('streetAddress', data.logradouro)
+    }
+  }, [data, setValue])
 
   async function handleUserBusinessRegister(data: RegisterUserBusinessForm) {
     try {

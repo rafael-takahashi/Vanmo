@@ -10,7 +10,9 @@ export function AppLayout() {
     <div>
       <header className="flex justify-between items-center px-5 py-6 h-[96px] w-full bg-primary-foreground">
         <div className="max-w-[1240px] w-full flex justify-between items-center mx-auto px-5">
-          <h1 className="text-white">LOGO</h1>
+          <a className="text-white" href="/">
+            LOGO
+          </a>
 
           {meuCookie ? (
             <>
@@ -36,6 +38,7 @@ export function AppLayout() {
       <main className="max-w-[1240px] w-full mx-auto">
         <Outlet />
       </main>
+      <footer className=""></footer>
     </div>
   )
 }

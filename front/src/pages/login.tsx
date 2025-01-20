@@ -3,6 +3,7 @@ import { LockKey, SignIn, User } from '@phosphor-icons/react'
 import { useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { signIn } from '@/api/login'
@@ -34,8 +35,8 @@ export function Login() {
       })
 
       navigate('/')
-    } catch (error) {
-      console.log(error)
+    } catch {
+      toast.error('Credenciais inválidas.')
     }
   }
 

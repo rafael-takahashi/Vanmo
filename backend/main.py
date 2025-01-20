@@ -48,7 +48,6 @@ class UsuarioRegistro(BaseModel):
     email: str
     senha: str
     tipo_conta: str
-    foto: UploadFile | str = ""
 
 @app.post("/usuario/registrar")
 async def registrar_novo_usuario(dados: UsuarioRegistro):
@@ -63,9 +62,6 @@ async def registrar_novo_usuario(dados: UsuarioRegistro):
         Caso sucesso, retorna o token de acesso para aquele usuário
         Caso haja um usuário cadastrado com o mesmo email, retorna o código 400
     """
-
-    # TODO: checar se o tamanho e o tipo de arquivo da foto são permitidos
-    # Caso não for, decidir entre retornar um código de erro ou prosseguir sem a foto
 
     # TODO: Validar email
 
@@ -224,13 +220,18 @@ async def cadastrar_dados_cliente(nome_completo: str, cpf: str, token: str = Dep
 
     return {"detail": "Cadastro realizado com sucesso"}
 
+class ApenasToken(BaseModel):
+    token: str = Depends(oauth2_esquema)
+
 @app.delete("/usuario/apagar_conta")
-async def apagar_usuario(token: str = Depends(oauth2_esquema)):
+async def apagar_usuario(dados: ApenasToken):
     """
     Apaga a conta de um usuário, só pode ser chamado pelo próprio usuário
 
     @param token: O token de acesso do usuário
     """
+
+    token = dados.token
 
     db = database.conectar_bd()
 
@@ -240,9 +241,14 @@ async def apagar_usuario(token: str = Depends(oauth2_esquema)):
 
     return {"detail": "Usuario removido com sucesso"}
 
+class UsuarioEditar(BaseModel):
+    email: str | None = None,
+    senha: str | None = None,
+    foto: UploadFile | None = None
+    token: str = Depends(oauth2_esquema)
+
 @app.put("/usuario/alterar_dados")
-async def editar_dados_cadastrais(email: str | None = None, senha: str | None = None,
-                            foto: UploadFile | None = None, token: str = Depends(oauth2_esquema)):
+async def editar_dados_cadastrais(dados: UsuarioEditar):
     """
     Altera os dados cadastrais de um usuário.
 
@@ -254,18 +260,18 @@ async def editar_dados_cadastrais(email: str | None = None, senha: str | None = 
 
     db = database.conectar_bd()
 
-    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, dados.token)
 
-    if email:
-        if crud_usuario.obter_usuario_por_nome(db, email):
+    if dados.email:
+        if crud_usuario.obter_usuario_por_nome(db, dados.email):
             raise HTTPException(status_code=400, detail="E-mail já cadastrado")
         else:
-            usuario.email = email
+            usuario.email = dados.email
     
-    if senha:
-        usuario.senha_hashed = auth.gerar_hash_senha(senha)
+    if dados.senha:
+        usuario.senha_hashed = auth.gerar_hash_senha(dados.senha)
     
-    if foto:
+    if dados.foto:
         if (os.path.isfile(usuario.foto)):
             # remover a foto antiga e salvar a nova
             try:
@@ -274,9 +280,9 @@ async def editar_dados_cadastrais(email: str | None = None, senha: str | None = 
                 raise HTTPException(status_code=400, detail=f"Erro ao deletar foto antiga: {e}")
         
         try:
-            caminho_da_nova_foto = f"imagens/usuarios/{foto.filename}"
+            caminho_da_nova_foto = f"imagens/usuarios/{dados.foto.filename}"
             with open(caminho_da_nova_foto, "wb") as arquivo_foto:
-                arquivo_foto.write(foto.file.read())
+                arquivo_foto.write(dados.foto.file.read())
                 usuario.foto = caminho_da_nova_foto
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Falha ao salvar a foto do usuário: {e.args}")
@@ -286,12 +292,14 @@ async def editar_dados_cadastrais(email: str | None = None, senha: str | None = 
     return {"detail": "Dados alterados com sucesso"}
 
 @app.get("/usuario/buscar_dados_cadastrais")
-async def buscar_dados_cadastrais(token: str = Depends(oauth2_esquema)):
+async def buscar_dados_cadastrais(dados: ApenasToken):
     """
     Busca os dados cadastrais de um usuário. Usado para mostrar os dados do perfil do usuário
 
     @param token: O token de acesso do usuário
     """
+
+    token = dados.token
 
     db = database.conectar_bd()
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
@@ -299,12 +307,14 @@ async def buscar_dados_cadastrais(token: str = Depends(oauth2_esquema)):
     return usuario
 
 @app.get("/usuario/buscar_foto_perfil")
-async def buscar_foto_perfil(token: str = Depends(oauth2_esquema)):
+async def buscar_foto_perfil(dados: ApenasToken):
     """
     Busca a foto de perfil de um usuário
 
     @param token: O token de acesso do usuário
     """
+
+    token = dados.token
 
     db = database.conectar_bd()
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
