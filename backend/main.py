@@ -88,6 +88,27 @@ async def registrar_novo_usuario(dados: UsuarioRegistro):
     token_acesso = auth.criar_token_acesso(dados={"sub": usuario.email})
     return {"access_token": token_acesso, "token_type": "bearer"}
 
+@app.post("/usuario/registrar_legacy")
+async def registrar_novo_usuario(email: str, senha: str, tipo_conta: str, foto: UploadFile | str):
+    """
+    Método legado para testar com o /docs do FastAPI
+    """
+
+    usuario = classe_usuario.Usuario(email, senha, tipo_conta, foto)
+    db = database.conectar_bd()
+
+    if usuario.foto == "":
+        usuario.foto = None
+
+    if crud_usuario.obter_usuario_por_nome(db, usuario.email):
+        raise HTTPException(status_code=400, detail="Usuario já existe")
+    
+    usuario.senha_hashed = auth.gerar_hash_senha(usuario.senha_hashed)
+    crud_usuario.criar_usuario(db, usuario)
+    token_acesso = auth.criar_token_acesso(dados={"sub": usuario.email})
+    return {"access_token": token_acesso, "token_type": "bearer"}
+
+
 class UsuarioLogin(BaseModel):
     email: str
     senha: str
@@ -263,7 +284,6 @@ async def editar_dados_cadastrais(email: str | None = None, senha: str | None = 
     crud_usuario.atualizar_usuario(db, usuario)
     
     return {"detail": "Dados alterados com sucesso"}
-
 
 @app.get("/usuario/buscar_dados_cadastrais")
 async def buscar_dados_cadastrais(token: str = Depends(oauth2_esquema)):
@@ -652,6 +672,26 @@ async def apagar_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):
     crud_veiculo.remover_veiculo(id_veiculo)
 
     return {"detail": "Veículo removido com sucesso"}
+
+@app.get("/veiculos/buscar_foto_veiculo")
+async def buscar_foto_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):
+    """
+    Busca a foto de um veículo
+
+    @param token: O token de acesso do usuário
+    """
+    db = database.conectar_bd()
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+
+    veiculo = crud_veiculo.buscar_veiculo(db, id_veiculo)
+
+    if veiculo.caminho_foto == "" or veiculo.caminho_foto is None:
+        return FileResponse("imagens/imagem_veiculo_padrao.png")
+    
+    if os.path.isfile(veiculo.caminho_foto):
+        return FileResponse(veiculo.caminho_foto)
+    
+    return FileResponse("imagens/imagem_veiculo_padrao.png")
 
 # Métodos extras cliente/empresa ----------------------------------------
 
