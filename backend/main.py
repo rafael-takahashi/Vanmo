@@ -68,13 +68,9 @@ async def registrar_novo_usuario(dados: UsuarioRegistro):
     email = dados.email
     senha = dados.senha
     tipo_conta = dados.tipo_conta
-    foto = dados.foto
 
-    usuario = classe_usuario.Usuario(email, senha, tipo_conta, foto)
+    usuario = classe_usuario.Usuario(email, senha, tipo_conta)
     db = database.conectar_bd()
-
-    if usuario.foto == "":
-        usuario.foto = None
 
     if crud_usuario.obter_usuario_por_nome(db, usuario.email):
         raise HTTPException(status_code=400, detail="Usuario já existe")
