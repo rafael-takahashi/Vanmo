@@ -15,11 +15,13 @@ class Usuario():
         self.foto: str | None = foto
 
 class Cliente(Usuario):
-    def __init__(self, id, email, senha_hashed, tipo_conta, foto, nome_completo: str, cpf: str):
+    def __init__(self, id, email, senha_hashed, tipo_conta, foto, nome_completo: str, cpf: str, data_nascimento: str, telefone: str):
         super().__init__(id, email, senha_hashed, tipo_conta, foto)
         self.nome_completo: str = nome_completo
         self.cpf: str = cpf
-
+        self.data_nascimento: str = data_nascimento
+        self.telefone: str = telefone
+        
     def __repr__(self):
         return f"[Cliente] Id: {self.id} email: {self.email} nome: {self.nome_completo} cpf: {self.cpf}"
     

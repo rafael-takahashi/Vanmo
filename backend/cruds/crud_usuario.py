@@ -42,9 +42,10 @@ def criar_usuario(db: sqlite3.Connection, usuario: Usuario):
     cursor: sqlite3.Cursor = db.cursor()
 
     dados = (usuario.email, usuario.senha_hashed, usuario.tipo_conta, path_foto)
-    cursor.execute(QueriesDB.query_inserir_usuario_novo, dados)
+    id_usuario = cursor.execute(QueriesDB.query_inserir_usuario_novo, dados)
     
     db.commit()
+    return id_usuario
 
 def __remover_empresa(db: sqlite3.Connection, usuario: Usuario):
     cursor = db.cursor()

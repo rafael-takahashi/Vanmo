@@ -27,6 +27,8 @@ async def iniciar_app(app: FastAPI):
     # TODO: Função que roda na inicialização do sistema e uma vez ao dia atualizando os status dos aluguéis
     # que já passaram das datas de vencimento
 
+    # TODO: Função que carrega a tabela de cidades brasileiras na memória
+
     yield
 
 app = FastAPI(lifespan=iniciar_app)
@@ -44,45 +46,8 @@ app.add_middleware(
 oauth2_esquema = OAuth2PasswordBearer(tokenUrl="/usuario/login_legacy")
 
 # Métodos de usuário ----------------------------------------
-class UsuarioRegistro(BaseModel):
-    email: str
-    senha: str
-    tipo_conta: str
 
-@app.post("/usuario/registrar")
-async def registrar_novo_usuario(dados: UsuarioRegistro):
-    """
-    Registra um novo usuário no sistema
-
-    @param email: O email do usuário a ser cadastrado
-    @param senha: A senha do usuário a ser cadastrado (preferencialmente em hash já)
-    @param tipo_conta: O tipo de conta ("Cliente", "Empresa")
-    @param foto: (Opcional) O arquivo de foto que o usuário enviou para seu perfil
-    @return:
-        Caso sucesso, retorna o token de acesso para aquele usuário
-        Caso haja um usuário cadastrado com o mesmo email, retorna o código 400
-    """
-
-    # TODO: Validar email
-
-    email = dados.email
-    senha = dados.senha
-    tipo_conta = dados.tipo_conta
-    foto = dados.foto
-
-    usuario = classe_usuario.Usuario(email, senha, tipo_conta, foto)
-    db = database.conectar_bd()
-
-    if usuario.foto == "":
-        usuario.foto = None
-
-    if crud_usuario.obter_usuario_por_nome(db, usuario.email):
-        raise HTTPException(status_code=400, detail="Usuario já existe")
-    
-    usuario.senha_hashed = auth.gerar_hash_senha(usuario.senha_hashed)
-    crud_usuario.criar_usuario(db, usuario)
-    token_acesso = auth.criar_token_acesso(dados={"sub": usuario.email})
-    return {"access_token": token_acesso, "token_type": "bearer"}
+# TODO: Colocar todas as classes modelo em um arquivo separado
 
 @app.post("/usuario/registrar_legacy")
 async def registrar_novo_usuario(email: str, senha: str, tipo_conta: str, foto: UploadFile | str):
@@ -130,7 +95,7 @@ async def login(dados: UsuarioLogin):
     return {"access_token": token_acesso, "token_type": "bearer"}
 
 @app.post("/usuario/login_legacy")
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+async def login_legado(form_data: OAuth2PasswordRequestForm = Depends()):
     """
     Login legado para teste com o /docs do FastAPI
     """
@@ -141,7 +106,17 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     token_acesso = auth.criar_token_acesso(dados={"sub": usuario.email})
     return {"access_token": token_acesso, "token_type": "bearer"}
 
-class EmpresaCadastro(BaseModel):
+class CadastroCliente(BaseModel):
+    email: str
+    senha: str
+    nome_completo: str
+    cpf: str
+    data_nascimento: str
+    telefone: str
+
+class CadastroEmpresa(BaseModel):
+    email: str
+    senha: str
     nome_fantasia: str
     cnpj: str
     uf: str
@@ -149,89 +124,82 @@ class EmpresaCadastro(BaseModel):
     bairro: str
     cep: str
     rua: str
-    numero: int
-    latitude: float
-    longitude: float
+    numero: str
 
-@app.post("/usuario/cadastrar_dados_empresa")
-async def cadastrar_dados_empresa(empresa: EmpresaCadastro, token: str = Depends(oauth2_esquema)):
-    """
-    Continuação do cadastro para os dados da empresa
-    """
+def registrar_novo_usuario(email: str, senha: str, tipo_conta: str, foto: UploadFile | str):
+
+    # TODO: checar se o tamanho e o tipo de arquivo da foto são permitidos
+    # Caso não for, decidir entre retornar um código de erro ou prosseguir sem a foto
+
+    # TODO: Validar email
+
+    usuario = classe_usuario.Usuario(email, senha, tipo_conta, foto)
     db = database.conectar_bd()
 
-    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+    if usuario.foto == "":
+        usuario.foto = None
 
-    if usuario.tipo_conta != "empresa":
-        raise HTTPException(status_code=400, detail="Tipo de usuário não é empresa")
-
-    if crud_usuario.verificar_se_dados_ja_cadastrados(db, usuario.email):
-        raise HTTPException(status_code=400, detail="Empresa já possui cadastro")
-
-    empresa.latitude = float(empresa.latitude)
-    empresa.longitude = float(empresa.longitude)
+    if crud_usuario.obter_usuario_por_nome(db, usuario.email):
+        raise HTTPException(status_code=400, detail="Usuario já existe")
     
-    # TODO: Validar latitude e longitude
+    usuario.senha_hashed = auth.gerar_hash_senha(usuario.senha_hashed)
+    id_usuario = crud_usuario.criar_usuario(db, usuario)
+    return id_usuario
 
-    endereco: classe_endereco.Endereco = classe_endereco.Endereco(empresa.uf, empresa.cidade, empresa.bairro, empresa.cep, empresa.rua, empresa.numero)
-    
-    # TODO: Validar UF e outros dados do endereço
+@app.post("/usuario/cadastro/empresa")
+async def registrar_empresa(dados: CadastroEmpresa):
+    id_usuario = registrar_novo_usuario(dados.email, dados.senha, "empresa", "")
 
-    local: classe_local.Local = classe_local.Local(0,0)
-    local.latitude = empresa.latitude
-    local.longitude = empresa.longitude
+    db = database.conectar_bd()
+
+    # TODO: Buscar latitude e longitude da empresa aqui
+
+    endereco: classe_endereco.Endereco = classe_endereco.Endereco(dados.uf, dados.cidade, dados.bairro, dados.cep, 
+                                                                  dados.rua, dados.numero)
+
+    # TODO: Validar UF
+
+    # TODO: Validar cidade
+
+    latitude = 0
+    longitude = 0
+
+    local: classe_local.Local = classe_local.Local(latitude, longitude, dados.nome_fantasia)
 
     # TODO: Validar CNPJ
 
-    empresa: classe_usuario.Empresa = classe_usuario.Empresa(id=usuario.id, email=usuario.email, senha_hashed=usuario.senha_hashed, 
-                                                             tipo_conta="empresa", foto=usuario.foto, nome_fantasia=empresa.nome_fantasia, cnpj=empresa.cnpj, 
-                                                             endereco=endereco, local=local)
+    empresa: classe_usuario.Empresa = classe_usuario.Empresa(id=id_usuario, email="", senha_hashed="", tipo_conta="empresa", foto="",
+                                                             nome_fantasia=dados.nome_fantasia, cnpj=dados.cnpj, endereco=endereco, local=local)
     
-    empresa.id = usuario.id
+    empresa.id = id_usuario
 
     crud_usuario.cadastrar_empresa(db, empresa)
 
     return {"detail": "Cadastro realizado com sucesso"}
 
-@app.post("/usuario/cadastrar_dados_cliente")
-async def cadastrar_dados_cliente(nome_completo: str, cpf: str, token: str = Depends(oauth2_esquema)):
-    """
-    Continuação do cadastro para os dados do cliente
-    """
+@app.post("/usuario/cadastro/cliente")
+async def registrar_cliente(dados: CadastroCliente):
+    id_usuario = registrar_novo_usuario(dados.email, dados.senha, "cliente", "")
 
     db = database.conectar_bd()
 
-    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
-
-    if usuario.tipo_conta != "cliente":
-        raise HTTPException(status_code=400, detail="Tipo de usuário não é cliente")
-    
-    if crud_usuario.verificar_se_dados_ja_cadastrados(db, usuario.email):
-        raise HTTPException(status_code=400, detail="Cliente já possui cadastro")
-    
     # TODO: Validar CPF
 
-    cliente: classe_usuario.Cliente = classe_usuario.Cliente(usuario.id, usuario.email, usuario.senha_hashed,
-                                                             "cliente", usuario.foto, nome_completo, cpf)
-    
-    cliente.id = usuario.id
+    cliente: classe_usuario.Cliente = classe_usuario.Cliente(id_usuario, "", "", "cliente", "", dados.nome_completo, dados.cpf, dados.data_nascimento, dados.telefone)
+
+    cliente.id = id_usuario
 
     crud_usuario.cadastrar_cliente(db, cliente)
-
+    
     return {"detail": "Cadastro realizado com sucesso"}
 
-class ApenasToken(BaseModel):
-    token: str = Depends(oauth2_esquema)
-
 @app.delete("/usuario/apagar_conta")
-async def apagar_usuario(dados: ApenasToken):
+async def apagar_usuario(token: str = Depends(oauth2_esquema)):
     """
     Apaga a conta de um usuário, só pode ser chamado pelo próprio usuário
 
     @param token: O token de acesso do usuário
     """
-
-    token = dados.token
 
     db = database.conectar_bd()
 
@@ -241,14 +209,41 @@ async def apagar_usuario(dados: ApenasToken):
 
     return {"detail": "Usuario removido com sucesso"}
 
-class UsuarioEditar(BaseModel):
-    email: str | None = None,
-    senha: str | None = None,
-    foto: UploadFile | None = None
-    token: str = Depends(oauth2_esquema)
+class AlterarDadosCliente(BaseModel):
+    email: str
+    senha: str
+    foto: UploadFile
+    nome_completo: str
+    cpf: str
+    data_nascimento: str
+    telefone: str
+
+class AlterarDadosEmpresa(BaseModel):
+    email: str
+    senha: str
+    foto: UploadFile
+    nome_fantasia: str
+    cnpj: str
+    uf: str
+    cidade: str
+    bairro: str
+    cep: str
+    rua: str
+    numero: str
+
+# TODO: Montar alteração para demais dados
+
+@app.put("/usuario/alterar_dados/cliente")
+async def editar_dados_cliente(dados: AlterarDadosCliente, token: str = Depends(oauth2_esquema)):
+    pass
+
+@app.put("/usuario/alterar_dados/empresa")
+async def editar_dados_empresa(dados: AlterarDadosEmpresa, token: str = Depends(oauth2_esquema)):
+    pass
 
 @app.put("/usuario/alterar_dados")
-async def editar_dados_cadastrais(dados: UsuarioEditar):
+async def editar_dados_cadastrais(email: str | None = None, senha: str | None = None,
+                            foto: UploadFile | None = None):
     """
     Altera os dados cadastrais de um usuário.
 
@@ -260,18 +255,18 @@ async def editar_dados_cadastrais(dados: UsuarioEditar):
 
     db = database.conectar_bd()
 
-    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, dados.token)
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
-    if dados.email:
-        if crud_usuario.obter_usuario_por_nome(db, dados.email):
+    if email:
+        if crud_usuario.obter_usuario_por_nome(db, email):
             raise HTTPException(status_code=400, detail="E-mail já cadastrado")
         else:
-            usuario.email = dados.email
+            usuario.email = email
     
-    if dados.senha:
-        usuario.senha_hashed = auth.gerar_hash_senha(dados.senha)
+    if senha:
+        usuario.senha_hashed = auth.gerar_hash_senha(senha)
     
-    if dados.foto:
+    if foto:
         if (os.path.isfile(usuario.foto)):
             # remover a foto antiga e salvar a nova
             try:
@@ -280,9 +275,9 @@ async def editar_dados_cadastrais(dados: UsuarioEditar):
                 raise HTTPException(status_code=400, detail=f"Erro ao deletar foto antiga: {e}")
         
         try:
-            caminho_da_nova_foto = f"imagens/usuarios/{dados.foto.filename}"
+            caminho_da_nova_foto = f"imagens/usuarios/{foto.filename}"
             with open(caminho_da_nova_foto, "wb") as arquivo_foto:
-                arquivo_foto.write(dados.foto.file.read())
+                arquivo_foto.write(foto.file.read())
                 usuario.foto = caminho_da_nova_foto
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Falha ao salvar a foto do usuário: {e.args}")
@@ -291,15 +286,16 @@ async def editar_dados_cadastrais(dados: UsuarioEditar):
     
     return {"detail": "Dados alterados com sucesso"}
 
+# TODO: Criar uma para buscar dados cliente, outra para empresa
+# TODO: Juntar foto aqui
+
 @app.get("/usuario/buscar_dados_cadastrais")
-async def buscar_dados_cadastrais(dados: ApenasToken):
+async def buscar_dados_cadastrais(token: str = Depends(oauth2_esquema)):
     """
     Busca os dados cadastrais de um usuário. Usado para mostrar os dados do perfil do usuário
 
     @param token: O token de acesso do usuário
     """
-
-    token = dados.token
 
     db = database.conectar_bd()
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
@@ -307,14 +303,12 @@ async def buscar_dados_cadastrais(dados: ApenasToken):
     return usuario
 
 @app.get("/usuario/buscar_foto_perfil")
-async def buscar_foto_perfil(dados: ApenasToken):
+async def buscar_foto_perfil(token: str = Depends(oauth2_esquema)):
     """
     Busca a foto de perfil de um usuário
 
     @param token: O token de acesso do usuário
     """
-
-    token = dados.token
 
     db = database.conectar_bd()
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
@@ -638,14 +632,20 @@ async def buscar_todos_veiculos_empresa(id_empresa: int, token: str = Depends(oa
 
     return crud_veiculo.listar_veiculos(db, id_empresa)
 
+class IdVeiculo(BaseModel):
+    id_veiculo: int
+
 @app.get("/veiculos/buscar_dados_veiculo")
-async def buscar_dados_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):
+async def buscar_dados_veiculo(dados: IdVeiculo, token: str = Depends(oauth2_esquema)):
     """
     Busca os dados de um veículo
 
     @param id_veiculo: O ID do veículo a se buscar os dados
     @param token: O token de acesso do usuário
     """
+
+    id_veiculo = dados.id_veiculo
+
     db = database.conectar_bd()
 
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
@@ -653,14 +653,17 @@ async def buscar_dados_veiculo(id_veiculo: int, token: str = Depends(oauth2_esqu
     # Buscar os dados do veículo no banco de dados
     return crud_veiculo.buscar_veiculo(db, id_veiculo)
 
+
 @app.delete("/veiculos/apagar_veiculo")
-async def apagar_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):
+async def apagar_veiculo(dados: IdVeiculo, token: str = Depends(oauth2_esquema)):
     """
     Apaga um veículo do sistema
 
     @param id_veiculo: O ID do veículo a ser apagado
     @param token: O token de acesso do usuário
     """
+
+    id_veiculo = dados.id_veiculo
 
     db = database.conectar_bd()
 
@@ -705,6 +708,8 @@ async def buscar_foto_veiculo(id_veiculo: int, token: str = Depends(oauth2_esque
 
 # Métodos extras cliente/empresa ----------------------------------------
 
+# TODO: Response model customizado com foto
+
 @app.get("/empresa/buscar_dados_empresa")
 async def buscar_dados_empresa(id_empresa: int, token: str = Depends(oauth2_esquema)):
     """
@@ -719,8 +724,12 @@ async def buscar_dados_empresa(id_empresa: int, token: str = Depends(oauth2_esqu
 
     return crud_usuario.buscar_empresa_por_id(db, id_empresa)
 
+class AvaliacaoEmpresa(BaseModel):
+    id_empresa: int
+    avaliacao: int
+
 @app.put("/empresa/avaliar_empresa")
-async def avaliar_empresa(id_empresa: int, avaliacao: float, token: str = Depends(oauth2_esquema)):
+async def avaliar_empresa(dados: AvaliacaoEmpresa, token: str = Depends(oauth2_esquema)):
     """
     Adiciona uma avaliação a uma empresa
 
@@ -728,6 +737,8 @@ async def avaliar_empresa(id_empresa: int, avaliacao: float, token: str = Depend
     @param avaliacao: A nota (um valor entre 0 e 5)
     @param token: O token de acesso do usuário
     """
+    id_empresa = dados.id_empresa
+    avaliacao = dados.avaliacao
 
     db = database.conectar_bd()
 
@@ -747,14 +758,23 @@ async def avaliar_empresa(id_empresa: int, avaliacao: float, token: str = Depend
 
     return {"detail": "Avaliação feita com sucesso"}
     
+class BuscaEmpresa(BaseModel):
+    nome_busca: str
+    pagina: int
+
 @app.get("/busca/buscar_empresas/nome")
-async def buscar_empresas_nome(nome_busca: str, token: str = Depends(oauth2_esquema)):
+async def buscar_empresas_nome(dados: BuscaEmpresa, token: str = Depends(oauth2_esquema)):
     """
     Busca as empresas a partir do nome
 
     @param nome_busca: O nome de empresa a ser buscada
     @param token: O token de acesso do usuário
     """
+
+    nome_busca = dados.nome_busca
+    pagina = dados.pagina
+
+    # TODO: Aplicar paginação
 
     # Obter o usuário a partir do token
 
