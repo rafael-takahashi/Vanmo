@@ -21,7 +21,7 @@ const registerUserPersonSchema = z.object({
 
 type RegisterUserPersonForm = z.infer<typeof registerUserPersonSchema>
 
-export default function FormClient() {
+export default function FormClient({setSuccess}:any) {
   const navigate = useNavigate()
   const { register: registerUserPerson, handleSubmit: handleSubmitUserPerson } =
     useForm<RegisterUserPersonForm>({
@@ -43,7 +43,11 @@ export default function FormClient() {
         phone: data.phone,
       })
 
-      navigate('/login')
+      setSuccess(true)
+
+      setTimeout(() => {
+        navigate('/');
+      }, 3000);
     } catch (err) {
       console.log(err)
     }

@@ -8,12 +8,12 @@ export function HomePage() {
         <SearchArea />
 
         <div>
-          <h2>Empresas parceiras</h2>
+          <h2 className="ml-8 my-6 text-2xl font-bold text-primary-foreground">Empresas parceiras</h2>
           {/* Carrossel com as empresas parceiras */}
         </div>
 
         <div>
-          <h2>Algumas features</h2>
+          <h2 className="ml-8 my-6 text-2xl font-bold text-primary-foreground">Algumas features</h2>
 
           <div className="grid grid-cols-2 gap-4">
             <FeatureBox />
