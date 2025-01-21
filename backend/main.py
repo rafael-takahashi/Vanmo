@@ -310,7 +310,7 @@ async def buscar_dados_cadastrais(token: str = Depends(oauth2_esquema)):
     db = database.conectar_bd()
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
-    return usuario
+    return {"email": usuario.email, "foto": usuario.foto, "id": usuario.id, "tipo_conta": usuario.tipo_conta}
 
 @app.get("/usuario/buscar_foto_perfil")
 async def buscar_foto_perfil(token: str = Depends(oauth2_esquema)):
