@@ -20,6 +20,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/jpg']
 
@@ -92,45 +93,92 @@ export default function Profile() {
               Editar Perfil
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Editar Perfil</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <label htmlFor="name" className="text-right">
-                    Nome Completo
-                  </label>
-                  <Input id="name" className="input-bordered col-span-3" />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <label htmlFor="email" className="text-right">
-                    E-mail
-                  </label>
-                  <Input
-                    id="email"
-                    className="input-bordered col-span-3"
-                    disabled
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <label htmlFor="dateOfBirth" className="text-right">
-                    Data de Nascimento
-                  </label>
-                  <Input
-                    id="dateOfBirth"
-                    className="input-bordered col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <label htmlFor="phone" className="text-right">
-                    Telefone Celular
-                  </label>
-                  <Input id="phone" className="input-bordered col-span-3" />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="submit">Salvar Perfil</Button>
-              </DialogFooter>
+              <Tabs defaultValue="account" className="w-full mt-4">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="account">
+                    Informações Pessoais
+                  </TabsTrigger>
+                  <TabsTrigger value="password">Senha</TabsTrigger>
+                </TabsList>
+                <TabsContent value="account" className="mt-4">
+                  <DialogHeader>
+                    <DialogTitle>Editar Perfil</DialogTitle>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <label htmlFor="name" className="text-right">
+                        Nome Completo
+                      </label>
+                      <Input id="name" className="input-bordered col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <label htmlFor="email" className="text-right">
+                        E-mail
+                      </label>
+                      <Input
+                        id="email"
+                        className="input-bordered col-span-3"
+                        disabled
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <label htmlFor="dateOfBirth" className="text-right">
+                        Data de Nascimento
+                      </label>
+                      <Input
+                        id="dateOfBirth"
+                        className="input-bordered col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <label htmlFor="phone" className="text-right">
+                        Telefone Celular
+                      </label>
+                      <Input id="phone" className="input-bordered col-span-3" />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button type="submit">Salvar Perfil</Button>
+                  </DialogFooter>
+                </TabsContent>
+                <TabsContent value="password" className="mt-4">
+                  <DialogHeader>
+                    <DialogTitle>Editar Senha</DialogTitle>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <label htmlFor="oldPassword" className="text-right">
+                        Senha atual
+                      </label>
+                      <Input
+                        id="oldPassword"
+                        className="input-bordered col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <label htmlFor="newPassword" className="text-right">
+                        Nova senha
+                      </label>
+                      <Input
+                        id="newPassword"
+                        className="input-bordered col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <label htmlFor="confirmPassword" className="text-right">
+                        Confirmar senha
+                      </label>
+                      <Input
+                        id="confirmPassword"
+                        className="input-bordered col-span-3"
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button type="submit">Trocar Senha</Button>
+                  </DialogFooter>
+                </TabsContent>
+              </Tabs>
             </DialogContent>
           </Dialog>
         </div>
