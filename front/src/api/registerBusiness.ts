@@ -1,3 +1,5 @@
+import Cookies from 'js-cookie'
+
 import { api } from '@/lib/axios'
 
 export interface registerBusinessBody {
@@ -27,9 +29,17 @@ export async function registerBusiness({
   streetAddress,
   typeAccount,
 }: registerBusinessBody) {
-  await api.post('/usuario/registrar', {
+  const response = await api.post('/usuario/registrar', {
     email,
     senha: password,
     tipo_conta: typeAccount,
+  })
+
+  const token = response.data.access_token
+
+  Cookies.set('auth_token', token, {
+    expires: 7,
+    secure: true,
+    sameSite: 'strict',
   })
 }

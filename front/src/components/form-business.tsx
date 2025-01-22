@@ -28,7 +28,7 @@ const registerUserBusinessSchema = z.object({
 
 type RegisterUserBusinessForm = z.infer<typeof registerUserBusinessSchema>
 
-export default function FormBusiness({setSuccess}:any) {
+export default function FormBusiness() {
   const navigate = useNavigate()
   const {
     register: registerUserBusiness,
@@ -74,12 +74,6 @@ export default function FormBusiness({setSuccess}:any) {
         streetAddress: data.streetAddress,
         typeAccount: data.typeAccount,
       })
-
-      setSuccess(true)
-
-      setTimeout(() => {
-        navigate('/');
-      }, 3000);
     } catch (err) {
       console.log(err)
     }

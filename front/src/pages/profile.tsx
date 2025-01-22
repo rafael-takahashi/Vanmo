@@ -1,7 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import Cookies from 'js-cookie'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import { editProfileUserClient } from '@/api/editUserClient'
+import { getUserClient } from '@/api/getUseClient'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -10,7 +15,7 @@ import garcia from '../assets/garcia.jpg'
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/jpg']
 
 const PersonalProfile = z.object({
-  fullName: z.string().nonempty(),
+  fullName: z.string(),
   email: z.string().email(),
   photo: z
     .any()
@@ -25,13 +30,41 @@ const PersonalProfile = z.object({
 type PersonalProfileForm = z.infer<typeof PersonalProfile>
 
 export default function Profile() {
-  const { register, handleSubmit } = useForm<PersonalProfileForm>({
+  const token = Cookies.get('auth_token')
+
+  const { register, handleSubmit, reset } = useForm<PersonalProfileForm>({
     resolver: zodResolver(PersonalProfile),
   })
 
+  const { mutateAsync } = useMutation({
+    mutationFn: editProfileUserClient,
+  })
+
+  const { data } = useQuery({
+    queryKey: ['user', token],
+    queryFn: () => getUserClient({ token }),
+  })
+
+  useEffect(() => {
+    if (data) {
+      reset({
+        email: data.email || '',
+        fullName: '',
+        photo: '', // Deixe vazio para o campo de arquivo
+      })
+    }
+  }, [data, reset])
+
   async function handleEditProfile(data: PersonalProfileForm) {
-    console.log('teste')
-    console.log(data)
+    try {
+      await mutateAsync({
+        email: data.email,
+        photo: data.photo,
+        token,
+      })
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   return (
@@ -76,6 +109,7 @@ export default function Profile() {
               className="input-bordered"
               type="email"
               {...register('email')}
+              disabled
             />
           </div>
           <div>
@@ -93,8 +127,6 @@ export default function Profile() {
         </form>
 
         <h2 className="text-white text-2xl mt-14">Minhas Propostas</h2>
-
-        
       </div>
     </main>
   )

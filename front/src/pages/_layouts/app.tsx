@@ -38,7 +38,7 @@ export function AppLayout() {
       <main className="max-w-[1240px] w-full mx-auto">
         <Outlet />
       </main>
-      <footer className="flex justify-between items-center px-5 py-6 h-[288px] w-full bg-primary-foreground mt-20"></footer>
+      <footer className=""></footer>
     </div>
   )
 }
