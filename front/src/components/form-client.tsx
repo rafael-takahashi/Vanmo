@@ -21,7 +21,11 @@ const registerUserPersonSchema = z.object({
 
 type RegisterUserPersonForm = z.infer<typeof registerUserPersonSchema>
 
-export default function FormClient({ setSuccess }: any) {
+interface FormClientProps {
+  setSuccess: (success: boolean) => void
+}
+
+export default function FormClient({ setSuccess }: FormClientProps) {
   const navigate = useNavigate()
   const { register: registerUserPerson, handleSubmit: handleSubmitUserPerson } =
     useForm<RegisterUserPersonForm>({

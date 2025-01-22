@@ -6,6 +6,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 
+import { LocatioInput } from './location-input'
 import { Button } from './ui/button'
 import { Calendar } from './ui/calendar'
 import { Input } from './ui/input'
@@ -104,12 +105,13 @@ export default function SearchArea() {
           >
             Partida
           </label>
-          <Input
+          {/* <Input
             type="text"
             className="input-bordered h-[96px] !text-xl !pt-8 !pl-10 !w-[230px]"
             placeholder="Insira uma cidade"
             {...register('from')}
-          />
+          /> */}
+          <LocatioInput />
           <MapPin size={32} className="absolute top-11 left-1" />
         </div>
         <div className="relative">
@@ -119,12 +121,13 @@ export default function SearchArea() {
           >
             Destino
           </label>
-          <Input
+          {/* <Input
             type="text"
             className="input-bordered h-[96px] !text-xl !pt-8 !pl-10 !w-[230px]"
             placeholder="Insira uma cidade"
             {...register('to')}
-          />
+          /> */}
+          <LocatioInput />
           <MapPin size={32} className="absolute top-11 left-1" />
         </div>
         <div className="w-[600px] bg-white rounded-md flex flex-col">

@@ -288,14 +288,12 @@ async def editar_dados_cadastrais(dados: UsuarioEditar):
     return {"detail": "Dados alterados com sucesso"}
 
 @app.get("/usuario/buscar_dados_cadastrais")
-async def buscar_dados_cadastrais(dados: ApenasToken):
+async def buscar_dados_cadastrais(token: str = Depends(oauth2_esquema)):
     """
     Busca os dados cadastrais de um usuário. Usado para mostrar os dados do perfil do usuário
 
     @param token: O token de acesso do usuário
     """
-
-    token = dados.token
 
     db = database.conectar_bd()
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)

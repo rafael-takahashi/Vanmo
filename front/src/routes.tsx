@@ -3,11 +3,12 @@ import { createBrowserRouter } from 'react-router'
 import AuthMiddleware from './middlewares/auth'
 import { AppLayout } from './pages/_layouts/app'
 import { AuthLayout } from './pages/_layouts/auth'
+import { Login } from './pages/auth/login'
+import { RegisterUser } from './pages/auth/register-user'
 import BusinessPage from './pages/business-page'
 import { HomePage } from './pages/homepage'
-import { Login } from './pages/login'
-import Profile from './pages/profile'
-import { RegisterUser } from './pages/register-user'
+import MyProposalsPage from './pages/profile/my-proposals-page'
+import Profile from './pages/profile/profile'
 import SearchPage from './pages/search'
 
 export const router = createBrowserRouter([
@@ -27,6 +28,14 @@ export const router = createBrowserRouter([
         element: (
           <AuthMiddleware>
             <Profile />
+          </AuthMiddleware>
+        ),
+      },
+      {
+        path: '/profile/proposals',
+        element: (
+          <AuthMiddleware>
+            <MyProposalsPage />
           </AuthMiddleware>
         ),
       },

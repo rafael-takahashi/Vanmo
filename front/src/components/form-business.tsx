@@ -28,7 +28,11 @@ const registerUserBusinessSchema = z.object({
 
 type RegisterUserBusinessForm = z.infer<typeof registerUserBusinessSchema>
 
-export default function FormBusiness({ setSuccess }: any) {
+interface FormBusinessProps {
+  setSuccess: (success: boolean) => void
+}
+
+export default function FormBusiness({ setSuccess }: FormBusinessProps) {
   const navigate = useNavigate()
   const {
     register: registerUserBusiness,
