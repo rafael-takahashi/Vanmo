@@ -19,8 +19,8 @@ const registerUserPersonSchema = z.object({
   email: z.string().email('E-mail é inválido').nonempty('E-mail é obrigatório'),
   phone: z.string().nonempty('Telefone é obrigatório'),
   password: z.string().min(8, 'A senha é muito curta').nonempty('Senha é obrigatória'),
-  confirmPassword: z.string().min(8, 'A senha é muito curta').nonempty('Senha é obrigatória'),
-})
+  confirmPassword: z.string().nonempty('Confirme sua senha'),
+}).refine(data => data.password === data.confirmPassword, {message: 'As senhas devem ser iguais'})
 
 type RegisterUserPersonForm = z.infer<typeof registerUserPersonSchema>
 
