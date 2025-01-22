@@ -1,7 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
+import { AxiosError } from 'axios';
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { registerClient } from '@/api/registerClient'
@@ -11,12 +14,12 @@ import { Input } from './ui/input'
 
 const registerUserPersonSchema = z.object({
   typeAccount: z.enum(['cliente', 'empresa']).default('cliente'),
-  fullName: z.string().nonempty(),
-  cpf: z.string().nonempty(),
-  email: z.string().email().nonempty(),
-  phone: z.string().nonempty(),
-  password: z.string().min(8, 'A senha é muito curta').nonempty(),
-  confirmPassword: z.string().min(8, 'A senha é muito curta').nonempty(),
+  fullName: z.string().nonempty('Nome é obrigatório'),
+  cpf: z.string().nonempty('CPF é obrigatório'),
+  email: z.string().email('E-mail é inválido').nonempty('E-mail é obrigatório'),
+  phone: z.string().nonempty('Telefone é obrigatório'),
+  password: z.string().min(8, 'A senha é muito curta').nonempty('Senha é obrigatória'),
+  confirmPassword: z.string().min(8, 'A senha é muito curta').nonempty('Senha é obrigatória'),
 })
 
 type RegisterUserPersonForm = z.infer<typeof registerUserPersonSchema>
@@ -27,10 +30,20 @@ interface FormClientProps {
 
 export default function FormClient({ setSuccess }: FormClientProps) {
   const navigate = useNavigate()
-  const { register: registerUserPerson, handleSubmit: handleSubmitUserPerson } =
-    useForm<RegisterUserPersonForm>({
-      resolver: zodResolver(registerUserPersonSchema),
-    })
+  const { 
+    register: registerUserPerson, 
+    handleSubmit: handleSubmitUserPerson, 
+    formState: { errors } 
+  } = useForm<RegisterUserPersonForm>({
+    resolver: zodResolver(registerUserPersonSchema),
+  })
+
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      const firstError = Object.values(errors)[0];
+      toast.error(firstError?.message);
+    }
+  }, [errors])
 
   const { mutateAsync } = useMutation({
     mutationFn: registerClient,
@@ -52,8 +65,13 @@ export default function FormClient({ setSuccess }: FormClientProps) {
       setTimeout(() => {
         navigate('/')
       }, 3000)
-    } catch (err) {
-      console.log(err)
+    } catch (err: unknown) {
+      console.error(err)
+      if (err instanceof AxiosError) {
+        toast.error(err.response?.data?.detail)
+      } else {
+        toast.error('Erro ao cadastrar usuário')
+      }
     }
   }
 
