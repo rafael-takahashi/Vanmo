@@ -1,4 +1,12 @@
 import re
+import csv
+
+class Cidade:
+    def __init__(self, uf: str, nome: str, latitude: float, longitude: float):
+        self.uf : str = uf
+        self.nome : str = nome 
+        self.latitude: float = latitude
+        self.longitude: float = longitude
 
 def valida_coordendas(latitude: float, longitude: float) -> bool:
     """
@@ -32,3 +40,15 @@ def valida_placa(placa: str) -> bool:
     placa_mercosul = r"^[A-Z]{3}\d{1}[A-J]{1}\d{2}$"
 
     return bool((re.fullmatch(placa_antiga, placa)) or (re.fullmatch(placa_mercosul, placa)))
+
+def carrega_cidades() -> list[Cidade]:
+    lista_cidades = []
+    with open('latitude-longitude-cidades.csv', mode='r') as tabela:
+        leitor = csv.reader(tabela,  delimiter=';')
+        next(leitor)
+
+        for linha in leitor:
+            cidade: Cidade = Cidade(linha[1], linha[2], linha[3], linha[4])
+            lista_cidades.append(cidade)
+    
+    return lista_cidades

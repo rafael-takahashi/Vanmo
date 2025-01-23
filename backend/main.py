@@ -28,6 +28,8 @@ async def iniciar_app(app: FastAPI):
     # que já passaram das datas de vencimento
 
     # TODO: Função que carrega a tabela de cidades brasileiras na memória
+    lista_cidades = carrega_cidades()
+    # print(f"lista_cidades[0].uf: {lista_cidades[0].uf}, lista_cidades[0].nome: {lista_cidades[0].nome}, lista_cidades[0].latitude: {lista_cidades[0].latitude}, lista_cidades[0].longitude: {lista_cidades[0].longitude}")
 
     yield
 
