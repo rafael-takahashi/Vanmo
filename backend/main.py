@@ -216,18 +216,13 @@ async def cadastrar_dados_cliente(nome_completo: str, cpf: str, token: str = Dep
 
     return {"detail": "Cadastro realizado com sucesso"}
 
-class ApenasToken(BaseModel):
-    token: str = Depends(oauth2_esquema)
-
 @app.delete("/usuario/apagar_conta")
-async def apagar_usuario(dados: ApenasToken):
+async def apagar_usuario(token: str = Depends(oauth2_esquema)):
     """
     Apaga a conta de um usuário, só pode ser chamado pelo próprio usuário
 
     @param token: O token de acesso do usuário
     """
-
-    token = dados.token
 
     db = database.conectar_bd()
 
@@ -301,15 +296,13 @@ async def buscar_dados_cadastrais(token: str = Depends(oauth2_esquema)):
     return usuario
 
 @app.get("/usuario/buscar_foto_perfil")
-async def buscar_foto_perfil(dados: ApenasToken):
+async def buscar_foto_perfil(token: str = Depends(oauth2_esquema)):
     """
     Busca a foto de perfil de um usuário
 
     @param token: O token de acesso do usuário
     """
-
-    token = dados.token
-
+    
     db = database.conectar_bd()
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
