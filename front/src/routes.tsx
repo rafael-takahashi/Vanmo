@@ -10,6 +10,7 @@ import { HomePage } from './pages/homepage'
 import MyProposalsPage from './pages/profile/my-proposals-page'
 import Profile from './pages/profile/profile'
 import SearchPage from './pages/search'
+import { ProposalPage } from './pages/proposal'
 
 export const router = createBrowserRouter([
   {
@@ -42,6 +43,14 @@ export const router = createBrowserRouter([
       {
         path: '/empresa/:name',
         element: <BusinessPage />,
+      },
+      {
+        path: '/proposta',
+        element: (
+          <AuthMiddleware>
+            <ProposalPage />
+          </AuthMiddleware>
+        )
       },
     ],
   },
