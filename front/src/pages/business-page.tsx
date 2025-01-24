@@ -2,6 +2,7 @@ import { MapPin } from '@phosphor-icons/react'
 import { useSearchParams } from 'react-router'
 
 import SearchArea from '@/components/search-area'
+import { VehicleList } from '@/components/vehicle-list'
 
 export default function BusinessPage() {
   const [searchParams] = useSearchParams()
@@ -41,6 +42,8 @@ export default function BusinessPage() {
           </span>
         )}
       </div>
+
+      <VehicleList />
     </main>
   )
 }
