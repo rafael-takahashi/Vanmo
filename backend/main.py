@@ -28,6 +28,8 @@ async def iniciar_app(app: FastAPI):
     # que já passaram das datas de vencimento
 
     # TODO: Função que carrega a tabela de cidades brasileiras na memória
+    lista_cidades = carrega_cidades()
+    # print(f"lista_cidades[0].uf: {lista_cidades[0].uf}, lista_cidades[0].nome: {lista_cidades[0].nome}, lista_cidades[0].latitude: {lista_cidades[0].latitude}, lista_cidades[0].longitude: {lista_cidades[0].longitude}")
 
     yield
 
@@ -49,13 +51,19 @@ oauth2_esquema = OAuth2PasswordBearer(tokenUrl="/usuario/login_legacy")
 
 # TODO: Colocar todas as classes modelo em um arquivo separado
 
+class CadastroUsuario(BaseModel):
+    email: str
+    senha: str
+    tipo_conta: str
+    foto: UploadFile | str
+
 @app.post("/usuario/registrar_legacy")
-async def registrar_novo_usuario(email: str, senha: str, tipo_conta: str, foto: UploadFile | str):
+async def registrar_novo_usuario(dados: CadastroUsuario):
     """
     Método legado para testar com o /docs do FastAPI
     """
 
-    usuario = classe_usuario.Usuario(email, senha, tipo_conta, foto)
+    usuario = classe_usuario.Usuario(dados.email, dados.senha, dados.tipo_conta, dados.foto)
     db = database.conectar_bd()
 
     if usuario.foto == "":
@@ -126,14 +134,14 @@ class CadastroEmpresa(BaseModel):
     rua: str
     numero: str
 
-def registrar_novo_usuario(email: str, senha: str, tipo_conta: str, foto: UploadFile | str):
+def registrar_novo_usuario(dados: CadastroUsuario):
 
     # TODO: checar se o tamanho e o tipo de arquivo da foto são permitidos
     # Caso não for, decidir entre retornar um código de erro ou prosseguir sem a foto
 
     # TODO: Validar email
 
-    usuario = classe_usuario.Usuario(email, senha, tipo_conta, foto)
+    usuario = classe_usuario.Usuario(dados.email, dados.senha, dados.tipo_conta, dados.foto)
     db = database.conectar_bd()
 
     if usuario.foto == "":
@@ -231,6 +239,13 @@ class AlterarDadosEmpresa(BaseModel):
     rua: str
     numero: str
 
+class AlterarDadosUsuario(BaseModel):
+    email: str | None = None, 
+    senha: str | None = None,
+    foto: UploadFile | None = None
+
+# TODO: Montar alteração para demais dados
+
 @app.put("/usuario/alterar_dados/cliente")
 async def editar_dados_cliente(dados: AlterarDadosCliente, token: str = Depends(oauth2_esquema)):
     
@@ -242,8 +257,9 @@ async def editar_dados_cliente(dados: AlterarDadosCliente, token: str = Depends(
 async def editar_dados_empresa(dados: AlterarDadosEmpresa, token: str = Depends(oauth2_esquema)):
     pass
 
-def editar_dados_cadastrais(email: str | None = None, senha: str | None = None,
-                            foto: UploadFile | None = None):
+
+@app.put("/usuario/alterar_dados")
+async def editar_dados_cadastrais(dados: AlterarDadosUsuario, token: str = Depends(oauth2_esquema)):
     """
     Altera os dados cadastrais de um usuário.
 
@@ -255,16 +271,16 @@ def editar_dados_cadastrais(email: str | None = None, senha: str | None = None,
 
     db = database.conectar_bd()
 
-    if email:
-        if crud_usuario.obter_usuario_por_nome(db, email):
+    if dados.email:
+        if crud_usuario.obter_usuario_por_nome(db, dados.email):
             raise HTTPException(status_code=400, detail="E-mail já cadastrado")
         else:
-            usuario.email = email
+            usuario.email = dados.email
     
-    if senha:
-        usuario.senha_hashed = auth.gerar_hash_senha(senha)
+    if dados.senha:
+        usuario.senha_hashed = auth.gerar_hash_senha(dados.senha)
     
-    if foto:
+    if dados.foto:
         if (os.path.isfile(usuario.foto)):
             # remover a foto antiga e salvar a nova
             try:
@@ -273,9 +289,9 @@ def editar_dados_cadastrais(email: str | None = None, senha: str | None = None,
                 raise HTTPException(status_code=400, detail=f"Erro ao deletar foto antiga: {e}")
         
         try:
-            caminho_da_nova_foto = f"imagens/usuarios/{foto.filename}"
+            caminho_da_nova_foto = f"imagens/usuarios/{dados.foto.filename}"
             with open(caminho_da_nova_foto, "wb") as arquivo_foto:
-                arquivo_foto.write(foto.file.read())
+                arquivo_foto.write(dados.foto.file.read())
                 usuario.foto = caminho_da_nova_foto
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Falha ao salvar a foto do usuário: {e.args}")
@@ -298,7 +314,7 @@ async def buscar_dados_cadastrais(token: str = Depends(oauth2_esquema)):
     db = database.conectar_bd()
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
-    return usuario
+    return {"email": usuario.email, "foto": usuario.foto, "id": usuario.id, "tipo_conta": usuario.tipo_conta}
 
 # @app.get("/usuario/buscar_foto_perfil")
 # async def buscar_foto_perfil(token: str = Depends(oauth2_esquema)):
@@ -321,12 +337,13 @@ async def buscar_dados_cadastrais(token: str = Depends(oauth2_esquema)):
 
 # Métodos de propostas ----------------------------------------
 
-class AceitarRejeitarProposta(BaseModel):
+@app.post("/propostas/aceitar_ou_rejetar_proposta")
+
+class DadosAcaoProposta(BaseModel):
     id_proposta: int
     opcao: bool
 
-@app.post("/propostas/aceitar_ou_rejetar_proposta")
-async def aceitar_ou_rejeitar_proposta(dados: AceitarRejeitarProposta, token: str = Depends(oauth2_esquema)):
+async def aceitar_ou_rejeitar_proposta(dados: DadosAcaoProposta, token: str = Depends(oauth2_esquema)):
     """
     Aceita ou rejeita uma proposta feita para uma empresa
 
@@ -344,7 +361,7 @@ async def aceitar_ou_rejeitar_proposta(dados: AceitarRejeitarProposta, token: st
     if usuario.tipo_conta != "empresa":
         raise HTTPException(status_code=400, detail="Apenas empresas podem aceitar ou rejeitar propostas")
 
-    aluguel = crud_aluguel.buscar_aluguel(db, id_proposta)
+    aluguel = crud_aluguel.buscar_aluguel(db, dados.id_proposta)
 
     if aluguel is None:
         raise HTTPException(status_code=404, detail="Proposta não encontrada")
@@ -356,10 +373,10 @@ async def aceitar_ou_rejeitar_proposta(dados: AceitarRejeitarProposta, token: st
         raise HTTPException(status_code=400, detail="Status do aluguel não é 'proposta'")
     
     novo_status = "rejeitado"
-    if opcao:
+    if dados.opcao:
         novo_status = "ativo"
 
-    crud_aluguel.alterar_status_aluguel(db, id_proposta, novo_status)
+    crud_aluguel.alterar_status_aluguel(db, dados.id_proposta, novo_status)
 
     return {"detail": f"Status alterado para '{novo_status}' com sucesso!"}
 
@@ -386,6 +403,7 @@ async def buscar_todas_propostas_usuario(token: str = Depends(oauth2_esquema)):
 
 class IdProposta(BaseModel):
     id_proposta: int
+        
 
 @app.get("/propostas/buscar_dados_proposta")
 async def buscar_dados_proposta(dados: IdProposta, token: str = Depends(oauth2_esquema)):
@@ -402,7 +420,7 @@ async def buscar_dados_proposta(dados: IdProposta, token: str = Depends(oauth2_e
 
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
-    aluguel = crud_aluguel.buscar_aluguel(db, id_proposta)
+    aluguel = crud_aluguel.buscar_aluguel(db, dados.id_proposta)
 
     if aluguel is None:
         raise HTTPException(status_code=404, detail="Proposta não encontrada")
@@ -458,36 +476,36 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
     if usuario.tipo_conta != "cliente":
         raise HTTPException(status_code=400, detail="Tipo de usuário não é cliente")
     
-    if not crud_veiculo.verificar_veiculo_empresa(db, id_veiculo, id_empresa):
+    if not crud_veiculo.verificar_veiculo_empresa(db, dados.id_veiculo, dados.id_empresa):
         raise HTTPException(status_code=400, detail="Veículo não pertence a empresa")
     
-    if not crud_veiculo.verificar_disponibilidade_veiculo(db, id_veiculo, data_saida, data_chegada):
+    if not crud_veiculo.verificar_disponibilidade_veiculo(db, dados.id_veiculo, dados.data_saida, dados.data_chegada):
         raise HTTPException(status_code=400, detail="Veículo não disponível para o período escolhido")
 
-    if (not valida_coordendas(latitude_partida, longitude_partida)) or (not valida_coordendas(latitude_chegada, longitude_chegada)):
+    if (not valida_coordendas(dados.latitude_partida, dados.longitude_partida)) or (not valida_coordendas(dados.latitude_chegada, dados.longitude_chegada)):
         raise HTTPException(status_code=400, detail="Coordenadas inválidas")
     
-    if (data_chegada > data_saida):
+    if (dados.data_chegada > dados.data_saida):
         raise HTTPException(status_code=400, detail="Datas inválidas: data de chegada anterior a data de saída")
 
-    veiculo: classe_veiculo.Veiculo = crud_veiculo.buscar_veiculo(db, id_veiculo)
+    veiculo: classe_veiculo.Veiculo = crud_veiculo.buscar_veiculo(db, dados.id_veiculo)
     if not veiculo:
         raise HTTPException(status_code=400, detail="Veículo não encontrado")
 
-    aluguel: classe_aluguel.Aluguel = classe_aluguel.Aluguel(None, usuario.id, id_empresa, id_veiculo)
-    aluguel.adicionar_datas(data_saida, data_chegada)
+    aluguel: classe_aluguel.Aluguel = classe_aluguel.Aluguel(None, usuario.id, dados.id_empresa, dados.id_veiculo)
+    aluguel.adicionar_datas(dados.data_saida, dados.data_chegada)
 
     # TODO: verficar se o local já existe
     # TODO: pensar numa forma para adicionar o nome no local
     # TODO: verificar se veículo tem valor por km
 
-    local_partida: classe_local.Local = classe_local.Local(latitude_partida, longitude_partida)
+    local_partida: classe_local.Local = classe_local.Local(dados.latitude_partida, dados.longitude_partida)
     local_partida.id = crud_local.criar_local(db, local_partida)
-    local_chegada: classe_local.Local = classe_local.Local(latitude_chegada, longitude_chegada)
+    local_chegada: classe_local.Local = classe_local.Local(dados.latitude_chegada, dados.longitude_chegada)
     local_chegada.id = crud_local.criar_local(db, local_chegada)
 
     aluguel.adicionar_locais(local_partida, local_chegada)
-    aluguel.adicionar_distancia_extra(distancia_extra_km)
+    aluguel.adicionar_distancia_extra(dados.distancia_extra_km)
     aluguel.calcular_valor_total(veiculo.custo_por_km, veiculo.custo_base)
 
     aluguel.estado_aluguel = "proposto"
@@ -514,7 +532,7 @@ async def cancelar_proposta(dados: IdProposta, token: str = Depends(oauth2_esque
     if usuario.tipo_conta != "cliente":
         raise HTTPException(status_code=400, detail="Apenas clientes podem cancelar propostas")
 
-    aluguel = crud_aluguel.buscar_aluguel(db, id_proposta)
+    aluguel = crud_aluguel.buscar_aluguel(db, dados.id_proposta)
 
     if aluguel is None:
         raise HTTPException(status_code=404, detail="Proposta não encontrada")
@@ -525,7 +543,7 @@ async def cancelar_proposta(dados: IdProposta, token: str = Depends(oauth2_esque
     if aluguel.estado_aluguel != "proposto":
         raise HTTPException(status_code=400, detail="Status do aluguel não é 'proposto'")
 
-    crud_aluguel.remover_aluguel(db, id_proposta)
+    crud_aluguel.remover_aluguel(db, dados.id_proposta)
 
     return {"detail": "Proposta cancelada com sucesso!"}    
     
@@ -571,7 +589,7 @@ async def cadastrar_veiculo(dados: CadastrarVeiculo, token: str = Depends(oauth2
     if dados.capacidade < 1:
         raise HTTPException(status_code=400, detail="Capacidade do veículo inválida")
     
-    if (dados.ano_fabricacao < 1970) or (dados.ano_fadados.bricacao > datetime.date.today().year):
+    if (dados.ano_fabricacao < 1970) or (dados.ano_fabricacao > datetime.date.today().year):
         raise HTTPException(status_code=400, detail="Ano de fabricação inválido")
     
     placa_veiculo = dados.placa_veiculo.upper()
@@ -585,6 +603,7 @@ async def cadastrar_veiculo(dados: CadastrarVeiculo, token: str = Depends(oauth2
     id_veiculo = crud_veiculo.criar_veiculo(db, veiculo)
 
     try:
+        
         caminho_da_foto = f"imagens/veiculos/{usuario.id}-{id_veiculo}.png"
         with open(caminho_da_foto, "wb") as arquivo_foto:
             arquivo_foto.write(dados.foto.file.read())
@@ -599,13 +618,13 @@ async def cadastrar_veiculo(dados: CadastrarVeiculo, token: str = Depends(oauth2
 
 class EditarVeiculo(BaseModel):
     id_veiculo: int
-    nome_veiculo: str | None = None
-    placa_veiculo: str | None = None
-    custo_por_km: float | None = None
-    custo_base: float | None = None
-    foto: UploadFile | None = None
-    cor: str | None = None
-    ano_fabricacao: int | None = None
+    nome_veiculo: str | None = None,
+    placa_veiculo: str | None = None,
+    custo_por_km: float | None = None,
+    custo_base: float | None = None,
+    foto: UploadFile | None = None,
+    cor: str | None = None,
+    ano_fabricacao: int | None = None,
 
 @app.put("/veiculos/editar_veiculo")
 async def editar_veiculo(dados: EditarVeiculo, token: str = Depends(oauth2_esquema)):
@@ -660,6 +679,7 @@ async def editar_veiculo(dados: EditarVeiculo, token: str = Depends(oauth2_esque
                 raise HTTPException(status_code=400, detail=f"Erro ao deletar foto antiga: {e}")
         
         try:
+            
             caminho_da_nova_foto = f"imagens/veiculos/{veiculo.id_empresa}-{veiculo.id_veiculo}.png"
             with open(caminho_da_nova_foto, "wb") as arquivo_foto:
                 arquivo_foto.write(dados.foto.file.read())
@@ -674,8 +694,11 @@ async def editar_veiculo(dados: EditarVeiculo, token: str = Depends(oauth2_esque
 class IdEmpresa(BaseModel):
     id_empresa: int
 
+class IdEmpresa(BaseModel):
+    id_empresa: int
+
 @app.get("/veiculos/buscar_veiculos_empresa")
-async def buscar_todos_veiculos_empresa(dados: IdEmpresa, token: str = Depends(oauth2_esquema)):
+async def buscar_todos_veiculos_empresa(dados: IdEmpresa):
     """
     Busca todos os veículos de uma empresa
 
@@ -687,9 +710,12 @@ async def buscar_todos_veiculos_empresa(dados: IdEmpresa, token: str = Depends(o
 
     db = database.conectar_bd()
 
-    auth.obter_usuario_atual(db, token)
+    # TODO: organizar resultado por páginas
 
-    return crud_veiculo.listar_veiculos(db, id_empresa)
+    # não precisa estar logado para buscar os veículos
+    # auth.obter_usuario_atual(db, token)
+
+    return crud_veiculo.listar_veiculos(db, dados.id_empresa)
 
 class IdVeiculo(BaseModel):
     id_veiculo: int
@@ -766,7 +792,7 @@ async def apagar_veiculo(dados: IdVeiculo, token: str = Depends(oauth2_esquema))
     return {"detail": "Veículo removido com sucesso"}
 
 @app.get("/veiculos/buscar_foto_veiculo")
-async def buscar_foto_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):
+async def buscar_foto_veiculo(dados: IdVeiculo, token: str = Depends(oauth2_esquema)):
     """
     Busca a foto de um veículo
 
@@ -775,7 +801,7 @@ async def buscar_foto_veiculo(id_veiculo: int, token: str = Depends(oauth2_esque
     db = database.conectar_bd()
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
-    veiculo = crud_veiculo.buscar_veiculo(db, id_veiculo)
+    veiculo = crud_veiculo.buscar_veiculo(db, dados.id_veiculo)
 
     if veiculo.caminho_foto == "" or veiculo.caminho_foto is None:
         return FileResponse("imagens/imagem_veiculo_padrao.png")
@@ -802,6 +828,8 @@ async def buscar_dados_empresa(dados: IdEmpresa, token: str = Depends(oauth2_esq
     @param id_empresa: O ID da empresa a qual se quer buscar os dados
     @param token: O token de acesso do usuário
     """
+
+    # TODO: precisa estar autenticado?
 
     id_empresa: int = dados.id_empresa
 
@@ -874,8 +902,14 @@ async def buscar_empresas_nome(dados: BuscaEmpresa, token: str = Depends(oauth2_
 
     return crud_usuario.buscador_empresas_nome(db, nome_busca, pagina)
 
+class CriteriosBuscaEmpresa(BaseModel):
+    data_de_partida: datetime.date | None = None,
+    qtd_passageiros: int | None = None,
+    latitude_partida: float | None = None, 
+    longitude_partida: float | None = None,
+
 @app.get("/busca/buscar_empresas/criterio")
-async def buscar_empresas_criterio(criterio: str, token: str = Depends(oauth2_esquema)):
+async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa, token: str = Depends(oauth2_esquema)):
     """
     Busca as empresas a partir de outros critérios
 
@@ -883,8 +917,19 @@ async def buscar_empresas_criterio(criterio: str, token: str = Depends(oauth2_es
     @param token: O token de acesso do usuário
     """
 
-    # Obter o usuário a partir do token
+    # Não é necessário autenticar para pesquisar empresas
+    # db = database.conectar_bd()
+    # usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
-    # TODO: Pensar em mais critérios aqui...
+    if dados.data_de_partida:
+        pass
+
+    if dados.qtd_passageiros:
+        pass
+
+    if dados.latitude_partida and dados.longitude_partida:
+        pass
+    
+    # TODO: paginação
 
     pass
