@@ -12,6 +12,7 @@ import MyVehiclesPage from './pages/profile/my-vehicles.page'
 import Profile from './pages/profile/profile'
 import { ProposalPage } from './pages/proposal'
 import SearchPage from './pages/search'
+import AddVehiclePage from './pages/profile/add-vehicle-page'
 
 export const router = createBrowserRouter([
   {
@@ -46,6 +47,14 @@ export const router = createBrowserRouter([
         element: (
           <AuthMiddleware>
             <MyVehiclesPage />
+          </AuthMiddleware>
+        ),
+      },
+      {
+        path: '/profile/add-vehicle',
+        element: (
+          <AuthMiddleware>
+            <AddVehiclePage />
           </AuthMiddleware>
         ),
       },

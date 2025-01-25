@@ -340,7 +340,12 @@ export default function ProfileBusinessArea() {
             Ver Mais
           </span>
 
-          <Plus size={24} color="#6af42a" className="ml-auto cursor-pointer" />
+          <Plus 
+            size={24}
+            color="#6af42a"
+            className="ml-auto cursor-pointer"
+            onClick={() => navigate('/profile/add-vehicle')}
+          />
         </div>
 
         <div className="flex flex-col gap-4 mt-4"></div>
