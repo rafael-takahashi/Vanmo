@@ -8,9 +8,10 @@ import { RegisterUser } from './pages/auth/register-user'
 import BusinessPage from './pages/business-page'
 import { HomePage } from './pages/homepage'
 import MyProposalsPage from './pages/profile/my-proposals-page'
+import MyVehiclesPage from './pages/profile/my-vehicles.page'
 import Profile from './pages/profile/profile'
-import SearchPage from './pages/search'
 import { ProposalPage } from './pages/proposal'
+import SearchPage from './pages/search'
 
 export const router = createBrowserRouter([
   {
@@ -41,6 +42,14 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: '/profile/vehicles',
+        element: (
+          <AuthMiddleware>
+            <MyVehiclesPage />
+          </AuthMiddleware>
+        ),
+      },
+      {
         path: '/empresa/:name',
         element: <BusinessPage />,
       },
@@ -50,7 +59,7 @@ export const router = createBrowserRouter([
           <AuthMiddleware>
             <ProposalPage />
           </AuthMiddleware>
-        )
+        ),
       },
     ],
   },

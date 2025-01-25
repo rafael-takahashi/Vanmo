@@ -1,6 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 
-export default function ProposalItem() {
+interface ProprosalItemProps {
+  type: 'cliente' | 'empresa'
+}
+
+export default function ProposalItem({ type }: ProprosalItemProps) {
   return (
     <Card className="bg-white rounded-md">
       <CardHeader>
@@ -11,22 +15,48 @@ export default function ProposalItem() {
         </CardTitle>
       </CardHeader>
       <CardContent className="grid grid-cols-2">
-        <div>
-          <h3 className="text-center font-semibold">Informações da Empresa</h3>
+        {type === 'cliente' && (
+          <div>
+            <h3 className="text-center font-semibold">
+              Informações da Empresa
+            </h3>
 
-          <p>
-            Empresa: <span>Viacao Garcia</span>
-          </p>
-          <p>
-            Veículo: <span>Onibux X</span>
-          </p>
-          <p>
-            Ano: <span>2020</span>
-          </p>
-          <p>
-            Passageiros: <span>24</span>
-          </p>
-        </div>
+            <p>
+              Empresa: <span>Viacao Garcia</span>
+            </p>
+            <p>
+              Veículo: <span>Onibux X</span>
+            </p>
+            <p>
+              Ano: <span>2020</span>
+            </p>
+            <p>
+              Passageiros: <span>24</span>
+            </p>
+          </div>
+        )}
+
+        {type === 'empresa' && (
+          <div>
+            <h3 className="text-center font-semibold">
+              Informações do Cliente
+            </h3>
+
+            <p>
+              Nome Completo: <span>John Doe</span>
+            </p>
+            <p>
+              Email: <span>johndoe@example.com</span>
+            </p>
+            <p>
+              Data de Nascimento: <span>01/01/2000</span>
+            </p>
+            <p>
+              CPF: <span>12312312312</span>
+            </p>
+          </div>
+        )}
+
         <div>
           <h3 className="text-center font-semibold">Informações da Viagem</h3>
           <p>

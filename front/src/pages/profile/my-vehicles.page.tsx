@@ -2,11 +2,10 @@ import { useQuery } from '@tanstack/react-query'
 import Cookies from 'js-cookie'
 
 import { getUserClient } from '@/api/getUserClient'
-import ProfileBusinessArea from '@/components/profile-business-area'
-import ProfileClientArea from '@/components/profile-client-area'
+import ProposalList from '@/components/proposal-list'
 import SideMenuProfile from '@/components/side-menu-profile'
 
-export default function Profile() {
+export default function MyVehiclesPage() {
   const token = Cookies.get('auth_token')
 
   const { data } = useQuery({
@@ -16,11 +15,11 @@ export default function Profile() {
 
   return (
     <main className="grid grid-cols-3 gap-4 mt-20">
-      <SideMenuProfile typeAccount={data?.tipo_conta} email={data?.email} />
+      <SideMenuProfile typeAccount={data?.tipo_conta} />
 
-      {data?.tipo_conta === 'cliente' && <ProfileClientArea />}
-
-      {data?.tipo_conta === 'empresa' && <ProfileBusinessArea />}
+      <div className="col-span-2 bg-primary-foreground p-10 rounded-md">
+        <ProposalList />
+      </div>
     </main>
   )
 }
