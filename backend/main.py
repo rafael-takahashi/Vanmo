@@ -218,33 +218,31 @@ async def apagar_usuario(token: str = Depends(oauth2_esquema)):
     return {"detail": "Usuario removido com sucesso"}
 
 class AlterarDadosCliente(BaseModel):
-    email: str
-    senha: str
-    foto: UploadFile
-    nome_completo: str
-    cpf: str
-    data_nascimento: str
-    telefone: str
+    email: str | None = None
+    senha: str | None = None
+    foto: UploadFile | None = None
+    nome_completo: str | None = None
+    cpf: str | None = None
+    data_nascimento: str | None = None
+    telefone: str | None = None
 
 class AlterarDadosEmpresa(BaseModel):
-    email: str
-    senha: str
-    foto: UploadFile
-    nome_fantasia: str
-    cnpj: str
-    uf: str
-    cidade: str
-    bairro: str
-    cep: str
-    rua: str
-    numero: str
-
-class AlterarDadosUsuario(BaseModel):
-    email: str | None = None, 
-    senha: str | None = None,
+    email: str | None = None
+    senha: str | None = None
     foto: UploadFile | None = None
+    nome_fantasia: str | None = None
+    cnpj: str | None = None
+    uf: str | None = None
+    cidade: str | None = None
+    bairro: str | None = None
+    cep: str | None = None
+    rua: str | None = None
+    numero: str | None = None
 
-# TODO: Montar alteração para demais dados
+# class AlterarDadosUsuario(BaseModel):
+#     email: str | None = None, 
+#     senha: str | None = None,
+#     foto: UploadFile
 
 @app.put("/usuario/alterar_dados/cliente")
 async def editar_dados_cliente(dados: AlterarDadosCliente, token: str = Depends(oauth2_esquema)):
@@ -253,52 +251,122 @@ async def editar_dados_cliente(dados: AlterarDadosCliente, token: str = Depends(
 
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
-@app.put("/usuario/alterar_dados/empresa")
-async def editar_dados_empresa(dados: AlterarDadosEmpresa, token: str = Depends(oauth2_esquema)):
-    pass
-
-
-@app.put("/usuario/alterar_dados")
-async def editar_dados_cadastrais(dados: AlterarDadosUsuario, token: str = Depends(oauth2_esquema)):
-    """
-    Altera os dados cadastrais de um usuário.
-
-    @param email: O email novo daquele usuário, ou None caso não haja alteração
-    @param senha: A senha nova daquele usuário, ou None caso não haja alteração
-    @param foto: A nova foto daquele usuário, ou None caso não haja alteração
-    @param token: O token de acesso daquele usuário
-    """
-
-    db = database.conectar_bd()
+    cliente = crud_usuario.buscar_dados_cliente(db, usuario)
 
     if dados.email:
-        if crud_usuario.obter_usuario_por_nome(db, dados.email):
-            raise HTTPException(status_code=400, detail="E-mail já cadastrado")
-        else:
-            usuario.email = dados.email
-    
-    if dados.senha:
-        usuario.senha_hashed = auth.gerar_hash_senha(dados.senha)
-    
-    if dados.foto:
-        if (os.path.isfile(usuario.foto)):
-            # remover a foto antiga e salvar a nova
-            try:
-                os.remove(usuario.foto)
-            except Exception as e:
-                raise HTTPException(status_code=400, detail=f"Erro ao deletar foto antiga: {e}")
-        
-        try:
-            caminho_da_nova_foto = f"imagens/usuarios/{dados.foto.filename}"
-            with open(caminho_da_nova_foto, "wb") as arquivo_foto:
-                arquivo_foto.write(dados.foto.file.read())
-                usuario.foto = caminho_da_nova_foto
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=f"Falha ao salvar a foto do usuário: {e.args}")
+        if crud_usuario.verificar_se_dados_ja_cadastrados(db, dados.email):
+            raise HTTPException(status_code=400, detail="O email já está cadastrado no sistema")
+        cliente.email = dados.email
 
-    crud_usuario.atualizar_usuario(db, usuario)
+    if dados.senha:
+        cliente.senha = auth.gerar_hash_senha(dados.senha)
+
+    if dados.foto:
+        # Salvar foto e guardar path aqui
+        cliente.foto = f"imagens/usuarios/{usuario.id}.png"
+
+    if dados.nome_completo: 
+        cliente.nome_completo = dados.nome_completo
+
+    if dados.cpf:
+        cliente.cpf = dados.cpf
+
+    if dados.data_nascimento:
+        cliente.data_nascimento = dados.data_nascimento
     
-    return {"detail": "Dados alterados com sucesso"}
+    if dados.telefone:
+        cliente.telefone = dados.telefone
+
+    crud_usuario.atualizar_cliente(db, cliente)    
+
+
+@app.put("/usuario/alterar_dados/empresa")
+async def editar_dados_empresa(dados: AlterarDadosEmpresa, token: str = Depends(oauth2_esquema)):
+    db = database.conectar_bd()
+
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+
+    empresa: classe_usuario.Empresa = crud_usuario.buscar_dados_empresa(db, usuario)
+
+    if dados.email:
+        if crud_usuario.verificar_se_dados_ja_cadastrados(db, dados.email):
+            raise HTTPException(status_code=400, detail="O email já está cadastrado no sistema")
+        empresa.email = dados.email
+
+    if dados.senha:
+        empresa.senha = auth.gerar_hash_senha(dados.senha)
+
+    if dados.foto:
+        # Salvar foto e guardar path aqui
+        empresa.foto = f"imagens/usuarios/{usuario.id}.png"
+    
+    if dados.nome_fantasia:
+        empresa.nome_fantasia = dados.nome_fantasia
+
+    if dados.cnpj:
+        empresa.cnpj = dados.cnpj
+
+    if dados.uf:
+        empresa.endereco.uf = dados.uf
+
+    if dados.cidade:
+        empresa.endereco.cidade = dados.cidade
+
+    if dados.bairro:
+        empresa.endereco.bairro = dados.bairro
+
+    if dados.cep:
+        empresa.endereco.cep = dados.cep
+
+    if dados.rua:
+        empresa.endereco.rua = dados.rua
+
+    if dados.numero:
+        empresa.endereco.numero = dados.numero
+
+    crud_usuario.atualizar_empresa(db, empresa)
+
+# @app.put("/usuario/alterar_dados")
+# async def editar_dados_cadastrais(dados: AlterarDadosUsuario, token: str = Depends(oauth2_esquema)):
+#     """
+#     Altera os dados cadastrais de um usuário.
+
+#     @param email: O email novo daquele usuário, ou None caso não haja alteração
+#     @param senha: A senha nova daquele usuário, ou None caso não haja alteração
+#     @param foto: A nova foto daquele usuário, ou None caso não haja alteração
+#     @param token: O token de acesso daquele usuário
+#     """
+
+#     db = database.conectar_bd()
+
+#     if dados.email:
+#         if crud_usuario.obter_usuario_por_nome(db, dados.email):
+#             raise HTTPException(status_code=400, detail="E-mail já cadastrado")
+#         else:
+#             usuario.email = dados.email
+    
+#     if dados.senha:
+#         usuario.senha_hashed = auth.gerar_hash_senha(dados.senha)
+    
+#     if dados.foto:
+#         if (os.path.isfile(usuario.foto)):
+#             # remover a foto antiga e salvar a nova
+#             try:
+#                 os.remove(usuario.foto)
+#             except Exception as e:
+#                 raise HTTPException(status_code=400, detail=f"Erro ao deletar foto antiga: {e}")
+        
+#         try:
+#             caminho_da_nova_foto = f"imagens/usuarios/{dados.foto.filename}"
+#             with open(caminho_da_nova_foto, "wb") as arquivo_foto:
+#                 arquivo_foto.write(dados.foto.file.read())
+#                 usuario.foto = caminho_da_nova_foto
+#         except Exception as e:
+#             raise HTTPException(status_code=400, detail=f"Falha ao salvar a foto do usuário: {e.args}")
+
+#     crud_usuario.atualizar_usuario(db, usuario)
+    
+#     return {"detail": "Dados alterados com sucesso"}
 
 # TODO: Criar uma para buscar dados cliente, outra para empresa
 # TODO: Juntar foto aqui
