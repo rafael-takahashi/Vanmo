@@ -11,7 +11,9 @@ from cruds.crud_local import *
 from cruds.crud_endereco import *
 from database import *
 from fastapi import HTTPException
+import base64
 import sqlite3
+import utils
 
 # Usada no auth.py
 def obter_usuario_por_nome(db: sqlite3.Connection, nome: str) -> Usuario:
@@ -141,7 +143,7 @@ def verificar_se_dados_ja_cadastrados(db: sqlite3.Connection, email: str) -> boo
 def cadastrar_cliente(db: sqlite3.Connection, cliente: Cliente):
     cursor: sqlite3.Cursor = db.cursor()
 
-    dados = (cliente.id, cliente.nome_completo, cliente.cpf)
+    dados = (cliente.id, cliente.nome_completo, cliente.cpf, cliente.data_nascimento, cliente.telefone)
     cursor.execute(QueriesDB.query_inserir_cliente_novo, dados)
     
     db.commit()
@@ -172,7 +174,7 @@ def buscar_dados_cliente(db: sqlite3.Connection, usuario: Usuario) -> Cliente:
     dados = (usuario.id,)
     resultados = cursor.execute(QueriesDB.query_buscar_cliente, dados).fetchone()
 
-    return Cliente(usuario.id, usuario.email, usuario.senha_hashed, usuario.tipo_conta, usuario.foto, resultados[1], resultados[2])
+    return Cliente(usuario.id, usuario.email, usuario.senha_hashed, usuario.tipo_conta, usuario.foto, resultados[1], resultados[2], resultados[3], resultados[4])
 
 def buscar_dados_empresa(db: sqlite3.Connection, usuario: Usuario) -> Empresa:
     cursor: sqlite3.Cursor = db.cursor()
@@ -196,30 +198,20 @@ def buscar_empresa_por_id (db: sqlite3.Connection, id_empresa: int) -> Empresa:
     cursor: sqlite3.Cursor = db.cursor()
 
     dados = (id_empresa,)
-    # (0id, 1email, 2senha_hashed, 3tipo_conta, 4path_foto)
     resultado_usuario = cursor.execute(QueriesDB.query_buscar_usuario_por_id, dados).fetchone()
     resultado_empresa = cursor.execute(QueriesDB.query_buscar_empresa, dados).fetchone()
 
-    id_usuario = resultado_usuario[0]
+    # id_usuario = resultado_usuario[0]
     email = resultado_usuario[1]
     senha = resultado_usuario[2]
     tipo = resultado_usuario[3]
     foto = resultado_usuario[4]
 
-    # print(f"AA \nid {id} \nemail {email} \nsenha {senha} \ntipo {tipo} \nfoto {foto}")
 
     local : Local =  buscar_local_por_id(db, resultado_empresa[4])
     endereco : Endereco = buscar_endereco_por_id(db, resultado_empresa[3])
-
-    # TODO: Wtf???? Todos atributos ficam defasados por algum motivo que eu não consegui descobri ainda
-
-    # empresa = Empresa(id=id_usuario, email=email, senha_hashed=senha, 
-    #                   tipo_conta=tipo, foto=foto,
-    #                   nome_fantasia=resultado_empresa[2], cnpj=resultado_empresa[1], 
-    #                   endereco=endereco, local=local)
     
     empresa = Empresa(None, None, None, None, None, None, None, None, None)
-    # print(empresa)
     
     empresa.id = id_empresa
     empresa.email = email
@@ -232,6 +224,17 @@ def buscar_empresa_por_id (db: sqlite3.Connection, id_empresa: int) -> Empresa:
     empresa.local = local
     empresa.num_avaliacoes = resultado_empresa[5]
     empresa.soma_avaliacoes = resultado_empresa[6]
+
+    try:
+        with open(empresa.foto, "rb") as file:
+            photo_bytes = file.read()
+            photo_base64 = base64.b64encode(photo_bytes).decode("utf-8")
+            empresa.foto = photo_base64
+    except FileNotFoundError:
+        with open("imagens/imagem_perfil_padrao.png", "rb") as file:
+            photo_bytes = file.read()
+            photo_base64 = base64.b64encode(photo_bytes).decode("utf-8")
+            empresa.foto = photo_base64
 
     return empresa
 
@@ -282,12 +285,11 @@ def atualizar_avaliacao(db: sqlite3.Connection, id_usuario: int, id_empresa: int
     empresa.soma_avaliacoes += nota_nova
 
     dados = (empresa.num_avaliacoes, empresa.soma_avaliacoes, id_empresa)
-    print(f"Atualizando empresa: {dados}")
     cursor.execute(QueriesDB.query_atualizar_avaliacoes_empresa, dados)
 
     db.commit()
 
-def buscador_empresas_nome(db: sqlite3.Connection, string_busca):
+def buscador_empresas_nome(db: sqlite3.Connection, string_busca: str, pagina: int = 1):
     cursor = db.cursor()
 
     resultados = cursor.execute(QueriesDB.query_buscador_por_nome, (string_busca,)).fetchall()
@@ -298,10 +300,35 @@ def buscador_empresas_nome(db: sqlite3.Connection, string_busca):
         item: Empresa = buscar_empresa_por_id(db, resultado[0])
         item.senha_hashed = ''
         item.email = ''
-        # print(item)
         empresas.append(item)
 
-    return empresas
+    inicio_pag = 10 * (pagina - 1)
+    fim_pag = inicio_pag + 9
+
+    return empresas[inicio_pag:fim_pag]
+
+def atualizar_cliente(db: sqlite3.Connection, cliente: Cliente):
+    cursor = db.cursor()
+
+    dados = (cliente.nome_completo, cliente.cpf, cliente.data_nascimento, cliente.telefone, cliente.id)
+
+    cursor.execute(QueriesDB.query_atualizar_cliente, dados)
+
+    db.commit()
+
+    atualizar_usuario(db, cliente)
+
+def atualizar_empresa(db: sqlite3.Connection, empresa: Empresa):
+    cursor = db.cursor()
+    dados = (empresa.cnpj, empresa.nome_fantasia, empresa.id)
+
+    cursor.execute(QueriesDB.query_atualizar_empresa, dados)
+
+    # TODO: Atualizar local e endereço
+
+    db.commit()
+
+    atualizar_usuario(db, empresa)
 
 def atualizar_usuario(db: sqlite3.Connection, usuario: Usuario):
     cursor = db.cursor()

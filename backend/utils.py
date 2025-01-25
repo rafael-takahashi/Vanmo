@@ -1,5 +1,7 @@
 import re
 
+CONST_NUM_RESULTADOS_POR_PAGINA = 10
+
 def valida_coordendas(latitude: float, longitude: float) -> bool:
     """
     Valida se duas coordenadas possuem valores válidos

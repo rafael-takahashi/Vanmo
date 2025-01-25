@@ -21,7 +21,7 @@ def criar_tabelas(conexao: sqlite3.Connection):
     cursor: sqlite3.Cursor = conexao.cursor()
 
     cursor.execute("CREATE TABLE IF NOT EXISTS Usuario(id_usuario integer primary key, email, senha_hashed, tipo_conta, path_foto)")
-    cursor.execute("CREATE TABLE IF NOT EXISTS Cliente(id_usuario, nome_completo, cpf)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS Cliente(id_usuario, nome_completo, cpf, data_nascimento, telefone)")
     cursor.execute("CREATE TABLE IF NOT EXISTS Empresa(id_usuario, cnpj, nome_fantasia, id_endereco, id_local, num_avaliacoes, soma_avaliacoes)")
     cursor.execute("CREATE TABLE IF NOT EXISTS Endereco(id_endereco integer primary key, cep, rua, numero, bairro, cidade, estado)")
     cursor.execute("CREATE TABLE IF NOT EXISTS Local(id_local integer primary key, latitude, longitude, nome)")
@@ -48,14 +48,16 @@ class QueriesDB:
     query_remover_usuario = "DELETE FROM Usuario WHERE id_usuario = ?"
     query_atualizar_usuario = "UPDATE Usuario SET email=?, senha_hashed=?, path_foto=? WHERE id_usuario=?"
     
-    query_inserir_cliente_novo = "INSERT INTO Cliente (id_usuario, nome_completo, cpf) VALUES (?, ?, ?)"
+    query_inserir_cliente_novo = "INSERT INTO Cliente (id_usuario, nome_completo, cpf, data_nascimento, telefone) VALUES (?, ?, ?, ?, ?)"
     query_remover_cliente = "DELETE FROM Cliente WHERE id_usuario = ?"
     query_buscar_cliente = "SELECT * FROM Cliente WHERE id_usuario = ?"
+    query_atualizar_cliente = "UPDATE Cliente SET nome_completo=?, cpf=?, data_nascimento=?, telefone=? WHERE id_usuario = ?"
 
     query_inserir_empresa_nova = "INSERT INTO Empresa (id_usuario, cnpj, nome_fantasia, id_endereco, id_local, num_avaliacoes, soma_avaliacoes) VALUES (?, ?, ?, ?, ?, ?, ?)"
     query_remover_empresa = "DELETE FROM Empresa WHERE id_usuario = ?"
     query_buscar_empresa = "SELECT * FROM Empresa WHERE id_usuario = ?"
     query_atualizar_avaliacoes_empresa = "UPDATE Empresa SET num_avaliacoes = ?, soma_avaliacoes = ? WHERE id_usuario = ?"
+    query_atualizar_empresa = "UPDATE Empresa SET cpnj = ?, nome_fantasia = ? WHERE id_usuario = ?"
 
     query_inserir_local_novo = "INSERT INTO Local (latitude, longitude, nome) VALUES (?, ?, ?) RETURNING id_local"
     query_buscar_local_por_id = "SELECT * FROM Local WHERE id_local = ?"
