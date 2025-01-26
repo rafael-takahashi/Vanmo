@@ -1,15 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { MagnifyingGlass, MapPin, User } from '@phosphor-icons/react'
-import { useQuery } from '@tanstack/react-query'
 import { format, parseISO } from 'date-fns'
 import { CalendarIcon } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 
-import { getCities } from '@/api/getCities'
-
-import { LocatioInput } from './location-input'
+import LocationInput from './location-input'
 import { Button } from './ui/button'
 import { Calendar } from './ui/calendar'
 import { Input } from './ui/input'
@@ -23,7 +20,7 @@ const SearchSchema = z.object({
   numberPassengers: z.string(),
 })
 
-type SearchForm = z.infer<typeof SearchSchema>
+export type SearchForm = z.infer<typeof SearchSchema>
 
 export default function SearchArea() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -34,7 +31,7 @@ export default function SearchArea() {
   const dateTo = searchParams.get('dateTo')
   const numberPassengers = searchParams.get('numberPassengers')
 
-  const { register, handleSubmit, control } = useForm<SearchForm>({
+  const { register, handleSubmit, control, setValue } = useForm<SearchForm>({
     resolver: zodResolver(SearchSchema),
     defaultValues: {
       from: from ?? '',
@@ -93,13 +90,6 @@ export default function SearchArea() {
     })
   }
 
-  const { data } = useQuery({
-    queryKey: ['cities'],
-    queryFn: getCities,
-  })
-
-  console.log(data)
-
   return (
     <form
       onSubmit={handleSubmit(handleSearch)}
@@ -115,13 +105,7 @@ export default function SearchArea() {
           >
             Partida
           </label>
-          {/* <Input
-            type="text"
-            className="input-bordered h-[96px] !text-xl !pt-8 !pl-10 !w-[230px]"
-            placeholder="Insira uma cidade"
-            {...register('from')}
-          /> */}
-          <LocatioInput />
+          <LocationInput register={register} setValue={setValue} field="from" />
           <MapPin size={32} className="absolute top-11 left-1" />
         </div>
         <div className="relative">
@@ -131,13 +115,7 @@ export default function SearchArea() {
           >
             Destino
           </label>
-          {/* <Input
-            type="text"
-            className="input-bordered h-[96px] !text-xl !pt-8 !pl-10 !w-[230px]"
-            placeholder="Insira uma cidade"
-            {...register('to')}
-          /> */}
-          <LocatioInput />
+          <LocationInput register={register} setValue={setValue} field="to" />
           <MapPin size={32} className="absolute top-11 left-1" />
         </div>
         <div className="w-[600px] bg-white rounded-md flex flex-col">

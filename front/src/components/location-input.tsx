@@ -1,12 +1,15 @@
+import { useQuery } from '@tanstack/react-query'
 import { Check, ChevronsUpDown } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { UseFormRegister, UseFormSetValue } from 'react-hook-form'
+import { useSearchParams } from 'react-router'
 
+import { getCities } from '@/api/getCities'
 import { Button } from '@/components/ui/button'
 import {
   Command,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
@@ -17,76 +20,113 @@ import {
 } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 
-const frameworks = [
-  {
-    value: 'next.js',
-    label: 'Next.js',
-  },
-  {
-    value: 'sveltekit',
-    label: 'SvelteKit',
-  },
-  {
-    value: 'nuxt.js',
-    label: 'Nuxt.js',
-  },
-  {
-    value: 'remix',
-    label: 'Remix',
-  },
-  {
-    value: 'astro',
-    label: 'Astro',
-  },
-]
+import { SearchForm } from './search-area'
 
-export function LocatioInput() {
+interface LocationInputProps {
+  register: UseFormRegister<SearchForm>
+  setValue: UseFormSetValue<SearchForm>
+  field: 'from' | 'to'
+}
+
+export default function LocationInput({
+  register,
+  setValue,
+  field,
+}: LocationInputProps) {
   const [open, setOpen] = useState(false)
-  const [value, setValue] = useState('')
+  const [value, setValueLocal] = useState('')
+  const [searchParams] = useSearchParams()
+
+  const from = searchParams.get('from')
+  const to = searchParams.get('to')
+
+  // Carregar a lista de cidades com react-query
+  const { data } = useQuery({
+    queryKey: ['cities'],
+    queryFn: getCities,
+  })
+
+  // Tratamento para remover as aspas extras de cada cidade
+  const citiesWithoutQuotes = data
+    ? data.map((city) => city.replace(/"/g, '')) // Remove todas as aspas duplas
+    : []
+
+  // Filtra as cidades com base no input do usuário
+  const filteredCities = citiesWithoutQuotes.filter((city) =>
+    city.toLowerCase().includes(value.toLowerCase()),
+  )
+
+  useEffect(() => {
+    if (field === 'from' && from) {
+      setValue(field, from)
+      setValueLocal(from)
+    }
+    if (field === 'to' && to) {
+      setValue(field, to)
+      setValueLocal(to)
+    }
+  }, [from, to, field, setValue])
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="h-[96px] !text-xl !pt-8 !pl-12 !w-[230px] bg-white"
-        >
-          {value
-            ? frameworks.find((framework) => framework.value === value)?.label
-            : 'Insira uma cidade'}
-          <ChevronsUpDown className="opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
-        <Command>
-          <CommandInput placeholder="Procure uma cidade..." />
-          <CommandList>
-            <CommandEmpty>Cidade não encontrada.</CommandEmpty>
-            <CommandGroup>
-              {frameworks.map((framework) => (
-                <CommandItem
-                  key={framework.value}
-                  value={framework.value}
-                  onSelect={(currentValue) => {
-                    setValue(currentValue === value ? '' : currentValue)
-                    setOpen(false)
-                  }}
-                >
-                  {framework.label}
-                  <Check
-                    className={cn(
-                      'ml-auto',
-                      value === framework.value ? 'opacity-100' : 'opacity-0',
-                    )}
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+    <>
+      {data ? (
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className="h-[96px] !text-lg !pt-8 !pl-12 !w-[230px] flex justify-between bg-white"
+            >
+              {value || 'Insira uma cidade'}
+              <ChevronsUpDown className="opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[200px] p-0">
+            <Command>
+              {/* Register aplicado no input */}
+              <input
+                type="text"
+                placeholder="Procure uma cidade..."
+                {...register(field)} // Vincula o campo ao react-hook-form
+                value={value}
+                onChange={(e) => setValueLocal(e.target.value)} // Atualiza o valor local
+                className="w-full p-2 border rounded"
+              />
+              <CommandList>
+                <CommandEmpty>Cidade não encontrada.</CommandEmpty>
+                <CommandGroup>
+                  {filteredCities.length > 0 ? (
+                    filteredCities.slice(0, 10).map((city, index) => (
+                      <CommandItem
+                        key={index}
+                        value={city}
+                        onSelect={(currentValue) => {
+                          setValueLocal(currentValue) // Atualiza o valor local
+                          setValue(field, currentValue) // Registra o valor no formulário
+                          setOpen(false) // Fecha o popover após seleção
+                        }}
+                      >
+                        {city}
+                        <Check
+                          className={cn(
+                            'ml-auto',
+                            value === city ? 'opacity-100' : 'opacity-0',
+                          )}
+                        />
+                      </CommandItem>
+                    ))
+                  ) : (
+                    <CommandEmpty>Cidade não encontrada.</CommandEmpty>
+                  )}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+      ) : (
+        <p>Carregando...</p>
+      )}
+    </>
   )
 }
