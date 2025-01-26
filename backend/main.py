@@ -132,18 +132,23 @@ class CadastroEmpresa(BaseModel):
     rua: str
     numero: str
 
-def registrar_novo_usuario(dados: CadastroUsuario) -> int:
+def registrar_novo_usuario(dados: CadastroUsuario) -> tuple[int, int]:
 
-    # TODO: Validar email
+    if not valida_email(dados.email):
+        raise HTTPException(status_code=400, detail="Email inválido")
+
+    db = database.conectar_bd()
 
     usuario = classe_usuario.Usuario(dados.email, dados.senha, dados.tipo_conta, None)
-    db = database.conectar_bd()
 
     if crud_usuario.obter_usuario_por_nome(db, usuario.email):
         raise HTTPException(status_code=400, detail="Usuario já existe")
-    
+
     usuario.senha_hashed = auth.gerar_hash_senha(usuario.senha_hashed)
     id_usuario = crud_usuario.criar_usuario(db, usuario)
+
+    db.close()
+
     return id_usuario, usuario.senha_hashed
 
 @app.post("/usuario/cadastro/empresa")
@@ -152,12 +157,14 @@ async def registrar_empresa(dados: CadastroEmpresa):
     cadastro_usuario = CadastroUsuario(
         email=dados.email,
         senha=dados.senha,
-        tipo_conta="cliente"
+        tipo_conta="empresa"
     )
     
-    id_usuario, senha = registrar_novo_usuario(cadastro_usuario)
+    # id_usuario, senha = registrar_novo_usuario(cadastro_usuario)
 
     db = database.conectar_bd()
+
+    dados.senha = auth.gerar_hash_senha(dados.senha)
 
     if not valida_uf(dados.uf):
         raise HTTPException(status_code=400, detail="UF inválido, formato necessário: 'PR', 'SP', 'RJ', etc.")
@@ -177,10 +184,10 @@ async def registrar_empresa(dados: CadastroEmpresa):
 
     local: classe_local.Local = classe_local.Local(latitude, longitude, dados.nome_fantasia)
 
-    empresa: classe_usuario.Empresa = classe_usuario.Empresa(id=id_usuario, email=dados.email, senha_hashed=senha, tipo_conta="empresa", foto="",
+    empresa: classe_usuario.Empresa = classe_usuario.Empresa(0, email=dados.email, senha_hashed=dados.senha, tipo_conta="empresa", foto="",
                                                              nome_fantasia=dados.nome_fantasia, cnpj=dados.cnpj, endereco=endereco, local=local, telefone=dados.telefone)
     
-    empresa.id = id_usuario
+    empresa.id = 0
 
     crud_usuario.cadastrar_empresa(db, empresa)
 
@@ -195,16 +202,16 @@ async def registrar_cliente(dados: CadastroCliente):
         tipo_conta="cliente"
     )
 
-    id_usuario, senha = registrar_novo_usuario(cadastro_usuario)
+    # id_usuario, senha = registrar_novo_usuario(cadastro_usuario)
 
     db = database.conectar_bd()
 
     # OBS: Assim como o CNPJ, optamos por deixar essa implementação inativa pra apresentação por motivos de testagem
     # valida_cpf(dados.cpf)
 
-    cliente: classe_usuario.Cliente = classe_usuario.Cliente(id_usuario, dados.email, senha, "cliente", "", dados.nome_completo, dados.cpf, dados.data_nascimento, dados.telefone)
+    dados.senha = auth.gerar_hash_senha(dados.senha)
 
-    cliente.id = id_usuario
+    cliente: classe_usuario.Cliente = classe_usuario.Cliente(0, dados.email, dados.senha, "cliente", "", dados.nome_completo, dados.cpf, dados.data_nascimento, dados.telefone)
 
     crud_usuario.cadastrar_cliente(db, cliente)
     
@@ -935,4 +942,5 @@ async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa, token: str = De
 
 @app.get("/cidades/lista_de_cidades")
 async def busca_lista_cidades():
+    global string_cidades
     return string_cidades
