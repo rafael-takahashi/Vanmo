@@ -911,20 +911,22 @@ async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa, token: str = De
     @param criterio:
     @param token: O token de acesso do usuário
     """
-
-    # Não é necessário autenticar para pesquisar empresas
-    # db = database.conectar_bd()
-    # usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+    empresas = set()
 
     if dados.data_de_partida:
-        pass
+        resultados = crud_usuario.buscar_empresa_por_data(dados.data_de_partida)
+        for resultado in resultados:
+            empresas.add(resultado)
 
     if dados.qtd_passageiros:
-        pass
+        resultados = crud_usuario.buscar_empresa_por_passageiros(dados.qtd_passageiros)
+        for resultado in resultados:
+            empresas.add(resultado) 
 
     if dados.latitude_partida and dados.longitude_partida:
         pass
     
     # TODO: paginação
+    # TODO: lógica de combinação dos critérios
 
     pass
