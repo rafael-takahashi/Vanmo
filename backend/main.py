@@ -146,7 +146,8 @@ def registrar_novo_usuario(dados: CadastroUsuario) -> int:
 
 @app.post("/usuario/cadastro/empresa")
 async def registrar_empresa(dados: CadastroEmpresa):
-    id_usuario, senha = registrar_novo_usuario(dados.email, dados.senha, "empresa", "")
+    dados_usuario: CadastroUsuario = CadastroUsuario(email=dados.email, senha=dados.senha, tipo_conta="empresa")
+    id_usuario, senha = registrar_novo_usuario(dados_usuario)
 
     db = database.conectar_bd()
 
@@ -179,7 +180,8 @@ async def registrar_empresa(dados: CadastroEmpresa):
 
 @app.post("/usuario/cadastro/cliente")
 async def registrar_cliente(dados: CadastroCliente):
-    id_usuario, senha = registrar_novo_usuario(dados.email, dados.senha, "cliente", "")
+    dados_usuario: CadastroUsuario = CadastroUsuario(email=dados.email, senha=dados.senha, tipo_conta="cliente")
+    id_usuario, senha = registrar_novo_usuario(dados_usuario)
 
     db = database.conectar_bd()
 
