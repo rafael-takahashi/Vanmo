@@ -93,7 +93,7 @@ export default function SearchArea() {
   return (
     <form
       onSubmit={handleSubmit(handleSearch)}
-      className="w-full flex flex-col gap-4 bg-primary-foreground rounded-md p-8 mt-8"
+      className="w-full flex flex-col gap-4 bg-primary-foreground rounded-md p-8 mt-8 shadow-xl"
     >
       <h2 className="text-background ml-4 text-2xl font-bold">Fretamento</h2>
 
@@ -210,13 +210,13 @@ export default function SearchArea() {
         </div>
       </div>
 
-      <Button className="w-[180px] h-auto ml-auto flex items-center justify-center py-2 px-4">
+      <Button className="h-auto ml-auto flex items-center justify-center py-2 px-4">
         <MagnifyingGlass
           className="text-primary-foreground"
           weight="bold"
-          style={{ width: 24, height: 24 }}
+          style={{ width: 18, height: 18 }}
         />
-        <span className="text-xl font-bold">BUSCAR</span>
+        <span className="text-base font-bold">BUSCAR</span>
       </Button>
     </form>
   )
