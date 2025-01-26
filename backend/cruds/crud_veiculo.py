@@ -7,8 +7,11 @@ from classes.classe_usuario import *
 from database import *
 from copy import deepcopy
 from classes import classe_veiculo, classe_calendario
+import utils
 import sqlite3
 import datetime
+import os
+import base64
 
 def criar_veiculo(db: sqlite3.Connection, veiculo: classe_veiculo.Veiculo) -> int:
     cursor = db.cursor()
@@ -19,16 +22,25 @@ def criar_veiculo(db: sqlite3.Connection, veiculo: classe_veiculo.Veiculo) -> in
     id_veiculo: int = cursor.lastrowid
     db.commit()
 
+    if veiculo.caminho_foto is not None:
+        path_foto = f"imagens/veiculos/{veiculo.id_empresa}-{id_veiculo}.png"
+        utils.salva_foto(path_foto, veiculo.caminho_foto)
+
     return id_veiculo
 
 def remover_veiculo(db: sqlite3.Connection, id_veiculo: int):
     cursor = db.cursor()
     dados = (id_veiculo,)
+    
+    obj = buscar_veiculo(db, id_veiculo)
+
+    if os.path.exists(obj.caminho_foto):
+        os.remove(obj.caminho_foto)
 
     cursor.execute(QueriesDB.query_remover_veiculo, id_veiculo)
 
 # Apenas um específico
-def buscar_veiculo(db: sqlite3.Connection, id_veiculo: int) -> classe_veiculo.Veiculo | None: 
+def buscar_veiculo(db: sqlite3.Connection, id_veiculo: int) -> classe_veiculo.Veiculo: 
     cursor = db.cursor()
     dados = (id_veiculo,)
 
@@ -41,6 +53,8 @@ def buscar_veiculo(db: sqlite3.Connection, id_veiculo: int) -> classe_veiculo.Ve
     veiculo.adicionar_custos(resultado[5], resultado[6])
     veiculo.adicionar_dados(resultado[7], resultado[8], resultado[9], resultado[4])
 
+    veiculo.caminho_foto = utils.carrega_foto_base64(veiculo.caminho_foto, True)
+
     return veiculo
 
 # Todos os veículos da empresa
@@ -50,15 +64,15 @@ def listar_veiculos(db: sqlite3.Connection, id_empresa: int) -> list[classe_veic
 
     lista_resultados = cursor.execute(QueriesDB.query_buscar_veiculos_empresa, dados).fetchall()
 
-    print(f"Resultados: {lista_resultados}")
-
     veiculos = []
 
     for resultado in lista_resultados:
-        veiculo = classe_veiculo.Veiculo(resultado[0], resultado[1], resultado[2], resultado[3])
-        veiculo.adicionar_custos(resultado[5], resultado[6])
-        veiculo.adicionar_dados(resultado[7], resultado[8], resultado[9], resultado[4])
+        # veiculo = classe_veiculo.Veiculo(resultado[0], resultado[1], resultado[2], resultado[3])
+        # veiculo.adicionar_custos(resultado[5], resultado[6])
+        # veiculo.adicionar_dados(resultado[7], resultado[8], resultado[9], resultado[4])
 
+        veiculo = buscar_veiculo(db, resultado[0])
+        
         veiculos.append(deepcopy(veiculo))
 
     return veiculos
@@ -66,6 +80,8 @@ def listar_veiculos(db: sqlite3.Connection, id_empresa: int) -> list[classe_veic
 def atualizar_veiculo(db: sqlite3.Connection, veiculo: classe_veiculo.Veiculo):
     cursor = db.cursor()
     dados = (veiculo.id_empresa, veiculo.nome_veiculo, veiculo.placa_veiculo, veiculo.capacidade, veiculo.custo_por_km, veiculo.custo_base, veiculo.caminho_foto, veiculo.cor, veiculo.ano_fabricacao, veiculo.id_veiculo)
+
+    utils.salva_foto(f"imagens/veiculos/{veiculo.id_empresa}-{veiculo.id_veiculo}.png", veiculo.caminho_foto)
 
     cursor.execute(QueriesDB.query_atualizar_veiculo, dados)
 

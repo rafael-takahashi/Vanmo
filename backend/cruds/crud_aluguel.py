@@ -9,7 +9,7 @@ from database import *
 from cruds.crud_local import buscar_local_por_id
 import sqlite3
 
-def criar_aluguel(db: sqlite3.Connection, aluguel: Aluguel): #... outros argumentos vêm aqui ):
+def criar_aluguel(db: sqlite3.Connection, aluguel: Aluguel):
     cursor: sqlite3.Cursor = db.cursor()
 
     dados = (aluguel.id_empresa, aluguel.id_cliente, aluguel.id_veiculo, aluguel.valor_total, aluguel.estado_aluguel, 
