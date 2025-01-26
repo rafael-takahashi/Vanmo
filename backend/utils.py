@@ -195,16 +195,8 @@ def valida_foto(arquivo: UploadFile, tamanho_maximo: int = 25 * 1024 * 1024) -> 
     return True
 
 def retorna_todas_cidades(lista_cidades: list[Cidade]) -> str:
-    """
-    Retorna uma string com todas as cidades no formato:
-    { "Maringá, PR", "Curitiba, PR", ... }
     
-    @param lista_cidades: Lista de objetos Cidade
-    @return: String formatada com as cidades e suas UFs
-    """
-    cidades_formatadas = [f'"{cidade.nome}, {cidade.uf}"' for cidade in lista_cidades]
-    return "{ " + ", ".join(cidades_formatadas) + " }"
-
+    return [f'"{cidade.nome}, {cidade.uf}"' for cidade in lista_cidades]
 
 def carrega_foto_base64(path_foto, veiculo=False) -> str:
     try:

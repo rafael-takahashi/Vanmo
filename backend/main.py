@@ -17,7 +17,7 @@ from cruds import crud_aluguel, crud_usuario, crud_veiculo, crud_local
 from utils import *
 
 lista_cidades = []
-string_cidades = ""
+objeto_cidades = []
 
 def loop_diario():
     """
@@ -39,7 +39,7 @@ async def iniciar_app(app: FastAPI):
     """
         Função chamada ao inicializar o sistema
     """
-    global string_cidades
+    global objeto_cidades
 
     # Criar tabelas no banco de dados caso elas não existam
     conexao = database.conectar_bd()
@@ -50,7 +50,7 @@ async def iniciar_app(app: FastAPI):
 
     lista_cidades = carrega_cidades()
 
-    string_cidades = retorna_todas_cidades(lista_cidades)
+    objeto_cidades = retorna_todas_cidades(lista_cidades)
 
     thread = threading.Thread(target=loop_diario)
     thread.start()
@@ -964,5 +964,5 @@ async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa, token: str = De
 
 @app.get("/cidades/lista_de_cidades")
 async def busca_lista_cidades():
-    global string_cidades
-    return string_cidades
+    global objeto_cidades
+    return objeto_cidades
