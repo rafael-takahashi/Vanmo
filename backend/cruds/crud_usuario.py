@@ -22,8 +22,6 @@ def obter_usuario_por_nome(db: sqlite3.Connection, nome: str) -> Usuario:
 
     cursor: sqlite3.Cursor = db.cursor()
 
-    # usuario = Usuario()
-
     resultados = cursor.execute(QueriesDB.query_buscar_usuario_por_email, (nome,)).fetchone()
 
     if not resultados:
@@ -31,9 +29,10 @@ def obter_usuario_por_nome(db: sqlite3.Connection, nome: str) -> Usuario:
 
     (id_usuario, email_usuario, senha_usuario, tipo_conta, path_foto) = resultados
 
+    cursor.close()
     return Usuario(email_usuario, senha_usuario, tipo_conta, path_foto, id=id_usuario)
 
-def criar_usuario(db: sqlite3.Connection, usuario: Usuario):
+def criar_usuario(db: sqlite3.Connection, usuario: Usuario) -> int:
 
     path_foto = ""
     
@@ -45,9 +44,8 @@ def criar_usuario(db: sqlite3.Connection, usuario: Usuario):
     cursor: sqlite3.Cursor = db.cursor()
 
     dados = (usuario.email, usuario.senha_hashed, usuario.tipo_conta, path_foto)
-    id_usuario = cursor.execute(QueriesDB.query_inserir_usuario_novo, dados)
-    
-    db.commit()
+    cursor.execute(QueriesDB.query_inserir_usuario_novo, dados)
+    id_usuario = cursor.lastrowid
     return id_usuario
 
 def __remover_empresa(db: sqlite3.Connection, usuario: Usuario):
@@ -147,14 +145,22 @@ def verificar_se_dados_ja_cadastrados(db: sqlite3.Connection, email: str) -> boo
     return True
 
 def cadastrar_cliente(db: sqlite3.Connection, cliente: Cliente):
+    
+    cliente.foto = None
+    id_usr = criar_usuario(db, cliente)
+    
     cursor: sqlite3.Cursor = db.cursor()
 
-    dados_cliente = (cliente.id, cliente.nome_completo, cliente.cpf, cliente.data_nascimento, cliente.telefone)
+    dados_cliente = (id_usr, cliente.nome_completo, cliente.cpf, cliente.data_nascimento, cliente.telefone)
     cursor.execute(QueriesDB.query_inserir_cliente_novo, dados_cliente)
     
     db.commit()
 
 def cadastrar_empresa(db: sqlite3.Connection, empresa: Empresa):
+    
+    empresa.foto = None
+    id_usr = criar_usuario(db, empresa)
+    
     cursor: sqlite3.Cursor = db.cursor()
 
     dados_local = (empresa.local.latitude, empresa.local.longitude, "sede")
@@ -168,11 +174,12 @@ def cadastrar_empresa(db: sqlite3.Connection, empresa: Empresa):
     id_endereco = cursor.execute(QueriesDB.query_inserir_endereco_novo, dados_endereco).fetchone()
     id_endereco = id_endereco[0]
 
-    dados = (empresa.id, empresa.cnpj, empresa.nome_fantasia, id_endereco, id_local, 0, 0)
+    dados = (id_usr, empresa.cnpj, empresa.nome_fantasia, id_endereco, id_local, 0, 0)
 
     cursor.execute(QueriesDB.query_inserir_empresa_nova, dados)
-    
+
     db.commit()
+
 
 def buscar_dados_cliente(db: sqlite3.Connection, usuario: Usuario) -> Cliente:
     cursor: sqlite3.Cursor = db.cursor()
