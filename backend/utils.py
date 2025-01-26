@@ -182,6 +182,7 @@ def valida_foto(arquivo: UploadFile, tamanho_maximo: int = 25 * 1024 * 1024) -> 
     """
     extensao_permitida = "image/png"
     if arquivo.content_type != extensao_permitida:
+        # OBS: Aqui a gente levanta uma exceção pra indicar melhor a mensagem de erro com o que tá errado
         raise HTTPException(status_code=400, detail="Arquivo inválido. Apenas imagens PNG são permitidas.")
 
     arquivo.file.seek(0, os.SEEK_END)

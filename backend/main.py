@@ -30,7 +30,6 @@ async def iniciar_app(app: FastAPI):
     # TODO: Função que roda na inicialização do sistema e uma vez ao dia atualizando os status dos aluguéis
     # que já passaram das datas de vencimento
 
-    # TODO: Função que carrega a tabela de cidades brasileiras na memória
     lista_cidades = carrega_cidades()
 
     string_cidades = retorna_todas_cidades(lista_cidades)
@@ -160,21 +159,21 @@ async def registrar_empresa(dados: CadastroEmpresa):
 
     db = database.conectar_bd()
 
+    if not valida_uf(dados.uf):
+        raise HTTPException(status_code=400, detail="UF inválido, formato necessário: 'PR', 'SP', 'RJ', etc.")
+
+    if not valida_cidade(dados.cidade):
+        raise HTTPException(status_code=400, detail="Nome da cidade inválido")
+
     endereco: classe_endereco.Endereco = classe_endereco.Endereco(dados.uf, dados.cidade, dados.bairro, dados.cep, 
                                                                   dados.rua, dados.numero)
 
-    # TODO: Validar UF
+    latitude, longitude = busca_latitude_longitude_de_cidade(dados.cidade, lista_cidades)
 
-    # TODO: Validar cidade
+    # OBS: Aqui entraria a validação de cnpj com o formato certinho e os dígitos verificadores
+    # mas assim como no CPF, nós decidimos não deixar isso em efeito para a demonstração inicial
 
-    # TODO: Buscar latitude e longitude da empresa aqui
-
-    # TODO: Validar CNPJ
-
-    # TODO: Revisar como é feita a passagem da senha ao criar a empresa
-
-    latitude = 0
-    longitude = 0
+    # valida_cnpj(dados.cnpj)
 
     local: classe_local.Local = classe_local.Local(latitude, longitude, dados.nome_fantasia)
 
@@ -200,9 +199,8 @@ async def registrar_cliente(dados: CadastroCliente):
 
     db = database.conectar_bd()
 
-    # TODO: Validar CPF
-
-    # TODO: Revisar como é feita a passagem da senha ao criar o cliente
+    # OBS: Assim como o CNPJ, optamos por deixar essa implementação inativa pra apresentação por motivos de testagem
+    # valida_cpf(dados.cpf)
 
     cliente: classe_usuario.Cliente = classe_usuario.Cliente(id_usuario, dados.email, senha, "cliente", "", dados.nome_completo, dados.cpf, dados.data_nascimento, dados.telefone)
 
@@ -269,7 +267,7 @@ async def editar_dados_cliente(dados: AlterarDadosCliente, token: str = Depends(
 
     if dados.foto:
         
-        # TODO: Validar foto
+        valida_foto(dados.foto)
 
         path_foto = f"imagens/usuarios/{usuario.id}.png"
         salva_foto(path_foto, dados.foto)
@@ -305,7 +303,8 @@ async def editar_dados_empresa(dados: AlterarDadosEmpresa, token: str = Depends(
         empresa.senha = auth.gerar_hash_senha(dados.senha)
 
     if dados.foto:
-        # TODO: Validar foto
+        
+        valida_foto(dados.foto)
 
         path_foto = f"imagens/usuarios/{usuario.id}.png"
         salva_foto(path_foto, dados.foto)
@@ -455,10 +454,8 @@ async def buscar_dados_proposta(dados: IdProposta, token: str = Depends(oauth2_e
 class CriarProposta(BaseModel):
     id_empresa: int
     id_veiculo: int
-    latitude_partida: float
-    longitude_partida: float
-    latitude_chegada: float
-    longitude_chegada: float
+    cidade_saida: str
+    cidade_chegada: str
     distancia_extra_km: float
     data_saida: datetime.date
     data_chegada: datetime.date
@@ -480,20 +477,24 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
     @param token: O token de acesso do usuário
     """
 
-    id_empresa = dados.id_empresa
-    id_veiculo = dados.id_veiculo
-    latitude_partida = dados.latitude_partida
-    longitude_partida = dados.longitude_partida
-    latitude_chegada = dados.latitude_chegada
-    longitude_chegada = dados.longitude_chegada
-    distancia_extra_km = dados.distancia_extra_km
-    data_saida = data_saida
-    data_chegada = data_chegada
-
-    # TODO: Alterar TUDO que usa latitude e longitude para funcionar com o arquivo de cidades
-
     db = database.conectar_bd()
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+
+    id_empresa = dados.id_empresa
+    id_veiculo = dados.id_veiculo
+
+    if not valida_cidade(dados.cidade_saida):
+        raise HTTPException(status_code=400, detail="Cidade de partida inválida")
+
+    if not valida_cidade(dados.cidade_chegada):
+        raise HTTPException(status_code=400, detail="Cidade de chegada inválida")
+    
+    latitude_partida, longitude_partida = busca_latitude_longitude_de_cidade(dados.cidade_saida)
+
+    latitude_chegada, longitude_chegada = busca_latitude_longitude_de_cidade(dados.cidade_chegada)
+
+    data_saida = data_saida
+    data_chegada = data_chegada
 
     if usuario.tipo_conta != "cliente":
         raise HTTPException(status_code=400, detail="Tipo de usuário não é cliente")
@@ -504,8 +505,10 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
     if not crud_veiculo.verificar_disponibilidade_veiculo(db, dados.id_veiculo, dados.data_saida, dados.data_chegada):
         raise HTTPException(status_code=400, detail="Veículo não disponível para o período escolhido")
 
-    if (not valida_coordendas(dados.latitude_partida, dados.longitude_partida)) or (not valida_coordendas(dados.latitude_chegada, dados.longitude_chegada)):
-        raise HTTPException(status_code=400, detail="Coordenadas inválidas")
+    # OBS: Como as coordenadas são internas da cidade agora, não é mais necessária essa validação
+
+    # if (not valida_coordendas(dados.latitude_partida, dados.longitude_partida)) or (not valida_coordendas(dados.latitude_chegada, dados.longitude_chegada)):
+    #     raise HTTPException(status_code=400, detail="Coordenadas inválidas")
     
     if (dados.data_chegada > dados.data_saida):
         raise HTTPException(status_code=400, detail="Datas inválidas: data de chegada anterior a data de saída")
@@ -517,13 +520,9 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
     aluguel: classe_aluguel.Aluguel = classe_aluguel.Aluguel(None, usuario.id, dados.id_empresa, dados.id_veiculo)
     aluguel.adicionar_datas(dados.data_saida, dados.data_chegada)
 
-    # TODO: verficar se o local já existe
-    # TODO: pensar numa forma para adicionar o nome no local
-    # TODO: verificar se veículo tem valor por km
-
-    local_partida: classe_local.Local = classe_local.Local(dados.latitude_partida, dados.longitude_partida)
+    local_partida: classe_local.Local = classe_local.Local(latitude_partida, longitude_partida)
     local_partida.id = crud_local.criar_local(db, local_partida)
-    local_chegada: classe_local.Local = classe_local.Local(dados.latitude_chegada, dados.longitude_chegada)
+    local_chegada: classe_local.Local = classe_local.Local(latitude_chegada, longitude_chegada)
     local_chegada.id = crud_local.criar_local(db, local_chegada)
 
     aluguel.adicionar_locais(local_partida, local_chegada)
@@ -683,7 +682,7 @@ async def editar_veiculo(dados: EditarVeiculo, token: str = Depends(oauth2_esque
 
     if dados.foto:
 
-        # TODO: Validar a foto
+        valida_foto(dados.foto)
 
         caminho_da_nova_foto = f"imagens/veiculos/{veiculo.id_empresa}-{veiculo.id_veiculo}.png"
         salva_foto(caminho_da_nova_foto, dados.foto)
@@ -934,4 +933,4 @@ async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa, token: str = De
 
 @app.get("/cidades/lista_de_cidades")
 async def busca_lista_cidades():
-    return lista_cidades
+    return string_cidades
