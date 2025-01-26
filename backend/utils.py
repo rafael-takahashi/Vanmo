@@ -48,7 +48,7 @@ def valida_placa(placa: str) -> bool:
 
 def carrega_cidades() -> list[Cidade]:
     lista_cidades = []
-    with open('latitude-longitude-cidades.csv', mode='r') as tabela:
+    with open('latitude-longitude-cidades.csv', mode='r', encoding='utf-8') as tabela:
         leitor = csv.reader(tabela,  delimiter=';')
         next(leitor)
 

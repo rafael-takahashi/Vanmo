@@ -704,8 +704,8 @@ class RespostaVeiculo(BaseModel):
     nome_veiculo: str
     placa_veiculo: str
 
-    calendario_disponibilidade: classe_calendario.Calendario
-
+    datas_indisponiveis: list[datetime.date]
+    
     custo_por_km: float
     custo_base: float
     
@@ -732,7 +732,7 @@ async def buscar_dados_veiculo(dados: IdVeiculo, token: str = Depends(oauth2_esq
     veiculo = crud_veiculo.buscar_veiculo(db, id_veiculo)
 
     response_data = RespostaVeiculo(id_veiculo=veiculo.id_veiculo, nome_veiculo=veiculo.nome_veiculo, placa_veiculo=veiculo.placa_veiculo,
-                                    calendario_disponibilidade=veiculo.calendario_disponibilidade, custo_por_km=veiculo.custo_por_km,
+                                    datas_indisponiveis=veiculo.calendario_disponibilidade.datas_indisponiveis, custo_por_km=veiculo.custo_por_km,
                                     custo_base=veiculo.custo_base, foto=veiculo.caminho_foto, cor=veiculo.cor,
                                     ano_fabricacao=veiculo.ano_fabricacao, capacidade=veiculo.capacidade)
 
