@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { LockKey, SignIn, User } from '@phosphor-icons/react'
 import { useMutation } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
@@ -11,17 +12,28 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 const loginSchema = z.object({
-  email: z.string().email().nonempty(),
-  password: z.string().nonempty(),
+  email: z.string().email('E-mail é inválido').nonempty('E-mail é obrigatório'),
+  password: z.string().nonempty('Senha é obrigatória'),
 })
 
 type loginForm = z.infer<typeof loginSchema>
 
 export function Login() {
   const navigate = useNavigate()
-  const { register, handleSubmit } = useForm<loginForm>({
+  const { 
+    register, 
+    handleSubmit, 
+    formState: { errors },
+  } = useForm<loginForm> ({
     resolver: zodResolver(loginSchema),
   })
+
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      const firstError = Object.values(errors)[0];
+      toast.error(firstError?.message);
+    }
+  }, [errors])
 
   const { mutateAsync: signInAccount } = useMutation({
     mutationFn: signIn,

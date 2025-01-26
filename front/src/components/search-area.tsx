@@ -6,6 +6,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 
+import { LocatioInput } from './location-input'
 import { Button } from './ui/button'
 import { Calendar } from './ui/calendar'
 import { Input } from './ui/input'
@@ -41,6 +42,8 @@ export default function SearchArea() {
     },
   })
 
+  const url = window.location.pathname
+
   async function handleSearch({
     from,
     to,
@@ -48,7 +51,9 @@ export default function SearchArea() {
     dateTo,
     numberPassengers,
   }: SearchForm) {
-    navigate('/search')
+    if (!url.startsWith('/empresa')) {
+      navigate('/search')
+    }
 
     setSearchParams((state) => {
       if (from) {
@@ -100,12 +105,13 @@ export default function SearchArea() {
           >
             Partida
           </label>
-          <Input
+          {/* <Input
             type="text"
             className="input-bordered h-[96px] !text-xl !pt-8 !pl-10 !w-[230px]"
             placeholder="Insira uma cidade"
             {...register('from')}
-          />
+          /> */}
+          <LocatioInput />
           <MapPin size={32} className="absolute top-11 left-1" />
         </div>
         <div className="relative">
@@ -115,12 +121,13 @@ export default function SearchArea() {
           >
             Destino
           </label>
-          <Input
+          {/* <Input
             type="text"
             className="input-bordered h-[96px] !text-xl !pt-8 !pl-10 !w-[230px]"
             placeholder="Insira uma cidade"
             {...register('to')}
-          />
+          /> */}
+          <LocatioInput />
           <MapPin size={32} className="absolute top-11 left-1" />
         </div>
         <div className="w-[600px] bg-white rounded-md flex flex-col">
@@ -205,11 +212,11 @@ export default function SearchArea() {
 
       <Button className="w-[180px] h-auto ml-auto flex items-center justify-center py-2 px-4">
         <MagnifyingGlass
-          color="#896c6c"
-          weight="fill"
+          className="text-primary-foreground"
+          weight="bold"
           style={{ width: 24, height: 24 }}
         />
-        <span className="text-2xl font-bold">BUSCAR</span>
+        <span className="text-xl font-bold">BUSCAR</span>
       </Button>
     </form>
   )
