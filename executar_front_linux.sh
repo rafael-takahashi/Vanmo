@@ -1,5 +1,5 @@
 #!/bin/bash
-cd frontend
-npm start
+cd front
+npm run dev
 read -p "Aperte enter para continuar . . . "
 

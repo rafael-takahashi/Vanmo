@@ -48,7 +48,7 @@ def valida_placa(placa: str) -> bool:
 
 def carrega_cidades() -> list[Cidade]:
     lista_cidades = []
-    with open('latitude-longitude-cidades.csv', mode='r') as tabela:
+    with open('latitude-longitude-cidades.csv', mode='r', encoding='utf-8') as tabela:
         leitor = csv.reader(tabela,  delimiter=';')
         next(leitor)
 
@@ -58,26 +58,137 @@ def carrega_cidades() -> list[Cidade]:
     
     return lista_cidades
 
-def busca_latitude_longitude_de_cidade(nome_cidade: str, lista_cidades: list[Cidade]) -> tuple[int, int]:
-    pass
+import unicodedata
+
+def remove_acentos(texto: str) -> str:
+    """
+    Remove acentuação e caracteres especiais de uma string.
+    
+    @param texto: Texto a ser normalizado
+    @return: Texto sem acentuação
+    """
+    return ''.join(
+        c for c in unicodedata.normalize('NFD', texto) if unicodedata.category(c) != 'Mn'
+    )
+
+def busca_latitude_longitude_de_cidade(nome_cidade: str, lista_cidades: list[Cidade]) -> tuple[float, float]:
+    """
+    Busca as coordenadas (latitude e longitude) de uma cidade a partir do nome, ignorando acentuação e cê-cedilha.
+    
+    @param nome_cidade: Nome da cidade a buscar
+    @param lista_cidades: Lista de objetos Cidade
+    @return: Tupla com latitude e longitude da cidade
+    """
+    nome_cidade_normalizado = remove_acentos(nome_cidade.lower())
+    for cidade in lista_cidades:
+        if remove_acentos(cidade.nome.lower()) == nome_cidade_normalizado:
+            return cidade.latitude, cidade.longitude
+    raise ValueError("Cidade não encontrada na lista")
+
 
 def valida_cpf(cpf: str) -> bool:
-    pass
+    """
+    Valida um CPF, considerando seus dígitos verificadores.
+    https://www.macoratti.net/alg_cpf.htm
+    
+    @param cpf: CPF a ser validado
+    @return: True se válido, False caso contrário
+    """
+    cpf = re.sub(r'\D', '', cpf)
+    if len(cpf) != 11 or cpf == cpf[0] * 11:
+        return False
+    
+    def calcula_digito(cpf, peso):
+        soma = sum(int(cpf[i]) * (peso - i) for i in range(peso - 1))
+        digito = 11 - soma % 11
+        return digito if digito < 10 else 0
+    
+    digito1 = calcula_digito(cpf, 10)
+    digito2 = calcula_digito(cpf, 11)
+    return cpf[-2:] == f"{digito1}{digito2}"
+
 
 def valida_cnpj(cnpj: str) -> bool:
-    pass
+    """
+    Valida um CNPJ, considerando seus dígitos verificadores.
+    https://www.macoratti.net/alg_cnpj.htm
+    
+    @param cnpj: CNPJ a ser validado
+    @return: True se válido, False caso contrário
+    """
+    cnpj = re.sub(r'\D', '', cnpj)
+    if len(cnpj) != 14 or cnpj == cnpj[0] * 14:
+        return False
+
+    def calcula_digito(cnpj, pesos):
+        soma = sum(int(cnpj[i]) * pesos[i] for i in range(len(pesos)))
+        resto = soma % 11
+        return 0 if resto < 2 else 11 - resto
+    
+    pesos1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    pesos2 = [6] + pesos1
+    digito1 = calcula_digito(cnpj[:12], pesos1)
+    digito2 = calcula_digito(cnpj[:13], pesos2)
+    return cnpj[-2:] == f"{digito1}{digito2}"
+
 
 def valida_email(email: str) -> bool:
-    pass
+    """
+    Valida se um email está no formato correto.
+    
+    @param email: Email a ser validado
+    @return: True se válido, False caso contrário
+    """
+    regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+    return bool(re.fullmatch(regex, email))
 
 def valida_cidade(cidade: str) -> bool:
-    pass
+    """
+    Valida se uma cidade tem um nome válido (somente letras e espaços).
+    
+    @param cidade: Nome da cidade
+    @return: True se válido, False caso contrário
+    """
+    return bool(re.fullmatch(r"^[a-zA-ZÀ-ÿ\s]+$", cidade))
 
 def valida_uf(uf: str) -> bool:
-    pass
+    """
+    Valida se uma UF é válida (dois caracteres de siglas brasileiras).
+    
+    @param uf: Sigla da UF
+    @return: True se válido, False caso contrário
+    """
+    estados_validos = {
+        "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
+        "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
+        "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+    }
+    return uf.upper() in estados_validos
+
 
 def valida_foto(arquivo: UploadFile) -> bool:
-    pass
+    """
+    Valida se um arquivo é uma imagem válida (JPEG ou PNG).
+    
+    @param arquivo: Arquivo a ser validado
+    @return: True se válido, False caso contrário
+    """
+    extensoes_permitidas = {"image/jpeg", "image/png"}
+    if arquivo.content_type in extensoes_permitidas:
+        return True
+    raise HTTPException(status_code=400, detail="Arquivo inválido. Somente JPEG e PNG são permitidos.")
+
+def retorna_todas_cidades(lista_cidades: list[Cidade]) -> str:
+    """
+    Retorna uma string com todas as cidades no formato:
+    { "Maringá, PR", "Curitiba, PR", ... }
+    
+    @param lista_cidades: Lista de objetos Cidade
+    @return: String formatada com as cidades e suas UFs
+    """
+    cidades_formatadas = [f'"{cidade.nome}, {cidade.uf}"' for cidade in lista_cidades]
+    return "{ " + ", ".join(cidades_formatadas) + " }"
+
 
 def carrega_foto_base64(path_foto, veiculo=False) -> str:
     try:
