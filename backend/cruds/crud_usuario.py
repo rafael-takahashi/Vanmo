@@ -37,7 +37,7 @@ def criar_usuario(db: sqlite3.Connection, usuario: Usuario):
     path_foto = ""
     
     if usuario.foto is not None:
-        path_foto = f"imagens/perfis/{usuario.email}.png"
+        path_foto = f"imagens/perfis/{usuario.id}.png"
 
         utils.salva_foto(path_foto, usuario.foto)
 
@@ -148,10 +148,12 @@ def verificar_se_dados_ja_cadastrados(db: sqlite3.Connection, email: str) -> boo
 def cadastrar_cliente(db: sqlite3.Connection, cliente: Cliente):
     cursor: sqlite3.Cursor = db.cursor()
 
-    dados = (cliente.id, cliente.nome_completo, cliente.cpf, cliente.data_nascimento, cliente.telefone)
-    cursor.execute(QueriesDB.query_inserir_cliente_novo, dados)
+    dados_cliente = (cliente.id, cliente.nome_completo, cliente.cpf, cliente.data_nascimento, cliente.telefone)
+    cursor.execute(QueriesDB.query_inserir_cliente_novo, dados_cliente)
     
     db.commit()
+    
+    criar_usuario(db, cliente)
 
 def cadastrar_empresa(db: sqlite3.Connection, empresa: Empresa):
     cursor: sqlite3.Cursor = db.cursor()
@@ -172,6 +174,8 @@ def cadastrar_empresa(db: sqlite3.Connection, empresa: Empresa):
     cursor.execute(QueriesDB.query_inserir_empresa_nova, dados)
     
     db.commit()
+
+    criar_usuario(db, empresa)
 
 def buscar_dados_cliente(db: sqlite3.Connection, usuario: Usuario) -> Cliente:
     cursor: sqlite3.Cursor = db.cursor()
