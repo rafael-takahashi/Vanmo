@@ -16,7 +16,10 @@ export default function Profile() {
 
   return (
     <main className="grid grid-cols-3 gap-4 mt-20">
-      <SideMenuProfile typeAccount={data?.tipo_conta} email={data?.email} />
+      <SideMenuProfile
+        typeAccount={data?.tipo_conta}
+        fullName={data?.nome_completo}
+      />
 
       {data?.tipo_conta === 'cliente' && <ProfileClientArea />}
 

@@ -4,9 +4,13 @@ interface getUserClientBody {
 }
 
 interface getUserClientResponse {
+  cpf: string
+  data_nascimento: string
   email: string
   foto: string
   id: number
+  nome_completo: string
+  telefone: string
   tipo_conta: string
 }
 
@@ -19,6 +23,8 @@ export async function getUserClient({ token }: getUserClientBody) {
       },
     },
   )
+
+  console.log(response.data)
 
   return response.data
 }

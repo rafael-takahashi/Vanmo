@@ -1,5 +1,3 @@
-import Cookies from 'js-cookie'
-
 import { api } from '@/lib/axios'
 
 export interface registerClientBody {
@@ -21,7 +19,7 @@ export async function registerClient({
   dateOfBirth,
   phone,
 }: registerClientBody) {
-  const response = await api.post('/usuario/cadastro/cliente', {
+  await api.post('/usuario/cadastro/cliente', {
     email,
     senha: password,
     nome_completo: fullName,
@@ -29,13 +27,5 @@ export async function registerClient({
     cpf,
     data_nascimento: dateOfBirth,
     telefone: phone,
-  })
-
-  const token = response.data.access_token
-
-  Cookies.set('auth_token', token, {
-    expires: 7,
-    secure: true,
-    sameSite: 'strict',
   })
 }

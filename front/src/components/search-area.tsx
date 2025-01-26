@@ -1,10 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { MagnifyingGlass, MapPin, User } from '@phosphor-icons/react'
+import { useQuery } from '@tanstack/react-query'
 import { format, parseISO } from 'date-fns'
 import { CalendarIcon } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
+
+import { getCities } from '@/api/getCities'
 
 import { LocatioInput } from './location-input'
 import { Button } from './ui/button'
@@ -89,6 +92,13 @@ export default function SearchArea() {
       return state
     })
   }
+
+  const { data } = useQuery({
+    queryKey: ['cities'],
+    queryFn: getCities,
+  })
+
+  console.log(data)
 
   return (
     <form

@@ -77,7 +77,7 @@ export default function FormClient({ setSuccess }: FormClientProps) {
       setSuccess(true)
 
       setTimeout(() => {
-        navigate('/')
+        navigate('/login')
       }, 3000)
     } catch (err: unknown) {
       console.error(err)

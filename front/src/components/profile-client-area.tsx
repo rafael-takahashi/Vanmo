@@ -1,11 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { format, parse } from 'date-fns'
 import Cookies from 'js-cookie'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 
+import { editProfileUserClient } from '@/api/editUserClient'
+import { getProposals } from '@/api/getProposals'
 import { getUserClient } from '@/api/getUserClient'
 
 import ProposalItem from './proposal-item'
@@ -25,25 +28,26 @@ const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/jpg']
 
 const PersonalProfile = z.object({
   fullName: z.string(),
-  cnpj: z.string(),
-  address: z.string(),
   dateOfBirth: z.string(),
   email: z.string().email(),
   phone: z.string(),
-  photo: z
-    .any()
-    .refine((fileList) => fileList && fileList.length > 0, 'File is required')
-    .refine(
-      (fileList) =>
-        fileList[0] && ALLOWED_MIME_TYPES.includes(fileList[0].type),
-      'Only JPEG and PNG files are allowed',
-    ),
+  // photo: z
+  //   .any()
+  //   .refine((fileList) => fileList && fileList.length > 0, 'File is required')
+  //   .refine(
+  //     (fileList) =>
+  //       fileList[0] && ALLOWED_MIME_TYPES.includes(fileList[0].type),
+  //     'Only JPEG and PNG files are allowed',
+  //   ),
 })
 
 type PersonalProfileForm = z.infer<typeof PersonalProfile>
 
 export default function ProfileClientArea() {
   const token = Cookies.get('auth_token')
+  const [originalData, setOriginalData] = useState<PersonalProfileForm | null>(
+    null,
+  )
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const { register, handleSubmit, reset } = useForm<PersonalProfileForm>({
@@ -55,24 +59,51 @@ export default function ProfileClientArea() {
     queryFn: () => getUserClient({ token }),
   })
 
+  const { data: proposalsList } = useQuery({
+    queryKey: ['proposals-user', token],
+    queryFn: () => getProposals({ token }),
+  })
+
+  const { mutateAsync } = useMutation({
+    mutationFn: editProfileUserClient,
+  })
+
   useEffect(() => {
     if (data) {
-      reset({
+      const initialData = {
         email: data.email || '',
-        // fullName: '',
-        photo: '', // Deixe vazio para o campo de arquivo
-      })
+        fullName: data.nome_completo || '',
+        dateOfBirth: data.data_nascimento || '',
+        phone: data.telefone || '',
+      }
+
+      setOriginalData(initialData) // Armazena os dados originais no estado
+      reset(initialData)
     }
   }, [data, reset])
 
   async function handleEditProfile(data: PersonalProfileForm) {
     try {
-      // await mutateAsync({
-      //   email: data.email,
-      //   photo: data.photo,
-      //   token,
-      // })
-      console.log(data)
+      const updatedFields: Partial<PersonalProfileForm> = {}
+
+      // Compara os valores atuais com os valores originais e adiciona os campos alterados
+      if (data.email !== originalData?.email) updatedFields.email = data.email
+      if (data.fullName !== originalData?.fullName)
+        updatedFields.fullName = data.fullName
+      if (data.dateOfBirth !== originalData?.dateOfBirth)
+        updatedFields.dateOfBirth = data.dateOfBirth
+      if (data.phone !== originalData?.phone) updatedFields.phone = data.phone
+
+      // Se houver alterações, envia apenas os campos modificados
+      if (Object.keys(updatedFields).length > 0) {
+        await mutateAsync({
+          ...updatedFields,
+          token,
+        })
+        console.log(updatedFields)
+      } else {
+        console.log('Nenhuma alteração detectada')
+      }
     } catch (error) {
       console.log(error)
     }
@@ -99,42 +130,59 @@ export default function ProfileClientArea() {
                   <DialogHeader>
                     <DialogTitle>Editar Perfil</DialogTitle>
                   </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="name" className="text-right">
-                        Nome Completo
-                      </label>
-                      <Input id="name" className="input-bordered col-span-3" />
+                  <form
+                    onSubmit={handleSubmit(handleEditProfile)}
+                    className="flex flex-col"
+                  >
+                    <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="name" className="text-right">
+                          Nome Completo
+                        </label>
+                        <Input
+                          id="name"
+                          className="input-bordered col-span-3"
+                          {...register('fullName')}
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="email" className="text-right">
+                          E-mail
+                        </label>
+                        <Input
+                          id="email"
+                          className="input-bordered col-span-3"
+                          {...register('email')}
+                          disabled
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="dateOfBirth" className="text-right">
+                          Data de Nascimento
+                        </label>
+                        <Input
+                          id="dateOfBirth"
+                          type="date"
+                          className="input-bordered col-span-3"
+                          {...register('dateOfBirth')}
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="phone" className="text-right">
+                          Telefone Celular
+                        </label>
+                        <Input
+                          id="phone"
+                          className="input-bordered col-span-3"
+                          {...register('phone')}
+                        />
+                      </div>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="email" className="text-right">
-                        E-mail
-                      </label>
-                      <Input
-                        id="email"
-                        className="input-bordered col-span-3"
-                        disabled
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="dateOfBirth" className="text-right">
-                        Data de Nascimento
-                      </label>
-                      <Input
-                        id="dateOfBirth"
-                        className="input-bordered col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="phone" className="text-right">
-                        Telefone Celular
-                      </label>
-                      <Input id="phone" className="input-bordered col-span-3" />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button type="submit">Salvar Perfil</Button>
-                  </DialogFooter>
+
+                    <Button type="submit" className="ml-auto">
+                      Salvar Perfil
+                    </Button>
+                  </form>
                 </TabsContent>
                 <TabsContent value="password" className="mt-4">
                   <DialogHeader>
@@ -177,10 +225,7 @@ export default function ProfileClientArea() {
             </DialogContent>
           </Dialog>
         </div>
-        <form
-          className="grid grid-cols-2 gap-4 mt-6"
-          onSubmit={handleSubmit(handleEditProfile)}
-        >
+        <form className="grid grid-cols-2 gap-4 mt-6">
           <div>
             <label htmlFor="" className="text-white">
               Nome Completo
@@ -244,8 +289,13 @@ export default function ProfileClientArea() {
           </span>
         </div>
         <div className="flex flex-col gap-4 mt-4">
-          <ProposalItem type="cliente" />
-          <ProposalItem type="cliente" />
+          {proposalsList && proposalsList.length > 0 ? (
+            proposalsList.map((proposal) => (
+              <ProposalItem key={proposal.id} type="cliente" />
+            ))
+          ) : (
+            <p className="text-white ">Não foram encontradas propostas.</p>
+          )}
         </div>
       </div>
     </>

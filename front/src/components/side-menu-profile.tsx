@@ -6,17 +6,13 @@ import { Button } from './ui/button'
 
 interface SideMenuProfileProps {
   fullName: string
-  email: string
   photo: string
-  id: number
   typeAccount: 'cliente' | 'empresa'
 }
 
 export default function SideMenuProfile({
   typeAccount,
-  email,
   fullName,
-  id,
   photo,
 }: SideMenuProfileProps) {
   const navigate = useNavigate()
@@ -31,7 +27,7 @@ export default function SideMenuProfile({
           <div className="flex rounded-full w-[256px] h-[256px] bg-white overflow-hidden">
             <img src={garcia} className="object-cover" alt="" />
           </div>
-          <span className="text-xl mt-2">USUARIO</span>
+          <span className="text-xl mt-2">{fullName}</span>
 
           <nav className="w-[256px] flex flex-col items-center mt-10 text-xl ">
             <span
@@ -130,7 +126,7 @@ export default function SideMenuProfile({
           <div className="flex rounded-full w-[256px] h-[256px] bg-white overflow-hidden">
             <img src={garcia} className="object-cover" alt="" />
           </div>
-          <span className="text-xl mt-2">EMPRESA</span>
+          <span className="text-xl mt-2">{fullName}</span>
 
           <nav className="w-[256px] flex flex-col items-center mt-10 text-xl ">
             <span

@@ -4,11 +4,15 @@ interface getProposalsBody {
   token: string | undefined
 }
 
-interface getProposalsResponse {
+interface Proposal {
   email: string
   foto: string
   id: number
   tipo_conta: string
+}
+
+interface getProposalsResponse {
+  data: Proposal[]
 }
 
 export async function getProposals({ token }: getProposalsBody) {
@@ -21,5 +25,5 @@ export async function getProposals({ token }: getProposalsBody) {
     },
   )
 
-  return response.data
+  return response.data.data
 }

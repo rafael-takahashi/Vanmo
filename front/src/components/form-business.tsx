@@ -105,7 +105,7 @@ export default function FormBusiness({ setSuccess }: FormBusinessProps) {
       setSuccess(true)
 
       setTimeout(() => {
-        navigate('/')
+        navigate('/login')
       }, 3000)
     } catch (err: unknown) {
       console.error(err)
