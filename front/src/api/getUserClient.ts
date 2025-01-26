@@ -24,7 +24,5 @@ export async function getUserClient({ token }: getUserClientBody) {
     },
   )
 
-  console.log(response.data)
-
   return response.data
 }
