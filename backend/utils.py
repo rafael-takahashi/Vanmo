@@ -1,5 +1,8 @@
 import re
 import csv
+import base64
+import os
+from fastapi import UploadFile, HTTPException
 
 class Cidade:
     def __init__(self, uf: str, nome: str, latitude: float, longitude: float):
@@ -54,3 +57,54 @@ def carrega_cidades() -> list[Cidade]:
             lista_cidades.append(cidade)
     
     return lista_cidades
+
+def busca_latitude_longitude_de_cidade(nome_cidade: str, lista_cidades: list[Cidade]) -> tuple[int, int]:
+    pass
+
+def valida_cpf(cpf: str) -> bool:
+    pass
+
+def valida_cnpj(cnpj: str) -> bool:
+    pass
+
+def valida_email(email: str) -> bool:
+    pass
+
+def valida_cidade(cidade: str) -> bool:
+    pass
+
+def valida_uf(uf: str) -> bool:
+    pass
+
+def valida_foto(arquivo: UploadFile) -> bool:
+    pass
+
+def carrega_foto_base64(path_foto, veiculo=False) -> str:
+    try:
+        with open(path_foto, "rb") as file:
+            photo_bytes = file.read()
+            photo_base64 = base64.b64encode(photo_bytes).decode("utf-8")
+            return photo_base64
+    except FileNotFoundError:
+        path_padrao = "imagens/imagem_perfil_padrao.png"
+        if veiculo:
+            path_padrao = "imagens/imagem_veiculo_padrao.png"
+        
+        with open(path_padrao, "rb") as file:
+            photo_bytes = file.read()
+            photo_base64 = base64.b64encode(photo_bytes).decode("utf-8")
+            return photo_base64
+
+def salva_foto(path_foto, arquivo: UploadFile):
+
+    try:
+        if path_foto is None or path_foto == "":
+            return
+
+        if (os.path.isfile(path_foto)):
+            os.remove(path_foto)
+
+        with open(path_foto, "wb+") as arquivo:
+            arquivo.write(arquivo.file.read())
+    except Exception:
+        raise HTTPException(status_code=400, detail="Falha ao salvar a foto")

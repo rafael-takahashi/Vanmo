@@ -7,8 +7,10 @@ from classes.classe_usuario import *
 from database import *
 from copy import deepcopy
 from classes import classe_veiculo, classe_calendario
+import utils
 import sqlite3
 import datetime
+import os
 import base64
 
 def criar_veiculo(db: sqlite3.Connection, veiculo: classe_veiculo.Veiculo) -> int:
@@ -20,11 +22,20 @@ def criar_veiculo(db: sqlite3.Connection, veiculo: classe_veiculo.Veiculo) -> in
     id_veiculo: int = cursor.lastrowid
     db.commit()
 
+    if veiculo.caminho_foto is not None:
+        path_foto = f"imagens/veiculos/{veiculo.id_empresa}-{id_veiculo}.png"
+        utils.salva_foto(path_foto, veiculo.caminho_foto)
+
     return id_veiculo
 
 def remover_veiculo(db: sqlite3.Connection, id_veiculo: int):
     cursor = db.cursor()
     dados = (id_veiculo,)
+    
+    obj = buscar_veiculo(db, id_veiculo)
+
+    if os.path.exists(obj.caminho_foto):
+        os.remove(obj.caminho_foto)
 
     cursor.execute(QueriesDB.query_remover_veiculo, id_veiculo)
 
@@ -42,16 +53,7 @@ def buscar_veiculo(db: sqlite3.Connection, id_veiculo: int) -> classe_veiculo.Ve
     veiculo.adicionar_custos(resultado[5], resultado[6])
     veiculo.adicionar_dados(resultado[7], resultado[8], resultado[9], resultado[4])
 
-    try:
-        with open(veiculo.caminho_foto, "rb") as file:
-            photo_bytes = file.read()
-            photo_base64 = base64.b64encode(photo_bytes).decode("utf-8")
-            veiculo.caminho_foto = photo_base64
-    except FileNotFoundError:
-        with open("imagens/imagem_veiculo_padrao.png", "rb") as file:
-            photo_bytes = file.read()
-            photo_base64 = base64.b64encode(photo_bytes).decode("utf-8")
-            veiculo.caminho_foto = photo_base64
+    veiculo.caminho_foto = utils.carrega_foto_base64(veiculo.caminho_foto, True)
 
     return veiculo
 
@@ -61,8 +63,6 @@ def listar_veiculos(db: sqlite3.Connection, id_empresa: int) -> list[classe_veic
     dados = (id_empresa,)
 
     lista_resultados = cursor.execute(QueriesDB.query_buscar_veiculos_empresa, dados).fetchall()
-
-    print(f"Resultados: {lista_resultados}")
 
     veiculos = []
 
@@ -80,6 +80,8 @@ def listar_veiculos(db: sqlite3.Connection, id_empresa: int) -> list[classe_veic
 def atualizar_veiculo(db: sqlite3.Connection, veiculo: classe_veiculo.Veiculo):
     cursor = db.cursor()
     dados = (veiculo.id_empresa, veiculo.nome_veiculo, veiculo.placa_veiculo, veiculo.capacidade, veiculo.custo_por_km, veiculo.custo_base, veiculo.caminho_foto, veiculo.cor, veiculo.ano_fabricacao, veiculo.id_veiculo)
+
+    utils.salva_foto(f"imagens/veiculos/{veiculo.id_empresa}-{veiculo.id_veiculo}.png", veiculo.caminho_foto)
 
     cursor.execute(QueriesDB.query_atualizar_veiculo, dados)
 

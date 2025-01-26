@@ -55,7 +55,6 @@ class CadastroUsuario(BaseModel):
     email: str
     senha: str
     tipo_conta: str
-    foto: UploadFile | str
 
 @app.post("/usuario/registrar_legacy")
 async def registrar_novo_usuario(dados: CadastroUsuario):
@@ -63,11 +62,8 @@ async def registrar_novo_usuario(dados: CadastroUsuario):
     Método legado para testar com o /docs do FastAPI
     """
 
-    usuario = classe_usuario.Usuario(dados.email, dados.senha, dados.tipo_conta, dados.foto)
+    usuario = classe_usuario.Usuario(dados.email, dados.senha, dados.tipo_conta, None)
     db = database.conectar_bd()
-
-    if usuario.foto == "":
-        usuario.foto = None
 
     if crud_usuario.obter_usuario_por_nome(db, usuario.email):
         raise HTTPException(status_code=400, detail="Usuario já existe")
@@ -76,7 +72,6 @@ async def registrar_novo_usuario(dados: CadastroUsuario):
     crud_usuario.criar_usuario(db, usuario)
     token_acesso = auth.criar_token_acesso(dados={"sub": usuario.email})
     return {"access_token": token_acesso, "token_type": "bearer"}
-
 
 class UsuarioLogin(BaseModel):
     email: str
@@ -134,18 +129,12 @@ class CadastroEmpresa(BaseModel):
     rua: str
     numero: str
 
-def registrar_novo_usuario(dados: CadastroUsuario):
-
-    # TODO: checar se o tamanho e o tipo de arquivo da foto são permitidos
-    # Caso não for, decidir entre retornar um código de erro ou prosseguir sem a foto
+def registrar_novo_usuario(dados: CadastroUsuario) -> int:
 
     # TODO: Validar email
 
-    usuario = classe_usuario.Usuario(dados.email, dados.senha, dados.tipo_conta, dados.foto)
+    usuario = classe_usuario.Usuario(dados.email, dados.senha, dados.tipo_conta, None)
     db = database.conectar_bd()
-
-    if usuario.foto == "":
-        usuario.foto = None
 
     if crud_usuario.obter_usuario_por_nome(db, usuario.email):
         raise HTTPException(status_code=400, detail="Usuario já existe")
@@ -160,8 +149,6 @@ async def registrar_empresa(dados: CadastroEmpresa):
 
     db = database.conectar_bd()
 
-    # TODO: Buscar latitude e longitude da empresa aqui
-
     endereco: classe_endereco.Endereco = classe_endereco.Endereco(dados.uf, dados.cidade, dados.bairro, dados.cep, 
                                                                   dados.rua, dados.numero)
 
@@ -169,12 +156,14 @@ async def registrar_empresa(dados: CadastroEmpresa):
 
     # TODO: Validar cidade
 
+    # TODO: Buscar latitude e longitude da empresa aqui
+
+    # TODO: Validar CNPJ
+
     latitude = 0
     longitude = 0
 
     local: classe_local.Local = classe_local.Local(latitude, longitude, dados.nome_fantasia)
-
-    # TODO: Validar CNPJ
 
     empresa: classe_usuario.Empresa = classe_usuario.Empresa(id=id_usuario, email="", senha_hashed="", tipo_conta="empresa", foto="",
                                                              nome_fantasia=dados.nome_fantasia, cnpj=dados.cnpj, endereco=endereco, local=local)
@@ -239,11 +228,6 @@ class AlterarDadosEmpresa(BaseModel):
     rua: str | None = None
     numero: str | None = None
 
-# class AlterarDadosUsuario(BaseModel):
-#     email: str | None = None, 
-#     senha: str | None = None,
-#     foto: UploadFile
-
 @app.put("/usuario/alterar_dados/cliente")
 async def editar_dados_cliente(dados: AlterarDadosCliente, token: str = Depends(oauth2_esquema)):
     
@@ -262,8 +246,11 @@ async def editar_dados_cliente(dados: AlterarDadosCliente, token: str = Depends(
         cliente.senha = auth.gerar_hash_senha(dados.senha)
 
     if dados.foto:
-        # Salvar foto e guardar path aqui
-        cliente.foto = f"imagens/usuarios/{usuario.id}.png"
+        
+        # TODO: Validar foto
+
+        path_foto = f"imagens/usuarios/{usuario.id}.png"
+        salva_foto(path_foto, dados.foto)
 
     if dados.nome_completo: 
         cliente.nome_completo = dados.nome_completo
@@ -278,7 +265,6 @@ async def editar_dados_cliente(dados: AlterarDadosCliente, token: str = Depends(
         cliente.telefone = dados.telefone
 
     crud_usuario.atualizar_cliente(db, cliente)    
-
 
 @app.put("/usuario/alterar_dados/empresa")
 async def editar_dados_empresa(dados: AlterarDadosEmpresa, token: str = Depends(oauth2_esquema)):
@@ -297,8 +283,10 @@ async def editar_dados_empresa(dados: AlterarDadosEmpresa, token: str = Depends(
         empresa.senha = auth.gerar_hash_senha(dados.senha)
 
     if dados.foto:
-        # Salvar foto e guardar path aqui
-        empresa.foto = f"imagens/usuarios/{usuario.id}.png"
+        # TODO: Validar foto
+
+        path_foto = f"imagens/usuarios/{usuario.id}.png"
+        salva_foto(path_foto, dados.foto)
     
     if dados.nome_fantasia:
         empresa.nome_fantasia = dados.nome_fantasia
@@ -326,82 +314,26 @@ async def editar_dados_empresa(dados: AlterarDadosEmpresa, token: str = Depends(
 
     crud_usuario.atualizar_empresa(db, empresa)
 
-# @app.put("/usuario/alterar_dados")
-# async def editar_dados_cadastrais(dados: AlterarDadosUsuario, token: str = Depends(oauth2_esquema)):
-#     """
-#     Altera os dados cadastrais de um usuário.
-
-#     @param email: O email novo daquele usuário, ou None caso não haja alteração
-#     @param senha: A senha nova daquele usuário, ou None caso não haja alteração
-#     @param foto: A nova foto daquele usuário, ou None caso não haja alteração
-#     @param token: O token de acesso daquele usuário
-#     """
-
-#     db = database.conectar_bd()
-
-#     if dados.email:
-#         if crud_usuario.obter_usuario_por_nome(db, dados.email):
-#             raise HTTPException(status_code=400, detail="E-mail já cadastrado")
-#         else:
-#             usuario.email = dados.email
-    
-#     if dados.senha:
-#         usuario.senha_hashed = auth.gerar_hash_senha(dados.senha)
-    
-#     if dados.foto:
-#         if (os.path.isfile(usuario.foto)):
-#             # remover a foto antiga e salvar a nova
-#             try:
-#                 os.remove(usuario.foto)
-#             except Exception as e:
-#                 raise HTTPException(status_code=400, detail=f"Erro ao deletar foto antiga: {e}")
-        
-#         try:
-#             caminho_da_nova_foto = f"imagens/usuarios/{dados.foto.filename}"
-#             with open(caminho_da_nova_foto, "wb") as arquivo_foto:
-#                 arquivo_foto.write(dados.foto.file.read())
-#                 usuario.foto = caminho_da_nova_foto
-#         except Exception as e:
-#             raise HTTPException(status_code=400, detail=f"Falha ao salvar a foto do usuário: {e.args}")
-
-#     crud_usuario.atualizar_usuario(db, usuario)
-    
-#     return {"detail": "Dados alterados com sucesso"}
-
-# TODO: Criar uma para buscar dados cliente, outra para empresa
-# TODO: Juntar foto aqui
-
-@app.get("/usuario/buscar_dados_cadastrais")
-async def buscar_dados_cadastrais(token: str = Depends(oauth2_esquema)):
-    """
-    Busca os dados cadastrais de um usuário. Usado para mostrar os dados do perfil do usuário
-
-    @param token: O token de acesso do usuário
-    """
+@app.get("/usuario/buscar_dados_cadastrais/cliente")
+async def buscar_dados_cadastrais_cliente(token: str = Depends(oauth2_esquema)):
 
     db = database.conectar_bd()
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
-    return {"email": usuario.email, "foto": usuario.foto, "id": usuario.id, "tipo_conta": usuario.tipo_conta}
+    cliente: classe_usuario.Cliente = crud_usuario.buscar_dados_cliente(db, usuario)
+    cliente.senha_hashed = ""
 
-# @app.get("/usuario/buscar_foto_perfil")
-# async def buscar_foto_perfil(token: str = Depends(oauth2_esquema)):
-#     """
-#     Busca a foto de perfil de um usuário
+    return cliente
 
-#     @param token: O token de acesso do usuário
-#     """
+@app.get("/usuario/buscar_dados_cadastrais/empresa")
+async def buscar_dados_cadastrais_empresa(token: str = Depends(oauth2_esquema)):
+    db = database.conectar_bd()
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
-#     db = database.conectar_bd()
-#     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+    empresa: classe_usuario.Empresa = crud_usuario.buscar_dados_empresa(db, usuario)
+    empresa.senha_hashed = ""
 
-#     if usuario.foto == "" or usuario.foto is None:
-#         return FileResponse("imagens/imagem_perfil_padrao.png")
-    
-#     if os.path.isfile(usuario.foto):
-#         return FileResponse(usuario.foto)
-    
-#     return FileResponse("imagens/imagem_perfil_padrao.png")
+    return empresa
 
 # Métodos de propostas ----------------------------------------
 
@@ -670,18 +602,10 @@ async def cadastrar_veiculo(dados: CadastrarVeiculo, token: str = Depends(oauth2
 
     id_veiculo = crud_veiculo.criar_veiculo(db, veiculo)
 
-    try:
-        
-        caminho_da_foto = f"imagens/veiculos/{usuario.id}-{id_veiculo}.png"
-        with open(caminho_da_foto, "wb") as arquivo_foto:
-            arquivo_foto.write(dados.foto.file.read())
-        veiculo.caminho_foto = caminho_da_foto
-        crud_veiculo.atualizar_veiculo(db, veiculo)
-    except Exception as e:
-        veiculo.caminho_foto = "imagens/imagem_veiculo_padrao.png"
-        crud_veiculo.atualizar_veiculo(db, veiculo)
-        raise HTTPException(status_code=400, detail=f"Falha ao salvar a foto do veículo: {e.args}, demais valores foram armazenados")
+    caminho_da_foto = f"imagens/veiculos/{usuario.id}-{id_veiculo}.png"
     
+    salva_foto(caminho_da_foto, dados.foto)
+
     return {"detail": "Veículo cadastrado com sucesso!"}
 
 class EditarVeiculo(BaseModel):
@@ -737,23 +661,10 @@ async def editar_veiculo(dados: EditarVeiculo, token: str = Depends(oauth2_esque
 
     if dados.foto:
 
-        # TODO: Verificar se a foto é png
+        # TODO: Validar a foto
 
-        if (os.path.isfile(veiculo.caminho_foto)):
-            # remover a foto antiga e salvar a nova
-            try:
-                os.remove(veiculo.caminho_foto)
-            except Exception as e:
-                raise HTTPException(status_code=400, detail=f"Erro ao deletar foto antiga: {e}")
-        
-        try:
-            
-            caminho_da_nova_foto = f"imagens/veiculos/{veiculo.id_empresa}-{veiculo.id_veiculo}.png"
-            with open(caminho_da_nova_foto, "wb") as arquivo_foto:
-                arquivo_foto.write(dados.foto.file.read())
-                veiculo.caminho_foto = caminho_da_nova_foto
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=f"Falha ao salvar a foto do veículo: {e.args}")
+        caminho_da_nova_foto = f"imagens/veiculos/{veiculo.id_empresa}-{veiculo.id_veiculo}.png"
+        salva_foto(caminho_da_nova_foto, dados.foto)
 
     crud_veiculo.atualizar_veiculo(db, veiculo)
 
@@ -859,25 +770,25 @@ async def apagar_veiculo(dados: IdVeiculo, token: str = Depends(oauth2_esquema))
 
     return {"detail": "Veículo removido com sucesso"}
 
-@app.get("/veiculos/buscar_foto_veiculo")
-async def buscar_foto_veiculo(dados: IdVeiculo, token: str = Depends(oauth2_esquema)):
-    """
-    Busca a foto de um veículo
+# @app.get("/veiculos/buscar_foto_veiculo")
+# async def buscar_foto_veiculo(dados: IdVeiculo, token: str = Depends(oauth2_esquema)):
+#     """
+#     Busca a foto de um veículo
 
-    @param token: O token de acesso do usuário
-    """
-    db = database.conectar_bd()
-    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+#     @param token: O token de acesso do usuário
+#     """
+#     db = database.conectar_bd()
+#     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
-    veiculo = crud_veiculo.buscar_veiculo(db, dados.id_veiculo)
+#     veiculo = crud_veiculo.buscar_veiculo(db, dados.id_veiculo)
 
-    if veiculo.caminho_foto == "" or veiculo.caminho_foto is None:
-        return FileResponse("imagens/imagem_veiculo_padrao.png")
+#     if veiculo.caminho_foto == "" or veiculo.caminho_foto is None:
+#         return FileResponse("imagens/imagem_veiculo_padrao.png")
     
-    if os.path.isfile(veiculo.caminho_foto):
-        return FileResponse(veiculo.caminho_foto)
+#     if os.path.isfile(veiculo.caminho_foto):
+#         return FileResponse(veiculo.caminho_foto)
     
-    return FileResponse("imagens/imagem_veiculo_padrao.png")
+#     return FileResponse("imagens/imagem_veiculo_padrao.png")
 
 # Métodos extras cliente/empresa ----------------------------------------
 
@@ -896,8 +807,6 @@ async def buscar_dados_empresa(dados: IdEmpresa, token: str = Depends(oauth2_esq
     @param id_empresa: O ID da empresa a qual se quer buscar os dados
     @param token: O token de acesso do usuário
     """
-
-    # TODO: precisa estar autenticado?
 
     id_empresa: int = dados.id_empresa
 
@@ -963,8 +872,7 @@ async def buscar_empresas_nome(dados: BuscaEmpresa, token: str = Depends(oauth2_
 
     db = database.conectar_bd()
 
-    # Validação apenas
-    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+    # usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
     nome_busca = nome_busca + "%"
 

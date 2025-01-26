@@ -9,6 +9,7 @@ from classes.classe_endereco import Endereco
 from classes.classe_local import Local
 from cruds.crud_local import *
 from cruds.crud_endereco import *
+from cruds.crud_veiculo import buscar_veiculo
 from database import *
 from fastapi import HTTPException
 import base64
@@ -38,8 +39,7 @@ def criar_usuario(db: sqlite3.Connection, usuario: Usuario):
     if usuario.foto is not None:
         path_foto = f"imagens/perfis/{usuario.email}.png"
 
-        with open(path_foto, "wb+") as arquivo:
-            arquivo.write(usuario.foto.file.read())
+        utils.salva_foto(path_foto, usuario.foto)
 
     cursor: sqlite3.Cursor = db.cursor()
 
@@ -75,6 +75,11 @@ def __remover_empresa(db: sqlite3.Connection, usuario: Usuario):
         id_veiculo = veiculo[0]
 
         dados = (id_veiculo,)
+
+        obj = buscar_veiculo(db, id_veiculo)
+
+        if os.path.exists(obj.caminho_foto):
+            os.remove(obj.caminho_foto)
 
         cursor.execute(QueriesDB.query_remover_calendario, dados)
         cursor.execute(QueriesDB.query_remover_veiculo, dados)
@@ -174,7 +179,7 @@ def buscar_dados_cliente(db: sqlite3.Connection, usuario: Usuario) -> Cliente:
     dados = (usuario.id,)
     resultados = cursor.execute(QueriesDB.query_buscar_cliente, dados).fetchone()
 
-    return Cliente(usuario.id, usuario.email, usuario.senha_hashed, usuario.tipo_conta, usuario.foto, resultados[1], resultados[2], resultados[3], resultados[4])
+    return Cliente(usuario.id, usuario.email, usuario.senha_hashed, usuario.tipo_conta, utils.carrega_foto_base64(usuario.foto), resultados[1], resultados[2], resultados[3], resultados[4])
 
 def buscar_dados_empresa(db: sqlite3.Connection, usuario: Usuario) -> Empresa:
     cursor: sqlite3.Cursor = db.cursor()
@@ -186,7 +191,7 @@ def buscar_dados_empresa(db: sqlite3.Connection, usuario: Usuario) -> Empresa:
     endereco : Endereco = buscar_endereco_por_id(db, resultados[3])
 
     empresa = Empresa(id=usuario.id, email=usuario.email, senha_hashed=usuario.senha_hashed, 
-                      tipo_conta=usuario.tipo_conta, foto=usuario.foto, 
+                      tipo_conta=usuario.tipo_conta, foto=utils.carrega_foto_base64(usuario.foto), 
                       nome_fantasia=resultados[2], cnpj=resultados[1], endereco=endereco, local=local)
 
     empresa.num_avaliacoes = resultados[5]
@@ -225,17 +230,8 @@ def buscar_empresa_por_id (db: sqlite3.Connection, id_empresa: int) -> Empresa:
     empresa.num_avaliacoes = resultado_empresa[5]
     empresa.soma_avaliacoes = resultado_empresa[6]
 
-    try:
-        with open(empresa.foto, "rb") as file:
-            photo_bytes = file.read()
-            photo_base64 = base64.b64encode(photo_bytes).decode("utf-8")
-            empresa.foto = photo_base64
-    except FileNotFoundError:
-        with open("imagens/imagem_perfil_padrao.png", "rb") as file:
-            photo_bytes = file.read()
-            photo_base64 = base64.b64encode(photo_bytes).decode("utf-8")
-            empresa.foto = photo_base64
-
+    empresa.foto = utils.carrega_foto_base64(empresa.foto)
+    
     return empresa
 
 def verificar_se_avaliacao_ja_feita(db: sqlite3.Connection, id_usuario: int, id_empresa: int) -> bool:
