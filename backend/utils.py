@@ -85,7 +85,6 @@ def busca_latitude_longitude_de_cidade(nome_cidade: str, lista_cidades: list[Cid
             return cidade.latitude, cidade.longitude
     raise ValueError("Cidade não encontrada na lista")
 
-
 def valida_cpf(cpf: str) -> bool:
     """
     Valida um CPF, considerando seus dígitos verificadores.
@@ -106,7 +105,6 @@ def valida_cpf(cpf: str) -> bool:
     digito1 = calcula_digito(cpf, 10)
     digito2 = calcula_digito(cpf, 11)
     return cpf[-2:] == f"{digito1}{digito2}"
-
 
 def valida_cnpj(cnpj: str) -> bool:
     """
@@ -131,7 +129,6 @@ def valida_cnpj(cnpj: str) -> bool:
     digito2 = calcula_digito(cnpj[:13], pesos2)
     return cnpj[-2:] == f"{digito1}{digito2}"
 
-
 def valida_email(email: str) -> bool:
     """
     Valida se um email está no formato correto.
@@ -142,14 +139,24 @@ def valida_email(email: str) -> bool:
     regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
     return bool(re.fullmatch(regex, email))
 
-def valida_cidade(cidade: str) -> bool:
+def valida_cidade(cidade: str, lista_cidades: list[Cidade]) -> bool:
     """
-    Valida se uma cidade tem um nome válido (somente letras e espaços).
+    Valida se uma cidade tem um nome válido (somente letras e espaços) e se ela está na lista de cidades
     
     @param cidade: Nome da cidade
     @return: True se válido, False caso contrário
     """
-    return bool(re.fullmatch(r"^[a-zA-ZÀ-ÿ\s]+$", cidade))
+    nome_cidade = remove_acentos(cidade.lower())
+    nome_valido = bool(re.fullmatch(r"^[a-zA-ZÀ-ÿ\s]+$", nome_cidade))
+
+    if not nome_valido:
+        raise HTTPException(status_code=400, detail="Nome da cidade pode conter apenas letras e números")
+    
+    for cidade in lista_cidades:
+        if remove_acentos(cidade.nome.lower()) == nome_cidade:
+            return True
+    
+    return False
 
 def valida_uf(uf: str) -> bool:
     """
@@ -165,18 +172,26 @@ def valida_uf(uf: str) -> bool:
     }
     return uf.upper() in estados_validos
 
-
-def valida_foto(arquivo: UploadFile) -> bool:
+def valida_foto(arquivo: UploadFile, tamanho_maximo: int = 25 * 1024 * 1024) -> bool:
     """
-    Valida se um arquivo é uma imagem válida (JPEG ou PNG).
+    Valida se um arquivo é uma imagem válida no formato PNG e dentro do tamanho permitido.
     
     @param arquivo: Arquivo a ser validado
-    @return: True se válido, False caso contrário
+    @param tamanho_maximo: Tamanho máximo permitido (em bytes). Padrão: 25 MB
+    @return: True se válido, levanta uma exceção caso contrário
     """
-    extensoes_permitidas = {"image/jpeg", "image/png"}
-    if arquivo.content_type in extensoes_permitidas:
-        return True
-    raise HTTPException(status_code=400, detail="Arquivo inválido. Somente JPEG e PNG são permitidos.")
+    extensao_permitida = "image/png"
+    if arquivo.content_type != extensao_permitida:
+        raise HTTPException(status_code=400, detail="Arquivo inválido. Apenas imagens PNG são permitidas.")
+
+    arquivo.file.seek(0, os.SEEK_END)
+    tamanho_arquivo = arquivo.file.tell()
+    arquivo.file.seek(0)
+
+    if tamanho_arquivo > tamanho_maximo:
+        raise HTTPException(status_code=400, detail=f"Arquivo muito grande. O tamanho máximo permitido é {tamanho_maximo // (1024 * 1024)} MB.")
+
+    return True
 
 def retorna_todas_cidades(lista_cidades: list[Cidade]) -> str:
     """

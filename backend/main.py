@@ -14,6 +14,9 @@ from classes import classe_aluguel, classe_calendario, classe_endereco, classe_l
 from cruds import crud_aluguel, crud_usuario, crud_veiculo, crud_local
 from utils import *
 
+lista_cidades = []
+string_cidades = ""
+
 @asynccontextmanager
 async def iniciar_app(app: FastAPI):
     """
@@ -29,8 +32,8 @@ async def iniciar_app(app: FastAPI):
 
     # TODO: Função que carrega a tabela de cidades brasileiras na memória
     lista_cidades = carrega_cidades()
-    # print(f"lista_cidades[0].uf: {lista_cidades[0].uf}, lista_cidades[0].nome: {lista_cidades[0].nome}, lista_cidades[0].latitude: {lista_cidades[0].latitude}, lista_cidades[0].longitude: {lista_cidades[0].longitude}")
 
+    string_cidades = retorna_todas_cidades(lista_cidades)
     yield
 
 app = FastAPI(lifespan=iniciar_app)
@@ -928,3 +931,7 @@ async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa, token: str = De
     # TODO: paginação
 
     pass
+
+@app.get("/cidades/lista_de_cidades")
+async def busca_lista_cidades():
+    return lista_cidades
