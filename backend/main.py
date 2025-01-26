@@ -1,5 +1,7 @@
 import datetime
 import os
+import threading
+import time
 
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile
 from fastapi.responses import FileResponse
@@ -17,11 +19,27 @@ from utils import *
 lista_cidades = []
 string_cidades = ""
 
+def loop_diario():
+    """
+    Loop diário para atualizar os status dos aluguéis com base na data de hoje
+
+    OBS: Tem que ser executada em uma thread separada para não travar o programa
+    """
+    print("Inicializou o loop diario")
+    while True:
+        db = database.conectar_bd()
+
+        database.atualizar_status_alugueis(db)
+
+        time.sleep(24 * 3600)
+   
+
 @asynccontextmanager
 async def iniciar_app(app: FastAPI):
     """
         Função chamada ao inicializar o sistema
     """
+    global string_cidades
 
     # Criar tabelas no banco de dados caso elas não existam
     conexao = database.conectar_bd()
@@ -33,6 +51,10 @@ async def iniciar_app(app: FastAPI):
     lista_cidades = carrega_cidades()
 
     string_cidades = retorna_todas_cidades(lista_cidades)
+
+    thread = threading.Thread(target=loop_diario)
+    thread.start()
+
     yield
 
 app = FastAPI(lifespan=iniciar_app)

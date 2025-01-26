@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import sqlite3
-
+import datetime
 
 def conectar_bd() -> sqlite3.Connection:
     """
@@ -84,6 +84,7 @@ class QueriesDB:
     query_buscar_alugueis_cliente = "SELECT * FROM Aluguel WHERE id_cliente = ?"
     query_remover_aluguel = "DELETE FROM Aluguel WHERE id_aluguel = ?"
     query_alterar_status_aluguel = "UPDATE Aluguel SET estado_aluguel = ? WHERE id_aluguel = ?"
+    query_buscar_alugueis_vencidos = "SELECT * FROM Aluguel WHERE data_fim < ?"
 
     query_inserir_calendario = "INSERT INTO Calendario (id_veiculo, data_indisponivel) VALUES (?, ?)"
     query_remover_calendario = "DELETE FROM Calendario WHERE id_veiculo = ?"
@@ -93,3 +94,36 @@ class QueriesDB:
     query_atualizar_avaliacao = "UPDATE Avaliacao SET nota = ? WHERE id_cliente = ? AND id_empresa = ?"
 
     query_buscador_por_nome = "SELECT * FROM Empresa WHERE nome_fantasia LIKE ?"
+
+    query_inserir_registro_historico = "INSERT INTO RegistrosLocacao(nome_cliente, cpf_cliente, nome_fantasia_empresa, cnpj_empresa, nome_veiculo, placa_veiculo, custo_total, data_inicio, data_fim) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+
+def atualizar_status_alugueis(conexao: sqlite3.Connection):
+    """
+    Atualiza os status dos aluguéis que já passaram da data de vencimento.
+
+    :param conexao: Conexão ativa com o banco de dados.
+    """
+    cursor = conexao.cursor()
+
+    hoje  = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    alugueis_vencidos = cursor.execute(QueriesDB.query_buscar_alugueis_vencidos, (hoje,)).fetchall()
+
+    for aluguel in alugueis_vencidos:
+        id_aluguel, id_empresa, id_cliente, id_veiculo, valor_total, estado_aluguel, \
+        data_inicio, data_fim, distancia_trajeto, distancia_extra, id_local_partida, id_local_chegada = aluguel
+
+        cliente = cursor.execute(QueriesDB.query_buscar_cliente, (id_cliente,)).fetchone()
+        _, nome_cliente, cpf_cliente, _, _ = cliente
+
+        empresa = cursor.execute(QueriesDB.query_buscar_empresa, (id_empresa,)).fetchone()
+        _, cnpj_empresa, nome_fantasia_empresa, _, _, _, _ = empresa
+
+        veiculo = cursor.execute(QueriesDB.query_buscar_veiculo, (id_veiculo,)).fetchone()
+        _, _, nome_veiculo, placa_veiculo, _, _, _, _, _, _ = veiculo
+
+        dados_registro = (nome_cliente, cpf_cliente, nome_fantasia_empresa, cnpj_empresa, nome_veiculo, placa_veiculo, valor_total, data_inicio, data_fim)
+        
+        cursor.execute(QueriesDB.query_inserir_registro_historico, dados_registro)
+
+        cursor.execute(QueriesDB.query_remover_aluguel, (id_aluguel,))
