@@ -121,6 +121,7 @@ class CadastroEmpresa(BaseModel):
     email: str
     senha: str
     nome_fantasia: str
+    telefone: str
     cnpj: str
     uf: str
     cidade: str
@@ -129,7 +130,7 @@ class CadastroEmpresa(BaseModel):
     rua: str
     numero: str
 
-async def registrar_novo_usuario(dados: CadastroUsuario) -> int:
+def registrar_novo_usuario(dados: CadastroUsuario) -> int:
 
     # TODO: Validar email
 
@@ -141,16 +142,21 @@ async def registrar_novo_usuario(dados: CadastroUsuario) -> int:
     
     usuario.senha_hashed = auth.gerar_hash_senha(usuario.senha_hashed)
     id_usuario = crud_usuario.criar_usuario(db, usuario)
-    return id_usuario
+    return id_usuario, usuario.senha_hashed
 
 @app.post("/usuario/cadastro/empresa")
 async def registrar_empresa(dados: CadastroEmpresa):
+
+    dados_usuario: CadastroUsuario = CadastroUsuario(email=dados.email, senha=dados.senha, tipo_conta="empresa")
+    id_usuario, senha = registrar_novo_usuario(dados_usuario)
+    
     cadastro_usuario = CadastroUsuario(
         email=dados.email,
         senha=dados.senha,
         tipo_conta="cliente"
     )
-    id_usuario = await registrar_novo_usuario(dados.email, dados.senha, cadastro_usuario)
+    
+    id_usuario = registrar_novo_usuario(cadastro_usuario)
 
     db = database.conectar_bd()
 
@@ -165,13 +171,15 @@ async def registrar_empresa(dados: CadastroEmpresa):
 
     # TODO: Validar CNPJ
 
+    # TODO: Revisar como é feita a passagem da senha ao criar a empresa
+
     latitude = 0
     longitude = 0
 
     local: classe_local.Local = classe_local.Local(latitude, longitude, dados.nome_fantasia)
 
-    empresa: classe_usuario.Empresa = classe_usuario.Empresa(id=id_usuario, email="", senha_hashed="", tipo_conta="empresa", foto="",
-                                                             nome_fantasia=dados.nome_fantasia, cnpj=dados.cnpj, endereco=endereco, local=local)
+    empresa: classe_usuario.Empresa = classe_usuario.Empresa(id=id_usuario, email=dados.email, senha_hashed=senha, tipo_conta="empresa", foto="",
+                                                             nome_fantasia=dados.nome_fantasia, cnpj=dados.cnpj, endereco=endereco, local=local, telefone=dados.telefone)
     
     empresa.id = id_usuario
 
@@ -181,19 +189,25 @@ async def registrar_empresa(dados: CadastroEmpresa):
 
 @app.post("/usuario/cadastro/cliente")
 async def registrar_cliente(dados: CadastroCliente):
+
+    dados_usuario: CadastroUsuario = CadastroUsuario(email=dados.email, senha=dados.senha, tipo_conta="cliente")
+    id_usuario, senha = registrar_novo_usuario(dados_usuario)
+
     cadastro_usuario = CadastroUsuario(
         email=dados.email,
         senha=dados.senha,
         tipo_conta="cliente"
     )
 
-    id_usuario = await registrar_novo_usuario(cadastro_usuario)
+    id_usuario = registrar_novo_usuario(cadastro_usuario)
 
     db = database.conectar_bd()
 
     # TODO: Validar CPF
 
-    cliente: classe_usuario.Cliente = classe_usuario.Cliente(id_usuario, "", "", "cliente", "", dados.nome_completo, dados.cpf, dados.data_nascimento, dados.telefone)
+    # TODO: Revisar como é feita a passagem da senha ao criar o cliente
+
+    cliente: classe_usuario.Cliente = classe_usuario.Cliente(id_usuario, dados.email, senha, "cliente", "", dados.nome_completo, dados.cpf, dados.data_nascimento, dados.telefone)
 
     cliente.id = id_usuario
 
