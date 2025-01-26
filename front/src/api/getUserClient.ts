@@ -12,7 +12,7 @@ interface getUserClientResponse {
 
 export async function getUserClient({ token }: getUserClientBody) {
   const response = await api.get<getUserClientResponse>(
-    '/usuario/buscar_dados_cadastrais',
+    '/usuario/buscar_dados_cadastrais/cliente',
     {
       headers: {
         Authorization: `Bearer ${token}`,

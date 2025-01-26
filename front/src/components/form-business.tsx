@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AxiosError } from 'axios';
+import { AxiosError } from 'axios'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
@@ -13,20 +13,31 @@ import { searchCEP, searchCepResponse } from '@/api/searchCEP'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 
-const registerUserBusinessSchema = z.object({
-  typeAccount: z.enum(['cliente', 'empresa']).default('empresa'),
-  fantasyName: z.string().nonempty('Nome fantasia é obrigatório'),
-  cnpj: z.string().nonempty('CNPJ é obrigatório'),
-  email: z.string().email('E-mail é inválido').nonempty('E-mail é obrigatório'),
-  phone: z.string().nonempty('Telefone é obrigatório'),
-  cepAddress: z.string().nonempty('CEP é obrigatório'),
-  cityAddress: z.string().nonempty('Cidade é obrigatória'),
-  stateAddress: z.string().nonempty('Estado é obrigatório'),
-  streetAddress: z.string().nonempty('Endereço é obrigatório'),
-  numberAddress: z.string().nonempty('Número é obrigatório'),
-  password: z.string().min(8, 'A senha é muito curta').nonempty('Senha é obrigatória'),
-  confirmPassword: z.string().nonempty('Confirme sua senha'),
-}).refine(data => data.password === data.confirmPassword, {message: 'As senhas devem ser iguais'})
+const registerUserBusinessSchema = z
+  .object({
+    typeAccount: z.enum(['cliente', 'empresa']).default('empresa'),
+    fantasyName: z.string().nonempty('Nome fantasia é obrigatório'),
+    cnpj: z.string().nonempty('CNPJ é obrigatório'),
+    email: z
+      .string()
+      .email('E-mail é inválido')
+      .nonempty('E-mail é obrigatório'),
+    phone: z.string().nonempty('Telefone é obrigatório'),
+    cepAddress: z.string().nonempty('CEP é obrigatório'),
+    cityAddress: z.string().nonempty('Cidade é obrigatória'),
+    stateAddress: z.string().nonempty('Estado é obrigatório'),
+    districtAddress: z.string().nonempty('Bairro é obrigatório'),
+    streetAddress: z.string().nonempty('Endereço é obrigatório'),
+    numberAddress: z.string().nonempty('Número é obrigatório'),
+    password: z
+      .string()
+      .min(8, 'A senha é muito curta')
+      .nonempty('Senha é obrigatória'),
+    confirmPassword: z.string().nonempty('Confirme sua senha'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'As senhas devem ser iguais',
+  })
 
 type RegisterUserBusinessForm = z.infer<typeof registerUserBusinessSchema>
 
@@ -41,15 +52,15 @@ export default function FormBusiness({ setSuccess }: FormBusinessProps) {
     handleSubmit: handleSubmitUserBusiness,
     watch,
     setValue,
-    formState: { errors } 
+    formState: { errors },
   } = useForm<RegisterUserBusinessForm>({
     resolver: zodResolver(registerUserBusinessSchema),
   })
 
   useEffect(() => {
     if (Object.keys(errors).length > 0) {
-      const firstError = Object.values(errors)[0];
-      toast.error(firstError?.message);
+      const firstError = Object.values(errors)[0]
+      toast.error(firstError?.message)
     }
   }, [errors])
 
@@ -70,6 +81,7 @@ export default function FormBusiness({ setSuccess }: FormBusinessProps) {
       setValue('cityAddress', data.localidade)
       setValue('stateAddress', data.estado)
       setValue('streetAddress', data.logradouro)
+      setValue('districtAddress', data.bairro)
     }
   }, [data, setValue])
 
@@ -86,6 +98,7 @@ export default function FormBusiness({ setSuccess }: FormBusinessProps) {
         phone: data.phone,
         stateAddress: data.stateAddress,
         streetAddress: data.streetAddress,
+        districtAddress: data.districtAddress,
         typeAccount: data.typeAccount,
       })
 
@@ -141,7 +154,7 @@ export default function FormBusiness({ setSuccess }: FormBusinessProps) {
         <Input
           type="text"
           placeholder="CEP*"
-          className="input-bordered col-span-2"
+          className="input-bordered col-span-1"
           {...registerUserBusiness('cepAddress')}
         />
 
@@ -157,6 +170,13 @@ export default function FormBusiness({ setSuccess }: FormBusinessProps) {
           placeholder="Estado*"
           className="input-bordered"
           {...registerUserBusiness('stateAddress')}
+        />
+
+        <Input
+          type="text"
+          placeholder="Bairro*"
+          className="input-bordered col-span-1"
+          {...registerUserBusiness('districtAddress')}
         />
 
         <Input

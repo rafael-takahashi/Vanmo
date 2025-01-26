@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
-import { AxiosError } from 'axios';
+import { AxiosError } from 'axios'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
@@ -12,15 +12,26 @@ import { registerClient } from '@/api/registerClient'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 
-const registerUserPersonSchema = z.object({
-  typeAccount: z.enum(['cliente', 'empresa']).default('cliente'),
-  fullName: z.string().nonempty('Nome é obrigatório'),
-  cpf: z.string().nonempty('CPF é obrigatório'),
-  email: z.string().email('E-mail é inválido').nonempty('E-mail é obrigatório'),
-  phone: z.string().nonempty('Telefone é obrigatório'),
-  password: z.string().min(8, 'A senha é muito curta').nonempty('Senha é obrigatória'),
-  confirmPassword: z.string().nonempty('Confirme sua senha'),
-}).refine(data => data.password === data.confirmPassword, {message: 'As senhas devem ser iguais'})
+const registerUserPersonSchema = z
+  .object({
+    typeAccount: z.enum(['cliente', 'empresa']).default('cliente'),
+    fullName: z.string().nonempty('Nome é obrigatório'),
+    cpf: z.string().nonempty('CPF é obrigatório'),
+    email: z
+      .string()
+      .email('E-mail é inválido')
+      .nonempty('E-mail é obrigatório'),
+    phone: z.string().nonempty('Telefone é obrigatório'),
+    dateOfBirth: z.string(),
+    password: z
+      .string()
+      .min(8, 'A senha é muito curta')
+      .nonempty('Senha é obrigatória'),
+    confirmPassword: z.string().nonempty('Confirme sua senha'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'As senhas devem ser iguais',
+  })
 
 type RegisterUserPersonForm = z.infer<typeof registerUserPersonSchema>
 
@@ -30,18 +41,18 @@ interface FormClientProps {
 
 export default function FormClient({ setSuccess }: FormClientProps) {
   const navigate = useNavigate()
-  const { 
-    register: registerUserPerson, 
-    handleSubmit: handleSubmitUserPerson, 
-    formState: { errors } 
+  const {
+    register: registerUserPerson,
+    handleSubmit: handleSubmitUserPerson,
+    formState: { errors },
   } = useForm<RegisterUserPersonForm>({
     resolver: zodResolver(registerUserPersonSchema),
   })
 
   useEffect(() => {
     if (Object.keys(errors).length > 0) {
-      const firstError = Object.values(errors)[0];
-      toast.error(firstError?.message);
+      const firstError = Object.values(errors)[0]
+      toast.error(firstError?.message)
     }
   }, [errors])
 
@@ -51,11 +62,14 @@ export default function FormClient({ setSuccess }: FormClientProps) {
 
   async function handleUserPersonRegister(data: RegisterUserPersonForm) {
     try {
+      const formattedDate = new Date(data.dateOfBirth)
+
       await mutateAsync({
         email: data.email,
         password: data.password,
         typeAccount: data.typeAccount,
         fullName: data.fullName,
+        dateOfBirth: formattedDate,
         cpf: data.cpf,
         phone: data.phone,
       })
@@ -105,8 +119,15 @@ export default function FormClient({ setSuccess }: FormClientProps) {
         <Input
           type="text"
           placeholder="Telefone celular*"
-          className="input-bordered col-span-2"
+          className="input-bordered col-span-1"
           {...registerUserPerson('phone')}
+        />
+
+        <Input
+          type="date"
+          placeholder="Data de nascimento*"
+          className="input-bordered col-span-1"
+          {...registerUserPerson('dateOfBirth')}
         />
 
         <Input

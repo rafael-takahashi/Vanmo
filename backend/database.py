@@ -8,7 +8,7 @@ def conectar_bd() -> sqlite3.Connection:
 
     :return: Uma instância de Connection
     """
-    return sqlite3.connect("app.db")
+    return sqlite3.connect("app.db", check_same_thread=False)
 
 
 def criar_tabelas(conexao: sqlite3.Connection):

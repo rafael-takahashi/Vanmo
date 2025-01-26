@@ -11,6 +11,7 @@ export interface registerBusinessBody {
   cep: string
   cityAddress: string
   stateAddress: string
+  districtAddress: string
   streetAddress: string
   numberAddress: string
   password: string
@@ -25,14 +26,23 @@ export async function registerBusiness({
   numberAddress,
   password,
   phone,
+  districtAddress,
   stateAddress,
   streetAddress,
   typeAccount,
 }: registerBusinessBody) {
-  const response = await api.post('/usuario/registrar', {
+  const response = await api.post('/usuario/cadastro/empresa', {
     email,
     senha: password,
+    nome_fantasia: fantasyName,
     tipo_conta: typeAccount,
+    cnpj,
+    uf: stateAddress,
+    cidade: cityAddress,
+    bairro: districtAddress,
+    cep,
+    rua: streetAddress,
+    numero: numberAddress,
   })
 
   const token = response.data.access_token
