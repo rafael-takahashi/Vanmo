@@ -4,7 +4,7 @@ import { Results } from '@/components/results'
 import SearchArea from '@/components/search-area'
 
 export default function SearchPage() {
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
   const from = searchParams.get('from')
   const to = searchParams.get('to')
   const dateFrom = searchParams.get('dateFrom')

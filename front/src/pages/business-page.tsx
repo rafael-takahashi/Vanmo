@@ -2,9 +2,10 @@ import { MapPin } from '@phosphor-icons/react'
 import { useSearchParams } from 'react-router'
 
 import SearchArea from '@/components/search-area'
+import { VehicleList } from '@/components/vehicle-list'
 
 export default function BusinessPage() {
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
   const from = searchParams.get('from')
   const to = searchParams.get('to')
   const dateFrom = searchParams.get('dateFrom')
@@ -30,7 +31,7 @@ export default function BusinessPage() {
         <span className="text-2xl font-bold text-primary-foreground">
           VEÍCULOS DISPONÍVEIS
         </span>
-        {searchParams && (
+        {from && (
           <span className="ml-6 text-primary-foreground font-semibold">
             Partida:{` `}
             <span className="text-primary">{from}</span>, Destino:{` `}{' '}
@@ -41,6 +42,8 @@ export default function BusinessPage() {
           </span>
         )}
       </div>
+
+      <VehicleList />
     </main>
   )
 }

@@ -1,8 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { AxiosError } from 'axios';
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { registerBusiness } from '@/api/registerBusiness'
@@ -13,31 +15,43 @@ import { Input } from './ui/input'
 
 const registerUserBusinessSchema = z.object({
   typeAccount: z.enum(['cliente', 'empresa']).default('empresa'),
-  fantasyName: z.string().nonempty(),
-  cnpj: z.string().nonempty(),
-  email: z.string().email().nonempty(),
-  phone: z.string().nonempty(),
-  cepAddress: z.string().nonempty(),
-  cityAddress: z.string().nonempty(),
-  stateAddress: z.string().nonempty(),
-  streetAddress: z.string().nonempty(),
-  numberAddress: z.string().nonempty(),
-  password: z.string().min(8, 'A senha é muito curta').nonempty(),
-  confirmPassword: z.string().min(8, 'A senha é muito curta').nonempty(),
-})
+  fantasyName: z.string().nonempty('Nome fantasia é obrigatório'),
+  cnpj: z.string().nonempty('CNPJ é obrigatório'),
+  email: z.string().email('E-mail é inválido').nonempty('E-mail é obrigatório'),
+  phone: z.string().nonempty('Telefone é obrigatório'),
+  cepAddress: z.string().nonempty('CEP é obrigatório'),
+  cityAddress: z.string().nonempty('Cidade é obrigatória'),
+  stateAddress: z.string().nonempty('Estado é obrigatório'),
+  streetAddress: z.string().nonempty('Endereço é obrigatório'),
+  numberAddress: z.string().nonempty('Número é obrigatório'),
+  password: z.string().min(8, 'A senha é muito curta').nonempty('Senha é obrigatória'),
+  confirmPassword: z.string().nonempty('Confirme sua senha'),
+}).refine(data => data.password === data.confirmPassword, {message: 'As senhas devem ser iguais'})
 
 type RegisterUserBusinessForm = z.infer<typeof registerUserBusinessSchema>
 
-export default function FormBusiness() {
+interface FormBusinessProps {
+  setSuccess: (success: boolean) => void
+}
+
+export default function FormBusiness({ setSuccess }: FormBusinessProps) {
   const navigate = useNavigate()
   const {
     register: registerUserBusiness,
     handleSubmit: handleSubmitUserBusiness,
     watch,
     setValue,
+    formState: { errors } 
   } = useForm<RegisterUserBusinessForm>({
     resolver: zodResolver(registerUserBusinessSchema),
   })
+
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      const firstError = Object.values(errors)[0];
+      toast.error(firstError?.message);
+    }
+  }, [errors])
 
   const cep = watch('cepAddress')
 
@@ -74,8 +88,19 @@ export default function FormBusiness() {
         streetAddress: data.streetAddress,
         typeAccount: data.typeAccount,
       })
-    } catch (err) {
-      console.log(err)
+
+      setSuccess(true)
+
+      setTimeout(() => {
+        navigate('/')
+      }, 3000)
+    } catch (err: unknown) {
+      console.error(err)
+      if (err instanceof AxiosError) {
+        toast.error(err.response?.data?.detail)
+      } else {
+        toast.error('Erro ao cadastrar usuário')
+      }
     }
   }
 
