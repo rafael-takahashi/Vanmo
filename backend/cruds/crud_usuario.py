@@ -152,8 +152,6 @@ def cadastrar_cliente(db: sqlite3.Connection, cliente: Cliente):
     cursor.execute(QueriesDB.query_inserir_cliente_novo, dados_cliente)
     
     db.commit()
-    
-    criar_usuario(db, cliente)
 
 def cadastrar_empresa(db: sqlite3.Connection, empresa: Empresa):
     cursor: sqlite3.Cursor = db.cursor()
@@ -174,8 +172,6 @@ def cadastrar_empresa(db: sqlite3.Connection, empresa: Empresa):
     cursor.execute(QueriesDB.query_inserir_empresa_nova, dados)
     
     db.commit()
-
-    criar_usuario(db, empresa)
 
 def buscar_dados_cliente(db: sqlite3.Connection, usuario: Usuario) -> Cliente:
     cursor: sqlite3.Cursor = db.cursor()
