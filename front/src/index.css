@@ -69,3 +69,15 @@
 .input-bordered {
   @apply border border-black border-opacity-30 focus:border-opacity-100 focus:outline-none rounded-md p-2;
 }
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
+input[type="date"] {
+  -moz-appearance: textfield;
+}
+
+input[type="date"] {
+  appearance: none;
+}

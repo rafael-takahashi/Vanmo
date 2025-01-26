@@ -129,7 +129,7 @@ class CadastroEmpresa(BaseModel):
     rua: str
     numero: str
 
-def registrar_novo_usuario(dados: CadastroUsuario) -> int:
+async def registrar_novo_usuario(dados: CadastroUsuario) -> int:
 
     # TODO: Validar email
 
@@ -145,7 +145,12 @@ def registrar_novo_usuario(dados: CadastroUsuario) -> int:
 
 @app.post("/usuario/cadastro/empresa")
 async def registrar_empresa(dados: CadastroEmpresa):
-    id_usuario = registrar_novo_usuario(dados.email, dados.senha, "empresa", "")
+    cadastro_usuario = CadastroUsuario(
+        email=dados.email,
+        senha=dados.senha,
+        tipo_conta="cliente"
+    )
+    id_usuario = await registrar_novo_usuario(dados.email, dados.senha, cadastro_usuario)
 
     db = database.conectar_bd()
 
@@ -176,7 +181,13 @@ async def registrar_empresa(dados: CadastroEmpresa):
 
 @app.post("/usuario/cadastro/cliente")
 async def registrar_cliente(dados: CadastroCliente):
-    id_usuario = registrar_novo_usuario(dados.email, dados.senha, "cliente", "")
+    cadastro_usuario = CadastroUsuario(
+        email=dados.email,
+        senha=dados.senha,
+        tipo_conta="cliente"
+    )
+
+    id_usuario = await registrar_novo_usuario(cadastro_usuario)
 
     db = database.conectar_bd()
 
