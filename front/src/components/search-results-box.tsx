@@ -52,7 +52,7 @@ export function SearchResults() {
 
   return (
     <div
-      className="bg-white rounded-md p-4 flex cursor-pointer"
+      className="bg-white rounded-md p-4 flex cursor-pointer shadow-lg"
       onClick={() => handleNavigateSearchResult()}
     >
       <div className="w-[280px] h-[180px] overflow-hidden">
@@ -65,9 +65,20 @@ export function SearchResults() {
       <div className="flex-1 ml-4">
         <h2 className="text-center text-xl font-bold">Viação Garcia</h2>
 
+        <p className="text-primary-foreground mt-4">
+          Cidade: <span className="text-primary font-semibold">Maringá</span>
+        </p>
+
         <p className="text-primary-foreground">
-          Endereço:{' '}
-          <span className="text-primary font-semibold">Rua Teste XYZ</span>
+          Estado: <span className="text-primary font-semibold">PR</span>
+        </p>
+
+        <p className="text-primary-foreground">
+          Bairro: <span className="text-primary font-semibold">Zona 7</span>
+        </p>
+
+        <p className="text-primary-foreground">
+          Rua: <span className="text-primary font-semibold">Rua XYZ, 42</span>
         </p>
 
         <p className="text-primary-foreground mt-auto">
