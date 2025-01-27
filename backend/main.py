@@ -196,6 +196,14 @@ async def editar_dados_cliente(dados: AlterarDadosCliente, token: str = Depends(
 
     crud_usuario.atualizar_cliente(db, cliente)    
 
+@app.get("/usuario/verifica_tipo_usuario")
+async def buscar_tipo_usuario(token: str = Depends(oauth2_esquema)):
+    db = database.conectar_bd()
+
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+
+    return {"tipo_usuario": usuario.tipo_conta}
+
 @app.put("/usuario/alterar_dados/empresa")
 async def editar_dados_empresa(dados: AlterarDadosEmpresa, token: str = Depends(oauth2_esquema)):
     db = database.conectar_bd()
