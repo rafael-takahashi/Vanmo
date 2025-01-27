@@ -2,7 +2,7 @@ import { Pencil, Trash } from '@phosphor-icons/react'
 import Cookies from 'js-cookie'
 import { toast } from 'sonner'
 
-import { deleteVehicle } from '@/api/deleteVehicle'
+import { deleteVehicle } from '@/api/vehicles/deleteVehicle'
 
 import garcia from '../assets/garcia.jpg'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'

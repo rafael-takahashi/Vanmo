@@ -692,7 +692,7 @@ async def apagar_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):
     @param id_veiculo: O ID do veículo a ser apagado
     @param token: O token de acesso do usuário
     """
-
+    
     db = database.conectar_bd()
 
     usuario_atual = auth.obter_usuario_atual(db, token)
@@ -710,7 +710,7 @@ async def apagar_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):
     if crud_veiculo.buscar_veiculo(db, id_veiculo) is None:
         raise HTTPException(status_code=400, detail="Veículo não encontrado no banco de dados")
 
-    crud_veiculo.remover_veiculo(id_veiculo)
+    crud_veiculo.remover_veiculo(db, id_veiculo)
 
     return {"detail": "Veículo removido com sucesso"}
 

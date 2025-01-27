@@ -8,7 +8,7 @@ import { useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 
 import { editProfileUserBusiness } from '@/api/editUserBusiness'
-import { getBusinessVehicles } from '@/api/getBusinessVehicles'
+import { getBusinessVehicles } from '@/api/vehicles/getBusinessVehicles'
 import { getUserBusiness } from '@/api/getUserBusiness'
 
 import ProposalItem from './proposal-item'
@@ -111,7 +111,7 @@ export default function ProfileBusinessArea() {
   const [vehicles, setVehicles] = useState<any[]>([])
 
   const fetchAndSetVehicles = async (businessId: number | undefined) => {
-    setVehicles(await getBusinessVehicles(businessId))
+    setVehicles(await getBusinessVehicles(businessId, 1))
   }
 
   async function handleEditProfile(data: BusinessProfileForm) {
