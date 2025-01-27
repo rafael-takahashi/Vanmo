@@ -126,7 +126,7 @@ export default function ProfileClientArea() {
         await mutateAsync({
           ...updatedFields,
           token,
-          photo,
+          photo
         })
       } else {
         console.log('Nenhuma alteração detectada')

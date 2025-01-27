@@ -635,15 +635,13 @@ async def editar_veiculo(dados: EditarVeiculo, token: str = Depends(oauth2_esque
     return {"detail": "Veículo editado com sucesso!"}
 
 @app.get("/veiculos/buscar_veiculos_empresa")
-async def buscar_todos_veiculos_empresa(dados: IdEmpresa):
+async def buscar_todos_veiculos_empresa(id_empresa: int):
     """
     Busca todos os veículos de uma empresa
 
     @param id_empresa: O ID da empresa a qual se quer se buscar os veículos
     @param token: O token de acesso do usuário
     """
-
-    id_empresa = dados.id_empresa
 
     db = database.conectar_bd()
 
@@ -652,7 +650,7 @@ async def buscar_todos_veiculos_empresa(dados: IdEmpresa):
     # não precisa estar logado para buscar os veículos
     # auth.obter_usuario_atual(db, token)
 
-    return crud_veiculo.listar_veiculos(db, dados.id_empresa)
+    return crud_veiculo.listar_veiculos(db, id_empresa)
 
 @app.get("/veiculos/buscar_dados_veiculo", response_model=RespostaVeiculo)
 async def buscar_dados_veiculo(dados: IdVeiculo, token: str = Depends(oauth2_esquema)):

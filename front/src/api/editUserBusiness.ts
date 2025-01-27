@@ -3,7 +3,7 @@ import { api } from '@/lib/axios'
 export interface editProfileUserBusinessBody {
   email?: string
   password?: string
-  photo?: FileList
+  photo?: File | null
   fantasyName?: string
   stateAddress?: string
   cityAddress?: string
