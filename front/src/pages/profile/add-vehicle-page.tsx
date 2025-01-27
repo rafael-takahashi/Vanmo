@@ -5,8 +5,13 @@ import { getUserBusiness } from '@/api/getUserBusiness'
 import { getUserClient } from '@/api/getUserClient'
 import AddVehicleForm from '@/components/add-vehicle-form'
 import SideMenuProfile from '@/components/side-menu-profile'
+import { useLocation } from 'react-router'
 
 export default function AddVehiclePage() {
+  const location = useLocation()
+  const vehicle = location.state?.vehicle
+  const editMode = vehicle != null
+
   const token = Cookies.get('auth_token')
 
   const { data: dataClient } = useQuery({
@@ -39,7 +44,7 @@ export default function AddVehiclePage() {
       />
 
       <div className="col-span-2 bg-primary-foreground p-10 rounded-md">
-        <AddVehicleForm />
+        <AddVehicleForm vehicle={vehicle} editMode={editMode}/>
       </div>
     </main>
   )

@@ -1,0 +1,44 @@
+import { api } from '@/lib/axios'
+interface createProposalBody {
+  id_empresa: number
+  id_veiculo: number
+  cidade_saida: string
+  cidade_chegada: string
+  distancia_extra_km: number
+  data_saida: string // Make sure Date is converted to ISO8601 before sending to FastAPI
+  data_chegada: string // .toISOString()
+  token: string | undefined
+}
+
+export async function createProposal({
+  id_empresa,
+  id_veiculo,
+  cidade_saida,
+  cidade_chegada,
+  distancia_extra_km,
+  data_saida,
+  data_chegada,
+  token,
+}: createProposalBody) {
+  const jsonBody = JSON.stringify({
+    id_empresa,
+    id_veiculo,
+    cidade_saida,
+    cidade_chegada,
+    distancia_extra_km,
+    data_saida,
+    data_chegada,
+  })
+  try {
+    const response = await api.post(`/propostas/criar_proposta/`, jsonBody, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    return response.data
+  } catch (error: any) {
+    console.error('Error:', error.response?.data || error.message)
+    throw error
+  }
+}

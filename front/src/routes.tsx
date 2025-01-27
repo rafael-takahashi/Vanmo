@@ -59,6 +59,14 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: '/profile/add-vehicle/:id',
+        element: (
+          <AuthMiddleware>
+            <AddVehiclePage />
+          </AuthMiddleware>
+        ),
+      },
+      {
         path: '/empresa/:name',
         element: <BusinessPage />,
       },

@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { format, parse } from 'date-fns'
+import { addDays, format } from 'date-fns'
 import Cookies from 'js-cookie'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -8,8 +8,8 @@ import { useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 
 import { editProfileUserClient } from '@/api/editUserClient'
-import { getProposals } from '@/api/getProposals'
 import { getUserClient } from '@/api/getUserClient'
+import { getUserProposals } from '@/api/proposals/getUserProposals'
 
 import ProposalItem from './proposal-item'
 import { Button } from './ui/button'
@@ -88,7 +88,7 @@ export default function ProfileClientArea() {
 
   const { data: proposalsList } = useQuery({
     queryKey: ['proposals-user', token],
-    queryFn: () => getProposals({ token }),
+    queryFn: () => getUserProposals({ token }),
   })
 
   const { mutateAsync } = useMutation({
@@ -96,11 +96,18 @@ export default function ProfileClientArea() {
   })
 
   useEffect(() => {
+    if (!data?.data_nascimento) {
+      return
+    }
+
+    const date = new Date(data.data_nascimento)
+    const adjustedDate = addDays(date, 1)
+
     if (data) {
       const initialData = {
         email: data.email || '',
         fullName: data.nome_completo || '',
-        dateOfBirth: data.data_nascimento || '',
+        dateOfBirth: format(adjustedDate, 'yyyy-MM-dd') || '',
         phone: data.telefone || '',
       }
 
@@ -126,7 +133,7 @@ export default function ProfileClientArea() {
         await mutateAsync({
           ...updatedFields,
           token,
-          photo
+          photo,
         })
       } else {
         console.log('Nenhuma alteração detectada')
@@ -204,7 +211,7 @@ export default function ProfileClientArea() {
                           {...register('phone')}
                         />
                       </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
+                      {/* <div className="grid grid-cols-4 items-center gap-4">
                         <label htmlFor="phone" className="text-right">
                           Foto
                         </label>
@@ -227,7 +234,7 @@ export default function ProfileClientArea() {
                             />
                           </div>
                         )}
-                      </div>
+                      </div> */}
                     </div>
 
                     <Button type="submit" className="ml-auto">
@@ -341,7 +348,7 @@ export default function ProfileClientArea() {
         </div>
         <div className="flex flex-col gap-4 mt-4">
           {proposalsList && proposalsList.length > 0 ? (
-            proposalsList.map((proposal) => (
+            proposalsList.map((proposal: any) => (
               <ProposalItem key={proposal.id} type="cliente" />
             ))
           ) : (

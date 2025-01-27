@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { Outlet, useNavigate } from 'react-router'
 
 import { fetchBusinessByName } from '@/api/fetchBusinessByName'
+import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   Command,
@@ -18,14 +19,14 @@ import {
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 
 export function AppLayout() {
+  const [nameSearch, setNameSearch] = useState('')
   const auth = Cookies.get('auth_token')
   const navigate = useNavigate()
-  const [nameSearch, setNameSearch] = useState('')
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['buscarEmpresas', nameSearch],
     queryFn: () => fetchBusinessByName({ nome: nameSearch }),
-    enabled: nameSearch.length > 0,
+    enabled: nameSearch.trim().length > 0,
     retry: false,
   })
 
@@ -55,19 +56,21 @@ export function AppLayout() {
                     value={nameSearch}
                     onValueChange={(value) => setNameSearch(value)}
                   />
-
                   <CommandList>
                     {isLoading ? (
                       <CommandEmpty>Carregando...</CommandEmpty>
                     ) : isError ? (
                       <CommandEmpty>Erro ao buscar empresas.</CommandEmpty>
-                    ) : data?.length === 0 ? (
+                    ) : !data || data.length === 0 ? (
                       <CommandEmpty>Não foi encontrado a empresa.</CommandEmpty>
                     ) : (
                       <CommandGroup heading="Sugestões">
-                        {data?.map((empresa) => (
+                        {data.slice(0, 5).map((empresa) => (
                           <CommandItem key={empresa.id}>
-                            <span>{empresa.nome}</span>
+                            <a href={`/empresa/${empresa.nome_fantasia}`}>
+                              <Avatar />
+                              <span>{empresa.nome_fantasia}</span>
+                            </a>
                           </CommandItem>
                         ))}
                       </CommandGroup>
