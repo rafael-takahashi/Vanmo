@@ -16,7 +16,7 @@ from classes import classe_aluguel, classe_calendario, classe_endereco, classe_l
 from cruds import crud_aluguel, crud_usuario, crud_veiculo, crud_local
 from utils import *
 from basemodels import *
-from testes_main import executar_testes
+from popular_bd import inserir_dados
 
 lista_cidades = []
 objeto_cidades = []
@@ -816,3 +816,8 @@ async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa, token: str = De
 async def busca_lista_cidades():
     global objeto_cidades
     return objeto_cidades
+
+@app.post("/dev/popular_bd")
+async def popular_bd():
+    db = database.conectar_bd()
+    await inserir_dados(db)
