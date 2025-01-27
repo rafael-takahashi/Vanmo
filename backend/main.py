@@ -782,8 +782,9 @@ async def buscar_empresas_nome(nome_busca: str, token: str = Depends(oauth2_esqu
 
     return crud_usuario.buscador_empresas_nome(db, nome_busca)
 
-@app.put("/busca/buscar_empresas/criterio")
-async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa):
+@app.get("/busca/buscar_empresas/criterio/{data_de_partida}/{qtd_passageiros}/{latitude_partida}/{longitude_partida}/{pagina}")
+async def buscar_empresas_criterio(data_de_partida: datetime.date | None = None, qtd_passageiros: int | None = None, 
+                                   latitude_partida: float | None = None, longitude_partida: float | None = None, pagina: int = 1):
     """
     Busca as empresas a partir de outros critérios
 
@@ -792,10 +793,10 @@ async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa):
     """
     db = database.conectar_bd()
 
-    if dados.pagina < 1:
+    if pagina < 1:
         return {"error": "A página deve ser maior ou igual a 1."}
 
-    if (not dados.data_de_partida) and (not dados.qtd_passageiros) and (not dados.latitude_partida) and (not dados.longitude_partida):
+    if (not data_de_partida) and (not qtd_passageiros) and (not latitude_partida) and (not longitude_partida):
         todas_empresas = crud_usuario.buscar_todas_empresas(db)
 
     else:
@@ -803,21 +804,21 @@ async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa):
         empresas_passageiros = set()
         empresas_local = set()
 
-        if dados.data_de_partida:
-            resultados = crud_usuario.buscar_empresa_por_data(db, dados.data_de_partida)
+        if data_de_partida:
+            resultados = crud_usuario.buscar_empresa_por_data(db, data_de_partida)
             for resultado in resultados:
                 empresas_data.add(resultado[0])
 
-        if dados.qtd_passageiros:
-            resultados = crud_usuario.buscar_empresa_por_passageiros(db, dados.qtd_passageiros)
+        if qtd_passageiros:
+            resultados = crud_usuario.buscar_empresa_por_passageiros(db, qtd_passageiros)
             for resultado in resultados:
                 empresas_passageiros.add(resultado[0]) 
 
-        if dados.latitude_partida and dados.longitude_partida:
-            if (not valida_coordendas(dados.latitude_partida, dados.longitude_partida)):
+        if latitude_partida and longitude_partida:
+            if (not valida_coordendas(latitude_partida, longitude_partida)):
                 raise HTTPException(status_code=400, detail="Coordenadas inválidas!")
 
-            resultados = crud_usuario.buscar_empresas_por_local(db, dados.latitude_partida, dados.longitude_partida)
+            resultados = crud_usuario.buscar_empresas_por_local(db, latitude_partida, longitude_partida)
             for resultado in resultados:
                 empresas_local.add(resultado[0]) 
 
@@ -838,7 +839,7 @@ async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa):
             empresa: classe_usuario.Empresa = crud_usuario.buscar_empresa_por_id(db, id_empresa)
             todas_empresas.append(empresa)
 
-    inicio_pag = 10 * (dados.pagina - 1)
+    inicio_pag = 10 * (pagina - 1)
     fim_pag = inicio_pag + 9
     return todas_empresas[inicio_pag:fim_pag+1]
 

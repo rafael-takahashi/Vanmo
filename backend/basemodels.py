@@ -124,13 +124,6 @@ class BuscaEmpresaNome(BaseModel):
     nome_busca: str
     pagina: int
 
-class CriteriosBuscaEmpresa(BaseModel):
-    data_de_partida: datetime.date | None = None
-    qtd_passageiros: int | None = None
-    latitude_partida: float | None = None
-    longitude_partida: float | None = None
-    pagina: int = 1
-
 class CriarProposta(BaseModel):
     id_empresa: int
     id_veiculo: int
