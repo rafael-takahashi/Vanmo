@@ -782,8 +782,8 @@ async def buscar_empresas_nome(dados: BuscaEmpresaNome, token: str = Depends(oau
 
     return crud_usuario.buscador_empresas_nome(db, nome_busca, pagina)
 
-@app.get("/busca/buscar_empresas/criterio")
-async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa, token: str = Depends(oauth2_esquema)):
+@app.put("/busca/buscar_empresas/criterio")
+async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa):
     """
     Busca as empresas a partir de outros critérios
 

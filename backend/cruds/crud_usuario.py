@@ -219,7 +219,6 @@ def buscar_empresa_por_data(db: sqlite3.Connection, data_partida: datetime.date)
     else:
         empresas = []
         for resultado in resultados:
-            empresa: Empresa = Empresa(resultado)
             resultado_usuario = cursor.execute(QueriesDB.query_buscar_usuario_por_id, (resultado[0],)).fetchone()
 
             email = resultado_usuario[1]
@@ -231,7 +230,7 @@ def buscar_empresa_por_data(db: sqlite3.Connection, data_partida: datetime.date)
             local : Local =  buscar_local_por_id(db, resultado[4])
             endereco : Endereco = buscar_endereco_por_id(db, resultado[3])
             
-            empresa = Empresa(None, None, None, None, None, None, None, None, None)
+            empresa = Empresa(None, None, None, None, None, None, None, None, None, None)
             
             empresa.id = resultado[0]
             empresa.email = email
@@ -264,7 +263,6 @@ def buscar_empresa_por_passageiros(db: sqlite3.Connection, num_passageiros: int)
     else:
         empresas = []
         for resultado in resultados:
-            empresa: Empresa = Empresa(resultado)
             resultado_usuario = cursor.execute(QueriesDB.query_buscar_usuario_por_id, (resultado[0],)).fetchone()
 
             email = resultado_usuario[1]
@@ -276,7 +274,7 @@ def buscar_empresa_por_passageiros(db: sqlite3.Connection, num_passageiros: int)
             local : Local =  buscar_local_por_id(db, resultado[4])
             endereco : Endereco = buscar_endereco_por_id(db, resultado[3])
             
-            empresa = Empresa(None, None, None, None, None, None, None, None, None)
+            empresa = Empresa(None, None, None, None, None, None, None, None, None, None)
             
             empresa.id = resultado[0]
             empresa.email = email
@@ -309,7 +307,6 @@ def buscar_empresas_por_local (db: sqlite3.Connection, latitude: float, longitud
     else:
         empresas = []
         for resultado in resultados:
-            empresa: Empresa = Empresa(resultado)
             resultado_usuario = cursor.execute(QueriesDB.query_buscar_usuario_por_id, (resultado[0],)).fetchone()
 
             email = resultado_usuario[1]
@@ -321,7 +318,7 @@ def buscar_empresas_por_local (db: sqlite3.Connection, latitude: float, longitud
             local : Local =  buscar_local_por_id(db, resultado[4])
             endereco : Endereco = buscar_endereco_por_id(db, resultado[3])
             
-            empresa = Empresa(None, None, None, None, None, None, None, None, None)
+            empresa = Empresa(None, None, None, None, None, None, None, None, None, None)
             
             empresa.id = resultado[0]
             empresa.email = email
