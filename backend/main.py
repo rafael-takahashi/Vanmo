@@ -792,7 +792,6 @@ async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa):
     """
     db = database.conectar_bd()
 
-    # TODO: validar coordenadas
 
     if (not dados.data_de_partida) and (not dados.qtd_passageiros) and (not dados.latitude_partida) and (not dados.longitude_partida):
         todas_empresas = crud_usuario.buscar_todas_empresas(db)
@@ -805,31 +804,37 @@ async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa):
         if dados.data_de_partida:
             resultados = crud_usuario.buscar_empresa_por_data(db, dados.data_de_partida)
             for resultado in resultados:
-                empresas_data.add(resultado)
+                empresas_data.add(resultado[0])
 
         if dados.qtd_passageiros:
             resultados = crud_usuario.buscar_empresa_por_passageiros(db, dados.qtd_passageiros)
             for resultado in resultados:
-                empresas_passageiros.add(resultado) 
+                empresas_passageiros.add(resultado[0]) 
 
         if dados.latitude_partida and dados.longitude_partida:
+            if (not valida_coordendas(dados.latitude_partida, dados.longitude_partida)):
+                raise HTTPException(status_code=400, detail="Coordenadas inválidas!")
+
             resultados = crud_usuario.buscar_empresas_por_local(db, dados.latitude_partida, dados.longitude_partida)
             for resultado in resultados:
-                empresas_local.add(resultado) 
+                empresas_local.add(resultado[0]) 
 
         conjuntos = [empresas_data, empresas_passageiros, empresas_local]
         
         conjuntos_nao_vazios = [conjunto for conjunto in conjuntos if conjunto]  # Apenas conjuntos não vazios
-        print(empresas_data)
-        print(empresas_passageiros)
 
         if conjuntos_nao_vazios:
             if len(conjuntos_nao_vazios) == 1:
-                todas_empresas = list(conjuntos_nao_vazios[0])
+                inter = list(conjuntos_nao_vazios[0])
             else:
-                todas_empresas = list(set.intersection(*conjuntos_nao_vazios))
+                inter = list(set.intersection(*conjuntos_nao_vazios))
         else:
-            todas_empresas = []
+            inter = []
+
+        todas_empresas = []
+        for id_empresa in inter:
+            empresa: classe_usuario.Empresa = crud_usuario.buscar_empresa_por_id(db, id_empresa)
+            todas_empresas.append(empresa)
 
     inicio_pag = 10 * (dados.pagina - 1)
     fim_pag = inicio_pag + 9

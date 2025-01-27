@@ -207,125 +207,125 @@ def buscar_dados_empresa(db: sqlite3.Connection, usuario: Usuario) -> Empresa:
 
     return empresa
 
-def buscar_empresa_por_data(db: sqlite3.Connection, data_partida: datetime.date) -> list[Empresa]:
+def buscar_empresa_por_data(db: sqlite3.Connection, data_partida: datetime.date) -> list[int]:
     cursor: sqlite3.Cursor = db.cursor()
     dados = (data_partida.strftime('%Y-%m-%d'),)
 
     resultados = cursor.execute(QueriesDB.query_buscar_empresa_por_data, dados).fetchall()
 
-    empresas = []
-    for resultado in resultados:
-        resultado_usuario = cursor.execute(QueriesDB.query_buscar_usuario_por_id, (resultado[0],)).fetchone()
+    # empresas = []
+    # for resultado in resultados:
+    #     resultado_usuario = cursor.execute(QueriesDB.query_buscar_usuario_por_id, (resultado[0],)).fetchone()
 
-        email = resultado_usuario[1]
-        senha = resultado_usuario[2]
-        tipo = resultado_usuario[3]
-        foto = resultado_usuario[4]
-        telefone = resultado_usuario[5]
+    #     email = resultado_usuario[1]
+    #     senha = resultado_usuario[2]
+    #     tipo = resultado_usuario[3]
+    #     foto = resultado_usuario[4]
+    #     telefone = resultado_usuario[5]
 
-        local : Local =  buscar_local_por_id(db, resultado[4])
-        endereco : Endereco = buscar_endereco_por_id(db, resultado[3])
+    #     local : Local =  buscar_local_por_id(db, resultado[4])
+    #     endereco : Endereco = buscar_endereco_por_id(db, resultado[3])
         
-        empresa = Empresa(None, None, None, None, None, None, None, None, None, None)
+    #     empresa = Empresa(None, None, None, None, None, None, None, None, None, None)
         
-        empresa.id = resultado[0]
-        empresa.email = email
-        empresa.senha_hashed = senha
-        empresa.tipo_conta = tipo
-        empresa.foto = foto
-        empresa.cnpj = resultado[1]
-        empresa.nome_fantasia = resultado[2]
-        empresa.endereco = endereco
-        empresa.local = local
-        empresa.num_avaliacoes = resultado[5]
-        empresa.soma_avaliacoes = resultado[6]
-        empresa.telefone = telefone
+    #     empresa.id = resultado[0]
+    #     empresa.email = email
+    #     empresa.senha_hashed = senha
+    #     empresa.tipo_conta = tipo
+    #     empresa.foto = foto
+    #     empresa.cnpj = resultado[1]
+    #     empresa.nome_fantasia = resultado[2]
+    #     empresa.endereco = endereco
+    #     empresa.local = local
+    #     empresa.num_avaliacoes = resultado[5]
+    #     empresa.soma_avaliacoes = resultado[6]
+    #     empresa.telefone = telefone
 
-        empresa.foto = utils.carrega_foto_base64(empresa.foto)
+    #     empresa.foto = utils.carrega_foto_base64(empresa.foto)
 
-        empresas.append(empresa)
+    #     empresas.append(empresa)
     
-    return empresas
+    return resultados
 
-def buscar_empresa_por_passageiros(db: sqlite3.Connection, num_passageiros: int) -> list[Empresa]:
+def buscar_empresa_por_passageiros(db: sqlite3.Connection, num_passageiros: int) -> list[int]:
     cursor: sqlite3.Cursor = db.cursor()
     dados = (num_passageiros,)
 
     resultados = cursor.execute(QueriesDB.query_buscar_empresa_por_passageiros, dados).fetchall()  
 
-    empresas = []
-    for resultado in resultados:
-        resultado_usuario = cursor.execute(QueriesDB.query_buscar_usuario_por_id, (resultado[0],)).fetchone()
+    # empresas = []
+    # for resultado in resultados:
+    #     resultado_usuario = cursor.execute(QueriesDB.query_buscar_usuario_por_id, (resultado[0],)).fetchone()
 
-        email = resultado_usuario[1]
-        senha = resultado_usuario[2]
-        tipo = resultado_usuario[3]
-        foto = resultado_usuario[4]
-        telefone = resultado_usuario[5]
+    #     email = resultado_usuario[1]
+    #     senha = resultado_usuario[2]
+    #     tipo = resultado_usuario[3]
+    #     foto = resultado_usuario[4]
+    #     telefone = resultado_usuario[5]
 
-        local : Local =  buscar_local_por_id(db, resultado[4])
-        endereco : Endereco = buscar_endereco_por_id(db, resultado[3])
+    #     local : Local =  buscar_local_por_id(db, resultado[4])
+    #     endereco : Endereco = buscar_endereco_por_id(db, resultado[3])
         
-        empresa = Empresa(None, None, None, None, None, None, None, None, None, None)
+    #     empresa = Empresa(None, None, None, None, None, None, None, None, None, None)
         
-        empresa.id = resultado[0]
-        empresa.email = email
-        empresa.senha_hashed = senha
-        empresa.tipo_conta = tipo
-        empresa.foto = foto
-        empresa.cnpj = resultado[1]
-        empresa.nome_fantasia = resultado[2]
-        empresa.endereco = endereco
-        empresa.local = local
-        empresa.num_avaliacoes = resultado[5]
-        empresa.soma_avaliacoes = resultado[6]
-        empresa.telefone = telefone
+    #     empresa.id = resultado[0]
+    #     empresa.email = email
+    #     empresa.senha_hashed = senha
+    #     empresa.tipo_conta = tipo
+    #     empresa.foto = foto
+    #     empresa.cnpj = resultado[1]
+    #     empresa.nome_fantasia = resultado[2]
+    #     empresa.endereco = endereco
+    #     empresa.local = local
+    #     empresa.num_avaliacoes = resultado[5]
+    #     empresa.soma_avaliacoes = resultado[6]
+    #     empresa.telefone = telefone
 
-        empresa.foto = utils.carrega_foto_base64(empresa.foto)
+    #     empresa.foto = utils.carrega_foto_base64(empresa.foto)
 
-        empresas.append(empresa)
+    #     empresas.append(empresa)
 
-    return empresas
+    return resultados
 
-def buscar_empresas_por_local (db: sqlite3.Connection, latitude: float, longitude:float) -> list[Empresa]:
+def buscar_empresas_por_local (db: sqlite3.Connection, latitude: float, longitude:float) -> list[int]:
     cursor: sqlite3.Cursor = db.cursor()
     dados = (latitude, longitude)
 
     resultados = cursor.execute(QueriesDB.query_buscar_empresa_por_local, dados).fetchall()  
 
-    empresas = []
-    for resultado in resultados:
-        resultado_usuario = cursor.execute(QueriesDB.query_buscar_usuario_por_id, (resultado[0],)).fetchone()
+    # empresas = []
+    # for resultado in resultados:
+    #     resultado_usuario = cursor.execute(QueriesDB.query_buscar_usuario_por_id, (resultado[0],)).fetchone()
 
-        email = resultado_usuario[1]
-        senha = resultado_usuario[2]
-        tipo = resultado_usuario[3]
-        foto = resultado_usuario[4]
-        telefone = resultado_usuario[5]
+    #     email = resultado_usuario[1]
+    #     senha = resultado_usuario[2]
+    #     tipo = resultado_usuario[3]
+    #     foto = resultado_usuario[4]
+    #     telefone = resultado_usuario[5]
 
-        local : Local =  buscar_local_por_id(db, resultado[4])
-        endereco : Endereco = buscar_endereco_por_id(db, resultado[3])
+    #     local : Local =  buscar_local_por_id(db, resultado[4])
+    #     endereco : Endereco = buscar_endereco_por_id(db, resultado[3])
         
-        empresa = Empresa(None, None, None, None, None, None, None, None, None, None)
+    #     empresa = Empresa(None, None, None, None, None, None, None, None, None, None)
         
-        empresa.id = resultado[0]
-        empresa.email = email
-        empresa.senha_hashed = senha
-        empresa.tipo_conta = tipo
-        empresa.foto = foto
-        empresa.cnpj = resultado[1]
-        empresa.nome_fantasia = resultado[2]
-        empresa.endereco = endereco
-        empresa.local = local
-        empresa.num_avaliacoes = resultado[5]
-        empresa.soma_avaliacoes = resultado[6]
-        empresa.telefone = telefone
+    #     empresa.id = resultado[0]
+    #     empresa.email = email
+    #     empresa.senha_hashed = senha
+    #     empresa.tipo_conta = tipo
+    #     empresa.foto = foto
+    #     empresa.cnpj = resultado[1]
+    #     empresa.nome_fantasia = resultado[2]
+    #     empresa.endereco = endereco
+    #     empresa.local = local
+    #     empresa.num_avaliacoes = resultado[5]
+    #     empresa.soma_avaliacoes = resultado[6]
+    #     empresa.telefone = telefone
 
-        empresa.foto = utils.carrega_foto_base64(empresa.foto)
+    #     empresa.foto = utils.carrega_foto_base64(empresa.foto)
 
-        empresas.append(empresa)
+    #     empresas.append(empresa)
     
-    return empresas
+    return resultados
 
 def buscar_todas_empresas (db: sqlite3.Connection) -> list[Empresa]:
     cursor: sqlite3.Cursor = db.cursor()
@@ -384,7 +384,7 @@ def buscar_empresa_por_id (db: sqlite3.Connection, id_empresa: int) -> Empresa:
     local : Local =  buscar_local_por_id(db, resultado_empresa[4])
     endereco : Endereco = buscar_endereco_por_id(db, resultado_empresa[3])
     
-    empresa = Empresa(None, None, None, None, None, None, None, None, None)
+    empresa = Empresa(None, None, None, None, None, None, None, None, None, None)
     
     empresa.id = id_empresa
     empresa.email = email
