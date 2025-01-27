@@ -31,7 +31,7 @@ def obter_usuario_por_nome(db: sqlite3.Connection, nome: str) -> Usuario:
     (id_usuario, email_usuario, senha_usuario, tipo_conta, path_foto, telefone) = resultados
 
     cursor.close()
-    return Usuario(email_usuario, senha_usuario, tipo_conta, path_foto, id=id_usuario, telefone=telefone)
+    return Usuario(email_usuario, senha_usuario, tipo_conta, path_foto, id_usuario=id_usuario, telefone=telefone)
 
 def criar_usuario(db: sqlite3.Connection, usuario: Usuario) -> int:
 
