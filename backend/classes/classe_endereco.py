@@ -7,3 +7,6 @@ class Endereco():
         self.cep: str = cep
         self.rua: str = rua
         self.numero: int = numero
+
+    def __repr__(self):
+        return f"{self.uf}, {self.cidade}, {self.cep}, {self.bairro}, {self.rua}, {self.numero}"

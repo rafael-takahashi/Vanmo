@@ -730,8 +730,12 @@ async def buscar_dados_empresa(id_empresa: int):
 
     empresa = crud_usuario.buscar_empresa_por_id(db, id_empresa)
 
+    avaliacao = 0
+    if empresa.num_avaliacoes != 0:
+        avaliacao = empresa.soma_avaliacoes / empresa.num_avaliacoes
+
     response_data = RespostaEmpresa(foto=empresa.foto, nome_fantasia=empresa.nome_fantasia, cnpj=empresa.cnpj,
-                                    endereco=str(empresa.endereco), avaliacao=(empresa.soma_avaliacoes/empresa.num_avaliacoes),
+                                    endereco=str(empresa.endereco), avaliacao=avaliacao,
                                     telefone=empresa.telefone)
 
     return response_data
