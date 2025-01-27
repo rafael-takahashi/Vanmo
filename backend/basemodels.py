@@ -106,7 +106,7 @@ class CadastrarVeiculo(BaseModel):
     cor: str
     ano_fabricacao: int
     capacidade: int
-    foto: UploadFile
+    foto: UploadFile | None = None
 
 class RespostaEmpresa(BaseModel):
     foto: str

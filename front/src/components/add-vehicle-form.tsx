@@ -68,14 +68,21 @@ export default function AddVehicleForm() {
                 token: token,
                 name: data.name,
                 licensePlate: data.licensePlate,
-                costPerKm: data.costPerKm,
-                baseCost: data.baseCost,
+                costPerKm: parseFloat(data.costPerKm),
+                baseCost: parseFloat(data.baseCost),
                 color: data.color,
-                year: data.year,
-                capacity: data.capacity
+                year: parseInt(data.year),
+                capacity: parseInt(data.capacity),
+                photo: null,
             })
-          } catch {
-            toast.error('Erro ao cadastrar veículo')
+            toast.success("Veículo cadastrado com sucesso!")
+          } catch (error: any) {
+            const errorMessage = error.response?.data || error.message || 'Erro desconhecido';
+            if (errorMessage?.detail) {
+                toast.error(errorMessage.detail);
+            } else {
+                toast.error('Erro desconhecido');
+            }
           }
     }
   

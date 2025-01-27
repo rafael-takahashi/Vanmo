@@ -4,12 +4,12 @@ export interface registerVehicleBody {
   token: string | undefined
   name: string
   licensePlate: string
-  costPerKm: string
-  baseCost: string
+  costPerKm: number
+  baseCost: number
   color: string
-  year: string
-  capacity: string
-  // TODO: add foto
+  year: number
+  capacity: number
+  photo: File | null
 }
 
 export async function registerVehicle({
@@ -21,20 +21,22 @@ export async function registerVehicle({
   color,
   year,
   capacity,
-  // TODO: add foto
+  photo
 }: registerVehicleBody) {
-  const formData = new FormData()
-  formData.append('nome_veiculo', name)
-  formData.append('placa_veiculo', licensePlate)
-  formData.append('custo_por_km', costPerKm)
-  formData.append('custo_base', baseCost)
-  formData.append('cor', color)
-  formData.append('ano_fabricacao', year)
-  formData.append('capacidade', capacity)
-  // TODO: add foto
+  const jsonBody = JSON.stringify({
+    nome_veiculo: name,
+    placa_veiculo: licensePlate,
+    custo_por_km: costPerKm,
+    custo_base: baseCost,
+    cor: color,
+    ano_fabricacao: year,
+    capacidade: capacity,
+    foto: photo
+  })
   try {
-    const response = await api.post('/veiculos/cadastrar_veiculo/', formData, {
+    const response = await api.post('/veiculos/cadastrar_veiculo/', jsonBody, {
       headers: {
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     })

@@ -572,13 +572,13 @@ async def cadastrar_veiculo(dados: CadastrarVeiculo, token: str = Depends(oauth2
 
     veiculo: classe_veiculo.Veiculo = classe_veiculo.Veiculo(None, usuario.id, dados.nome_veiculo, placa_veiculo)
     veiculo.adicionar_custos(dados.custo_por_km, dados.custo_base)
-    veiculo.adicionar_dados("", dados.cor, dados.ano_fabricacao, dados.capacidade)
-
+    veiculo.adicionar_dados(None, dados.cor, dados.ano_fabricacao, dados.capacidade)
+    
     id_veiculo = crud_veiculo.criar_veiculo(db, veiculo)
 
     caminho_da_foto = f"imagens/veiculos/{usuario.id}-{id_veiculo}.png"
     
-    salva_foto(caminho_da_foto, dados.foto)
+    if dados.foto is not None: salva_foto(caminho_da_foto, dados.foto)
 
     return {"detail": "Veículo cadastrado com sucesso!"}
 
