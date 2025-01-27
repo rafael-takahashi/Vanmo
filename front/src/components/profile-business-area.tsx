@@ -1,13 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus } from '@phosphor-icons/react'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import Cookies from 'js-cookie'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 
-import { getUserClient } from '@/api/getUserClient'
+import { editProfileUserBusiness } from '@/api/editUserBusiness'
+import { getUserBusiness } from '@/api/getUserBusiness'
 
 import ProposalItem from './proposal-item'
 import { Button } from './ui/button'
@@ -25,27 +26,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/jpg']
 
 const BusinessProfile = z.object({
-  fantasyName: z.string().nonempty('Nome fantasia é obrigatório'),
-  cnpj: z.string().nonempty('CNPJ é obrigatório'),
-  email: z.string().email('E-mail é inválido').nonempty('E-mail é obrigatório'),
-  phone: z.string().nonempty('Telefone é obrigatório'),
-  cepAddress: z.string().nonempty('CEP é obrigatório'),
-  cityAddress: z.string().nonempty('Cidade é obrigatória'),
-  stateAddress: z.string().nonempty('Estado é obrigatório'),
-  streetAddress: z.string().nonempty('Endereço é obrigatório'),
-  numberAddress: z.string().nonempty('Número é obrigatório'),
-  password: z
-    .string()
-    .min(8, 'A senha é muito curta')
-    .nonempty('Senha é obrigatória'),
-  photo: z
-    .any()
-    .refine((fileList) => fileList && fileList.length > 0, 'File is required')
-    .refine(
-      (fileList) =>
-        fileList[0] && ALLOWED_MIME_TYPES.includes(fileList[0].type),
-      'Only JPEG and PNG files are allowed',
-    ),
+  fantasyName: z.string().optional(),
+  cnpj: z.string().optional(),
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  cepAddress: z.string().optional(),
+  cityAddress: z.string().optional(),
+  stateAddress: z.string().optional(),
+  streetAddress: z.string().optional(),
+  numberAddress: z.string().optional(),
 })
 
 type BusinessProfileForm = z.infer<typeof BusinessProfile>
@@ -53,36 +42,74 @@ type BusinessProfileForm = z.infer<typeof BusinessProfile>
 export default function ProfileBusinessArea() {
   const token = Cookies.get('auth_token')
   const [searchParams, setSearchParams] = useSearchParams()
+  const [originalData, setOriginalData] = useState<BusinessProfileForm | null>(
+    null,
+  )
   const navigate = useNavigate()
   const { register, handleSubmit, reset } = useForm<BusinessProfileForm>({
     resolver: zodResolver(BusinessProfile),
   })
 
   const { data } = useQuery({
-    queryKey: ['user', token],
-    queryFn: () => getUserClient({ token }),
+    queryKey: ['userBusiness', token],
+    queryFn: () => getUserBusiness({ token }),
+  })
+
+  const { mutateAsync } = useMutation({
+    mutationFn: editProfileUserBusiness,
   })
 
   useEffect(() => {
     if (data) {
-      reset({
+      const initialData = {
         email: data.email || '',
-        // fullName: '',
-        photo: '', // Deixe vazio para o campo de arquivo
-      })
+        fantasyName: data.nome_fantasia || '',
+        cnpj: data.cnpj || '',
+        cepAddress: data.endereco.cep || '',
+        phone: data.telefone || '',
+        cityAddress: data.endereco.cidade || '',
+        streetAddress: data.endereco.rua || '',
+        numberAddress: data.endereco.numero || '',
+        stateAddress: data.endereco.uf || '',
+      }
+
+      setOriginalData(initialData) // Armazena os dados originais no estado
+      reset(initialData)
     }
   }, [data, reset])
 
   async function handleEditProfile(data: BusinessProfileForm) {
     try {
-      // await mutateAsync({
-      //   email: data.email,
-      //   photo: data.photo,
-      //   token,
-      // })
-      console.log(data)
+      const updatedFields: Partial<BusinessProfileForm> = {}
+
+      // Compara os valores atuais com os valores originais e adiciona os campos alterados
+      if (data.email !== originalData?.email) updatedFields.email = data.email
+      if (data.fantasyName !== originalData?.fantasyName)
+        updatedFields.fantasyName = data.fantasyName
+      if (data.cnpj !== originalData?.cnpj) updatedFields.cnpj = data.cnpj
+      if (data.cepAddress !== originalData?.cepAddress)
+        updatedFields.cepAddress = data.cepAddress
+      if (data.phone !== originalData?.phone) updatedFields.phone = data.phone
+      if (data.cityAddress !== originalData?.cityAddress)
+        updatedFields.cityAddress = data.cityAddress
+      if (data.streetAddress !== originalData?.streetAddress)
+        updatedFields.streetAddress = data.streetAddress
+      if (data.numberAddress !== originalData?.numberAddress)
+        updatedFields.numberAddress = data.numberAddress
+      if (data.stateAddress !== originalData?.stateAddress)
+        updatedFields.stateAddress = data.stateAddress
+
+      // Se houver alterações, envia apenas os campos modificados
+      if (Object.keys(updatedFields).length > 0 || data.photo) {
+        await mutateAsync({
+          ...updatedFields,
+          token,
+        })
+      } else {
+        console.log('Nenhuma alteração detectada')
+      }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -107,72 +134,108 @@ export default function ProfileBusinessArea() {
                   <DialogHeader>
                     <DialogTitle>Editar Perfil</DialogTitle>
                   </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="fantasyName" className="text-right">
-                        Nome Fantasia
-                      </label>
-                      <Input
-                        id="fantasyName"
-                        className="input-bordered col-span-3"
-                      />
+                  <form
+                    onSubmit={handleSubmit(handleEditProfile)}
+                    className="flex flex-col"
+                  >
+                    <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="fantasyName" className="text-right">
+                          Nome Fantasia
+                        </label>
+                        <Input
+                          id="fantasyName"
+                          className="input-bordered col-span-3"
+                          {...register('fantasyName')}
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="email" className="text-right">
+                          E-mail
+                        </label>
+                        <Input
+                          id="email"
+                          className="input-bordered col-span-3"
+                          {...register('email')}
+                          disabled
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="CNPJ" className="text-right">
+                          CNPJ
+                        </label>
+                        <Input
+                          id="CNPJ"
+                          className="input-bordered col-span-3"
+                          {...register('cnpj')}
+                          disabled
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="phone" className="text-right">
+                          Telefone Celular
+                        </label>
+                        <Input
+                          id="phone"
+                          className="input-bordered col-span-3"
+                          {...register('phone')}
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="cep" className="text-right">
+                          CEP
+                        </label>
+                        <Input
+                          id="cep"
+                          className="input-bordered col-span-3"
+                          {...register('cepAddress')}
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="city" className="text-right">
+                          Cidade
+                        </label>
+                        <Input
+                          id="city"
+                          className="input-bordered col-span-3"
+                          {...register('cityAddress')}
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="uf" className="text-right">
+                          UF
+                        </label>
+                        <Input
+                          id="uf"
+                          className="input-bordered col-span-3"
+                          {...register('stateAddress')}
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="street" className="text-right">
+                          Endereço
+                        </label>
+                        <Input
+                          id="street"
+                          className="input-bordered col-span-3"
+                          {...register('streetAddress')}
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="number" className="text-right">
+                          Número
+                        </label>
+                        <Input
+                          id="number"
+                          className="input-bordered col-span-3"
+                          {...register('numberAddress')}
+                        />
+                      </div>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="email" className="text-right">
-                        E-mail
-                      </label>
-                      <Input
-                        id="email"
-                        className="input-bordered col-span-3"
-                        disabled
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="CNPJ" className="text-right">
-                        CNPJ
-                      </label>
-                      <Input id="CNPJ" className="input-bordered col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="phone" className="text-right">
-                        Telefone Celular
-                      </label>
-                      <Input id="phone" className="input-bordered col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="cep" className="text-right">
-                        CEP
-                      </label>
-                      <Input id="cep" className="input-bordered col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="city" className="text-right">
-                        Cidade
-                      </label>
-                      <Input id="city" className="input-bordered col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="street" className="text-right">
-                        Endereço
-                      </label>
-                      <Input
-                        id="street"
-                        className="input-bordered col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="number" className="text-right">
-                        Número
-                      </label>
-                      <Input
-                        id="number"
-                        className="input-bordered col-span-3"
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button type="submit">Salvar Perfil</Button>
-                  </DialogFooter>
+                    <Button type="submit" className="ml-auto">
+                      Salvar Perfil
+                    </Button>
+                  </form>
                 </TabsContent>
                 <TabsContent value="password" className="mt-4">
                   <DialogHeader>
@@ -215,10 +278,7 @@ export default function ProfileBusinessArea() {
             </DialogContent>
           </Dialog>
         </div>
-        <form
-          className="grid grid-cols-2 gap-4 mt-6"
-          onSubmit={handleSubmit(handleEditProfile)}
-        >
+        <form className="grid grid-cols-2 gap-4 mt-6">
           <div>
             <label htmlFor="" className="text-white">
               Nome Fantasia
@@ -340,7 +400,7 @@ export default function ProfileBusinessArea() {
             Ver Mais
           </span>
 
-          <Plus 
+          <Plus
             size={24}
             color="#6af42a"
             className="ml-auto cursor-pointer"

@@ -9,8 +9,8 @@ export interface editProfileUserBusinessBody {
   cityAddress?: string
   districtAddress?: string
   cep?: string
-  streetAddress: string
-  numberAddress: string
+  streetAddress?: string
+  numberAddress?: string
   phone?: string
   token?: string
 }
@@ -42,6 +42,7 @@ export async function editProfileUserBusiness({
       cep,
       rua: streetAddress,
       numero: numberAddress,
+      telefone: phone,
     },
     {
       headers: {

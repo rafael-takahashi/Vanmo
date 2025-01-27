@@ -45,7 +45,7 @@ type PersonalProfileForm = z.infer<typeof PersonalProfile>
 
 export default function ProfileClientArea() {
   const [photo, setPhoto] = useState<File | null>(null)
-  const [error, setError] = useState<string | null>(null) 
+  const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,7 +82,7 @@ export default function ProfileClientArea() {
   })
 
   const { data } = useQuery({
-    queryKey: ['user', token],
+    queryKey: ['userClient', token],
     queryFn: () => getUserClient({ token }),
   })
 
@@ -126,9 +126,8 @@ export default function ProfileClientArea() {
         await mutateAsync({
           ...updatedFields,
           token,
-          photo: photo,
+          photo,
         })
-        console.log(updatedFields)
       } else {
         console.log('Nenhuma alteração detectada')
       }
@@ -217,9 +216,7 @@ export default function ProfileClientArea() {
                           onChange={handleFileChange}
                         />
                         {error && (
-                          <p className="text-red-500 text-sm mt-1">
-                            {error}
-                          </p>
+                          <p className="text-red-500 text-sm mt-1">{error}</p>
                         )}
                         {preview && (
                           <div className="mt-2">
