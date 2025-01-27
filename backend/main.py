@@ -634,7 +634,7 @@ async def editar_veiculo(dados: EditarVeiculo, token: str = Depends(oauth2_esque
 
     return {"detail": "Veículo editado com sucesso!"}
 
-@app.get("/veiculos/buscar_veiculos_empresa")
+@app.get("/veiculos/buscar_veiculos_empresa/{id_empresa}")
 async def buscar_todos_veiculos_empresa(id_empresa: int):
     """
     Busca todos os veículos de uma empresa
@@ -652,16 +652,14 @@ async def buscar_todos_veiculos_empresa(id_empresa: int):
 
     return crud_veiculo.listar_veiculos(db, id_empresa)
 
-@app.get("/veiculos/buscar_dados_veiculo", response_model=RespostaVeiculo)
-async def buscar_dados_veiculo(dados: IdVeiculo, token: str = Depends(oauth2_esquema)):
+@app.get("/veiculos/buscar_dados_veiculo/{id_veiculo}", response_model=RespostaVeiculo)
+async def buscar_dados_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):
     """
     Busca os dados de um veículo
 
     @param id_veiculo: O ID do veículo a se buscar os dados
     @param token: O token de acesso do usuário
     """
-
-    id_veiculo = dados.id_veiculo
 
     db = database.conectar_bd()
 
@@ -676,16 +674,14 @@ async def buscar_dados_veiculo(dados: IdVeiculo, token: str = Depends(oauth2_esq
 
     return RespostaVeiculo
 
-@app.delete("/veiculos/apagar_veiculo")
-async def apagar_veiculo(dados: IdVeiculo, token: str = Depends(oauth2_esquema)):
+@app.delete("/veiculos/apagar_veiculo/{id_veiculo}")
+async def apagar_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):
     """
     Apaga um veículo do sistema
 
     @param id_veiculo: O ID do veículo a ser apagado
     @param token: O token de acesso do usuário
     """
-
-    id_veiculo = dados.id_veiculo
 
     db = database.conectar_bd()
 
@@ -710,17 +706,14 @@ async def apagar_veiculo(dados: IdVeiculo, token: str = Depends(oauth2_esquema))
 
 # Métodos extras cliente/empresa ----------------------------------------
 
-@app.get("/empresa/buscar_dados_empresa", response_model=RespostaEmpresa)
-async def buscar_dados_empresa(dados: IdEmpresa, token: str = Depends(oauth2_esquema)):
+@app.get("/empresa/buscar_dados_empresa/{id_empresa}", response_model=RespostaEmpresa)
+async def buscar_dados_empresa(id_empresa: int, token: str = Depends(oauth2_esquema)):
     """
     Busca os dados de uma empresa específica
 
     @param id_empresa: O ID da empresa a qual se quer buscar os dados
     @param token: O token de acesso do usuário
     """
-
-    id_empresa: int = dados.id_empresa
-
     db = database.conectar_bd()
     usuario_atual = auth.obter_usuario_atual(db, token)
 
@@ -762,8 +755,8 @@ async def avaliar_empresa(dados: AvaliacaoEmpresa, token: str = Depends(oauth2_e
 
     return {"detail": "Avaliação feita com sucesso"}
     
-@app.get("/busca/buscar_empresas/nome")
-async def buscar_empresas_nome(dados: BuscaEmpresaNome, token: str = Depends(oauth2_esquema)):
+@app.get("/busca/buscar_empresas/nome/{nome_busca}")
+async def buscar_empresas_nome(nome_busca: str, token: str = Depends(oauth2_esquema)):
     """
     Busca as empresas a partir do nome
 
@@ -771,16 +764,13 @@ async def buscar_empresas_nome(dados: BuscaEmpresaNome, token: str = Depends(oau
     @param token: O token de acesso do usuário
     """
 
-    nome_busca = dados.nome_busca
-    pagina = dados.pagina
-
     db = database.conectar_bd()
 
     # usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
     nome_busca = nome_busca + "%"
 
-    return crud_usuario.buscador_empresas_nome(db, nome_busca, pagina)
+    return crud_usuario.buscador_empresas_nome(db, nome_busca)
 
 @app.put("/busca/buscar_empresas/criterio")
 async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa):

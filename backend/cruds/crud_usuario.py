@@ -430,7 +430,7 @@ def atualizar_avaliacao(db: sqlite3.Connection, id_usuario: int, id_empresa: int
 
     db.commit()
 
-def buscador_empresas_nome(db: sqlite3.Connection, string_busca: str, pagina: int = 1):
+def buscador_empresas_nome(db: sqlite3.Connection, string_busca: str):
     cursor = db.cursor()
 
     resultados = cursor.execute(QueriesDB.query_buscador_por_nome, (string_busca,)).fetchall()
@@ -443,10 +443,7 @@ def buscador_empresas_nome(db: sqlite3.Connection, string_busca: str, pagina: in
         item.email = ''
         empresas.append(item)
 
-    inicio_pag = 10 * (pagina - 1)
-    fim_pag = inicio_pag + 9
-
-    return empresas[inicio_pag:fim_pag]
+    return empresas
 
 def atualizar_cliente(db: sqlite3.Connection, cliente: Cliente):
     cursor = db.cursor()
