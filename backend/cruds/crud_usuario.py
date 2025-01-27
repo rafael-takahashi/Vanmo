@@ -38,7 +38,7 @@ def criar_usuario(db: sqlite3.Connection, usuario: Usuario) -> int:
     path_foto = ""
     
     if usuario.foto is not None:
-        path_foto = f"imagens/perfis/{usuario.id}.png"
+        path_foto = f"imagens/perfis/{usuario.id_usuario}.png"
 
         utils.salva_foto(path_foto, usuario.foto)
 
@@ -54,7 +54,7 @@ def __remover_empresa(db: sqlite3.Connection, usuario: Usuario):
 
     empresa: Empresa = buscar_dados_empresa(db, usuario)
 
-    dados = (empresa.id,)
+    dados = (empresa.id_usuario,)
 
     alugueis: list[tuple] = cursor.execute(QueriesDB.query_buscar_alugueis_empresa, dados).fetchall()
 
@@ -86,7 +86,7 @@ def __remover_empresa(db: sqlite3.Connection, usuario: Usuario):
 
     cursor.execute(QueriesDB.query_remover_endereco, (empresa.endereco,))
     cursor.execute(QueriesDB.query_remover_local, (empresa.local,))
-    cursor.execute(QueriesDB.query_remover_empresa, (usuario.id,))
+    cursor.execute(QueriesDB.query_remover_empresa, (usuario.id_usuario,))
 
     db.commit()
 
@@ -95,7 +95,7 @@ def __remover_cliente(db: sqlite3.Connection, usuario: Usuario):
 
     cliente: Cliente = buscar_dados_cliente(db, usuario)
 
-    dados = (cliente.id,)
+    dados = (cliente.id_usuario,)
 
     alugueis: list[tuple] = cursor.execute(QueriesDB.query_buscar_alugueis_cliente, dados).fetchall()
 
@@ -110,13 +110,13 @@ def __remover_cliente(db: sqlite3.Connection, usuario: Usuario):
 
         cursor.execute(QueriesDB.query_remover_aluguel, dados)
 
-    cursor.execute(QueriesDB.query_remover_cliente, (usuario.id,))
+    cursor.execute(QueriesDB.query_remover_cliente, (usuario.id_usuario,))
 
     db.commit()
 
 def remover_usuario(db: sqlite3.Connection, usuario: Usuario):
 
-    dados = (usuario.id,)
+    dados = (usuario.id_usuario,)
     cursor: sqlite3.Cursor = db.cursor()
     
     if usuario.tipo_conta == "empresa":
@@ -184,21 +184,21 @@ def cadastrar_empresa(db: sqlite3.Connection, empresa: Empresa):
 def buscar_dados_cliente(db: sqlite3.Connection, usuario: Usuario) -> Cliente:
     cursor: sqlite3.Cursor = db.cursor()
 
-    dados = (usuario.id,)
+    dados = (usuario.id_usuario,)
     resultados = cursor.execute(QueriesDB.query_buscar_cliente, dados).fetchone()
 
-    return Cliente(usuario.id, usuario.email, usuario.senha_hashed, usuario.tipo_conta, utils.carrega_foto_base64(usuario.foto), resultados[1], resultados[2], resultados[3], usuario.telefone)
+    return Cliente(usuario.id_usuario, usuario.email, usuario.senha_hashed, usuario.tipo_conta, utils.carrega_foto_base64(usuario.foto), resultados[1], resultados[2], resultados[3], usuario.telefone)
 
 def buscar_dados_empresa(db: sqlite3.Connection, usuario: Usuario) -> Empresa:
     cursor: sqlite3.Cursor = db.cursor()
 
-    dados = (usuario.id,)
+    dados = (usuario.id_usuario,)
     resultados = cursor.execute(QueriesDB.query_buscar_empresa, dados).fetchone()
 
     local : Local =  buscar_local_por_id(db, resultados[4])
     endereco : Endereco = buscar_endereco_por_id(db, resultados[3])
 
-    empresa = Empresa(id=usuario.id, email=usuario.email, senha_hashed=usuario.senha_hashed, 
+    empresa = Empresa(id=usuario.id_usuario, email=usuario.email, senha_hashed=usuario.senha_hashed, 
                       tipo_conta=usuario.tipo_conta, foto=utils.carrega_foto_base64(usuario.foto), 
                       nome_fantasia=resultados[2], cnpj=resultados[1], endereco=endereco, local=local, telefone=usuario.telefone)
 
@@ -232,7 +232,7 @@ def buscar_empresa_por_data(db: sqlite3.Connection, data_partida: datetime.date)
             
             empresa = Empresa(None, None, None, None, None, None, None, None, None, None)
             
-            empresa.id = resultado[0]
+            empresa.id_usuario = resultado[0]
             empresa.email = email
             empresa.senha_hashed = senha
             empresa.tipo_conta = tipo
@@ -276,7 +276,7 @@ def buscar_empresa_por_passageiros(db: sqlite3.Connection, num_passageiros: int)
             
             empresa = Empresa(None, None, None, None, None, None, None, None, None, None)
             
-            empresa.id = resultado[0]
+            empresa.id_usuario = resultado[0]
             empresa.email = email
             empresa.senha_hashed = senha
             empresa.tipo_conta = tipo
@@ -320,7 +320,7 @@ def buscar_empresas_por_local (db: sqlite3.Connection, latitude: float, longitud
             
             empresa = Empresa(None, None, None, None, None, None, None, None, None, None)
             
-            empresa.id = resultado[0]
+            empresa.id_usuario = resultado[0]
             empresa.email = email
             empresa.senha_hashed = senha
             empresa.tipo_conta = tipo
@@ -357,20 +357,22 @@ def buscar_empresa_por_id (db: sqlite3.Connection, id_empresa: int) -> Empresa:
     local : Local =  buscar_local_por_id(db, resultado_empresa[4])
     endereco : Endereco = buscar_endereco_por_id(db, resultado_empresa[3])
     
-    empresa = Empresa(None, None, None, None, None, None, None, None, None)
+    # empresa = Empresa(None, None, None, None, None, None, None, None, None)
+    empresa = Empresa(id_empresa, email, senha, tipo, foto, resultado_empresa[2], resultado_empresa[1], endereco, local, 
+                      resultado_empresa[5], resultado_empresa[6], telefone)
     
-    empresa.id = id_empresa
-    empresa.email = email
-    empresa.senha_hashed = senha
-    empresa.tipo_conta = tipo
-    empresa.foto = foto
-    empresa.cnpj = resultado_empresa[1]
-    empresa.nome_fantasia = resultado_empresa[2]
-    empresa.endereco = endereco
-    empresa.local = local
-    empresa.num_avaliacoes = resultado_empresa[5]
-    empresa.soma_avaliacoes = resultado_empresa[6]
-    empresa.telefone = telefone
+    # empresa.id_usuario = id_empresa
+    # empresa.email = email
+    # empresa.senha_hashed = senha
+    # empresa.tipo_conta = tipo
+    # empresa.foto = foto
+    # empresa.cnpj = resultado_empresa[1]
+    # empresa.nome_fantasia = resultado_empresa[2]
+    # empresa.endereco = endereco
+    # empresa.local = local
+    # empresa.num_avaliacoes = resultado_empresa[5]
+    # empresa.soma_avaliacoes = resultado_empresa[6]
+    # empresa.telefone = telefone
 
     empresa.foto = utils.carrega_foto_base64(empresa.foto)
     
@@ -448,7 +450,7 @@ def buscador_empresas_nome(db: sqlite3.Connection, string_busca: str, pagina: in
 def atualizar_cliente(db: sqlite3.Connection, cliente: Cliente):
     cursor = db.cursor()
 
-    dados = (cliente.nome_completo, cliente.cpf, cliente.data_nascimento, cliente.id)
+    dados = (cliente.nome_completo, cliente.cpf, cliente.data_nascimento, cliente.id_usuario)
 
     cursor.execute(QueriesDB.query_atualizar_cliente, dados)
 
@@ -458,7 +460,7 @@ def atualizar_cliente(db: sqlite3.Connection, cliente: Cliente):
 
 def atualizar_empresa(db: sqlite3.Connection, empresa: Empresa):
     cursor = db.cursor()
-    dados = (empresa.cnpj, empresa.nome_fantasia, empresa.id)
+    dados = (empresa.cnpj, empresa.nome_fantasia, empresa.id_usuario)
 
     cursor.execute(QueriesDB.query_atualizar_empresa, dados)
 
@@ -477,7 +479,7 @@ def atualizar_empresa(db: sqlite3.Connection, empresa: Empresa):
 
 def atualizar_usuario(db: sqlite3.Connection, usuario: Usuario):
     cursor = db.cursor()
-    dados = (usuario.email, usuario.senha_hashed, usuario.foto, usuario.id)
+    dados = (usuario.email, usuario.senha_hashed, usuario.foto, usuario.id_usuario)
 
     cursor.execute(QueriesDB.query_atualizar_usuario, dados)
 
