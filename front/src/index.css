@@ -81,3 +81,7 @@ input[type="date"] {
 input[type="date"] {
   appearance: none;
 }
+
+body {
+  font-family: 'Roboto', sans-serif;
+}
