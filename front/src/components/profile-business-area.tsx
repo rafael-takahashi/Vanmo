@@ -104,6 +104,7 @@ export default function ProfileBusinessArea() {
 
       setOriginalData(initialData) // Armazena os dados originais no estado
       reset(initialData)
+      fetchAndSetVehicles(data?.id_usuario)
     }
   }, [data, reset])
 
@@ -112,10 +113,6 @@ export default function ProfileBusinessArea() {
   const fetchAndSetVehicles = async (businessId: number | undefined) => {
     setVehicles(await getBusinessVehicles(businessId))
   }
-
-  useEffect(() => {
-    if (data?.id) fetchAndSetVehicles(data?.id)
-  }, [data?.id])
 
   async function handleEditProfile(data: BusinessProfileForm) {
     try {

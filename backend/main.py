@@ -658,6 +658,8 @@ async def buscar_todos_veiculos_empresa(id_empresa: int):
     # não precisa estar logado para buscar os veículos
     # auth.obter_usuario_atual(db, token)
 
+    print(id_empresa)
+
     return crud_veiculo.listar_veiculos(db, id_empresa)
 
 @app.get("/veiculos/buscar_dados_veiculo/{id_veiculo}", response_model=RespostaVeiculo)

@@ -26,8 +26,8 @@ export default function MyVehiclesPage() {
   }
 
   useEffect(() => {
-    if (data?.id) fetchAndSetVehicles(data?.id)
-  }, [data?.id])
+    if (data?.id_usuario) fetchAndSetVehicles(data?.id_usuario)
+  }, [data?.id_usuario])
 
   return (
     <main className="grid grid-cols-3 gap-4 mt-20">

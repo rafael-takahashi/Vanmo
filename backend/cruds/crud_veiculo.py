@@ -81,7 +81,8 @@ def atualizar_veiculo(db: sqlite3.Connection, veiculo: classe_veiculo.Veiculo):
     cursor = db.cursor()
     dados = (veiculo.id_empresa, veiculo.nome_veiculo, veiculo.placa_veiculo, veiculo.capacidade, veiculo.custo_por_km, veiculo.custo_base, veiculo.caminho_foto, veiculo.cor, veiculo.ano_fabricacao, veiculo.id_veiculo)
 
-    utils.salva_foto(f"imagens/veiculos/{veiculo.id_empresa}-{veiculo.id_veiculo}.png", veiculo.caminho_foto)
+    if veiculo.caminho_foto is not None:
+        utils.salva_foto(f"imagens/veiculos/{veiculo.id_empresa}-{veiculo.id_veiculo}.png", veiculo.caminho_foto)
 
     cursor.execute(QueriesDB.query_atualizar_veiculo, dados)
 
