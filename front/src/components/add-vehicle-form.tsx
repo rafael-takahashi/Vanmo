@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query'
 import Cookies from 'js-cookie'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -47,7 +48,10 @@ const VehicleSchema = z.object({
 type vehicleForm = z.infer<typeof VehicleSchema>
 
 export default function AddVehicleForm() {
+  const navigate = useNavigate()
+
   const token = Cookies.get('auth_token')
+
   const {
     register,
     handleSubmit,
@@ -81,6 +85,7 @@ export default function AddVehicleForm() {
         photo: null,
       })
       toast.success('Veículo cadastrado com sucesso!')
+      navigate('/profile/vehicles')
     } catch (error: any) {
       const errorMessage =
         error.response?.data || error.message || 'Erro desconhecido'
