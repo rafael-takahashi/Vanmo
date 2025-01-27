@@ -106,7 +106,7 @@ async def registrar_empresa(dados: CadastroEmpresa):
         raise HTTPException(status_code=400, detail="Nome da cidade inválido")
 
     endereco: classe_endereco.Endereco = classe_endereco.Endereco(dados.uf, dados.cidade, dados.bairro, dados.cep, 
-                                                                  dados.rua, dados.numero)
+                                                                  dados.rua, dados.numero, None)
 
     latitude, longitude = busca_latitude_longitude_de_cidade(dados.cidade, lista_cidades)
 
@@ -420,9 +420,9 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
     aluguel.adicionar_datas(dados.data_saida, dados.data_chegada)
 
     local_partida: classe_local.Local = classe_local.Local(latitude_partida, longitude_partida)
-    local_partida.id = crud_local.criar_local(db, local_partida)
+    local_partida.id_local = crud_local.criar_local(db, local_partida)
     local_chegada: classe_local.Local = classe_local.Local(latitude_chegada, longitude_chegada)
-    local_chegada.id = crud_local.criar_local(db, local_chegada)
+    local_chegada.id_local = crud_local.criar_local(db, local_chegada)
 
     aluguel.adicionar_locais(local_partida, local_chegada)
     aluguel.adicionar_distancia_extra(dados.distancia_extra_km)
@@ -521,9 +521,9 @@ async def verificar_custo_proposta(dados: CriarProposta, token: str = Depends(oa
     aluguel.adicionar_datas(dados.data_saida, dados.data_chegada)
 
     local_partida: classe_local.Local = classe_local.Local(latitude_partida, longitude_partida)
-    local_partida.id = crud_local.criar_local(db, local_partida)
+    local_partida.id_local = crud_local.criar_local(db, local_partida)
     local_chegada: classe_local.Local = classe_local.Local(latitude_chegada, longitude_chegada)
-    local_chegada.id = crud_local.criar_local(db, local_chegada)
+    local_chegada.id_local = crud_local.criar_local(db, local_chegada)
 
     aluguel.adicionar_locais(local_partida, local_chegada)
     aluguel.adicionar_distancia_extra(dados.distancia_extra_km)

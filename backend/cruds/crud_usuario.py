@@ -465,7 +465,7 @@ def atualizar_empresa(db: sqlite3.Connection, empresa: Empresa):
 
     cursor.execute(QueriesDB.query_atualizar_empresa, dados)
 
-    dados_local = (empresa.local.latitude, empresa.local.longitude, empresa.local.nome, empresa.local.id)
+    dados_local = (empresa.local.latitude, empresa.local.longitude, empresa.local.nome, empresa.local.id_local)
 
     cursor.execute(QueriesDB.query_atualizar_local, dados_local)
 
