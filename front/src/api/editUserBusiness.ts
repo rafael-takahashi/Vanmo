@@ -3,7 +3,7 @@ import { api } from '@/lib/axios'
 export interface editProfileUserBusinessBody {
   email?: string
   password?: string
-  photo?: File | null
+  photo?: File
   fantasyName?: string
   stateAddress?: string
   cityAddress?: string
@@ -29,6 +29,19 @@ export async function editProfileUserBusiness({
   phone,
   token,
 }: editProfileUserBusinessBody) {
+  console.log(email)
+  console.log(password)
+  console.log(photo)
+  console.log(fantasyName)
+  console.log(stateAddress)
+  console.log(cityAddress)
+  console.log(districtAddress)
+  console.log(cep)
+  console.log(streetAddress)
+  console.log(numberAddress)
+  console.log(phone)
+  console.log(token)
+
   await api.put(
     '/usuario/alterar_dados/empresa',
     {

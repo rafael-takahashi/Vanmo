@@ -6,16 +6,13 @@ interface getUserProposalsBody {
 
 export async function getUserProposals({ token }: getUserProposalsBody) {
   try {
-    const response = await api.get(
-      '/propostas/buscar_propostas',
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    const response = await api.get('/propostas/buscar_propostas', {
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-    )
+    })
     return response.data
-  } catch (error : any) {
+  } catch (error: any) {
     console.error('Error:', error.response?.data || error.message)
     throw error
   }

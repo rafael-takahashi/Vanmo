@@ -19,7 +19,7 @@ export async function getProposalData({
       },
     )
     return response.data
-  } catch (error : any) {
+  } catch (error: any) {
     console.error('Error:', error.response?.data || error.message)
     throw error
   }

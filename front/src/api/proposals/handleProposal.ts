@@ -6,7 +6,11 @@ interface handleProposalBody {
   token: string | undefined
 }
 
-export async function handleProposal({ idProposal, state, token }: handleProposalBody) {
+export async function handleProposal({
+  idProposal,
+  state,
+  token,
+}: handleProposalBody) {
   try {
     const response = await api.post(
       '/propostas/aceitar_ou_rejetar_proposta',
@@ -19,9 +23,9 @@ export async function handleProposal({ idProposal, state, token }: handleProposa
           Authorization: `Bearer ${token}`,
         },
       },
-    ) 
+    )
     return response.data
-  } catch (error : any) {
+  } catch (error: any) {
     console.error('Error:', error.response?.data || error.message)
     throw error
   }

@@ -39,8 +39,8 @@ export async function editVehicle({
     try {
         const response = await api.put('/veiculos/editar_veiculo', jsonBody, {
             headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
             },
         })
     } catch (error: any) {
