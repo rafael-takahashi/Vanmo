@@ -57,7 +57,7 @@ class QueriesDB:
     query_remover_empresa = "DELETE FROM Empresa WHERE id_usuario = ?"
     query_buscar_empresa = "SELECT * FROM Empresa WHERE id_usuario = ?"
     query_atualizar_avaliacoes_empresa = "UPDATE Empresa SET num_avaliacoes = ?, soma_avaliacoes = ? WHERE id_usuario = ?"
-    query_atualizar_empresa = "UPDATE Empresa SET cpnj = ?, nome_fantasia = ? WHERE id_usuario = ?"
+    query_atualizar_empresa = "UPDATE Empresa SET cnpj = ?, nome_fantasia = ? WHERE id_usuario = ?"
     query_buscar_empresa_por_data = "SELECT DISTINCT e.id_usuario FROM Empresa e JOIN Veiculo v ON e.id_usuario = v.id_empresa WHERE v.id_veiculo NOT IN (SELECT c.id_veiculo FROM Calendario c WHERE c.data_indisponivel = ?)"
     query_buscar_empresa_por_passageiros = "SELECT DISTINCT e.id_usuario FROM Empresa e JOIN Veiculo v ON e.id_usuario = v.id_empresa WHERE v.capacidade >= ?"
     query_buscar_empresa_por_local = "SELECT DISTINCT e.id_usuario FROM Empresa e JOIN Local l ON e.id_local = l.id_local WHERE (ABS(l.latitude - ?) <= 0.00001 AND ABS(l.longitude - ?) <= 0.00001)"
