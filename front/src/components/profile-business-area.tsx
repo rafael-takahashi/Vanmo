@@ -8,10 +8,10 @@ import { useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 
 import { editProfileUserBusiness } from '@/api/editUserBusiness'
+import { getBusinessVehicles } from '@/api/getBusinessVehicles'
 import { getUserBusiness } from '@/api/getUserBusiness'
 
 import ProposalItem from './proposal-item'
-import VehicleItem from './vehicle-item'
 import { Button } from './ui/button'
 import {
   Dialog,
@@ -23,7 +23,7 @@ import {
 } from './ui/dialog'
 import { Input } from './ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
-import { getBusinessVehicles } from '@/api/getBusinessVehicles'
+import VehicleItem from './vehicle-item'
 
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/jpg']
 
@@ -107,16 +107,15 @@ export default function ProfileBusinessArea() {
     }
   }, [data, reset])
 
-  const [vehicles, setVehicles] = useState<any[]>([]);
+  const [vehicles, setVehicles] = useState<any[]>([])
 
   const fetchAndSetVehicles = async (businessId: number | undefined) => {
     setVehicles(await getBusinessVehicles(businessId))
   }
 
   useEffect(() => {
-    if (data?.id)
-      fetchAndSetVehicles(data?.id)
-  }, [data?.id]);
+    if (data?.id) fetchAndSetVehicles(data?.id)
+  }, [data?.id])
 
   async function handleEditProfile(data: BusinessProfileForm) {
     try {
@@ -144,7 +143,7 @@ export default function ProfileBusinessArea() {
         await mutateAsync({
           ...updatedFields,
           token,
-          photo
+          photo,
         })
       } else {
         console.log('Nenhuma alteração detectada')
@@ -456,15 +455,16 @@ export default function ProfileBusinessArea() {
         </div>
         <div className="flex items-end gap-4 mt-14">
           <h2 className="text-white text-2xl">Veículos</h2>
-          <span
-            className="text-white text-sm font-thin cursor-pointer"
-            onClick={() => {
-              navigate('/profile/vehicles')
-            }}
-          >
-            Ver Mais
-          </span>
-
+          {vehicles.length > 2 && (
+            <span
+              className="text-white text-sm font-thin cursor-pointer"
+              onClick={() => {
+                navigate('/profile/vehicles')
+              }}
+            >
+              Ver Mais
+            </span>
+          )}
           <Plus
             size={24}
             color="#6af42a"
@@ -473,8 +473,8 @@ export default function ProfileBusinessArea() {
           />
         </div>
         <div className="flex flex-col gap-4 mt-4">
-          {vehicles[0] && <VehicleItem vehicle={vehicles[0]}/>}
-          {vehicles[1] && <VehicleItem vehicle={vehicles[1]}/>}
+          {vehicles[0] && <VehicleItem vehicle={vehicles[0]} />}
+          {vehicles[1] && <VehicleItem vehicle={vehicles[1]} />}
         </div>
 
         <div className="flex flex-col gap-4 mt-4"></div>

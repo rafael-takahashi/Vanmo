@@ -3,8 +3,8 @@ import Cookies from 'js-cookie'
 
 import { getUserBusiness } from '@/api/getUserBusiness'
 import { getUserClient } from '@/api/getUserClient'
-import SideMenuProfile from '@/components/side-menu-profile'
 import AddVehicleForm from '@/components/add-vehicle-form'
+import SideMenuProfile from '@/components/side-menu-profile'
 
 export default function AddVehiclePage() {
   const token = Cookies.get('auth_token')
