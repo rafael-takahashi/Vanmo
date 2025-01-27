@@ -73,9 +73,3 @@ def remover_aluguel(db: sqlite3.Connection, id_aluguel: int):
     cursor.execute(QueriesDB.query_remover_aluguel, (id_aluguel,))
 
     db.commit()
-
-def atualizar_aluguel():
-    pass
-
-def listar_alugueis():
-    pass

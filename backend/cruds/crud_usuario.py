@@ -17,6 +17,7 @@ import sqlite3
 import utils
 import datetime
 
+
 # Usada no auth.py
 def obter_usuario_por_nome(db: sqlite3.Connection, nome: str) -> Usuario:
 
@@ -27,10 +28,10 @@ def obter_usuario_por_nome(db: sqlite3.Connection, nome: str) -> Usuario:
     if not resultados:
         return None
 
-    (id_usuario, email_usuario, senha_usuario, tipo_conta, path_foto) = resultados
+    (id_usuario, email_usuario, senha_usuario, tipo_conta, path_foto, telefone) = resultados
 
     cursor.close()
-    return Usuario(email_usuario, senha_usuario, tipo_conta, path_foto, id=id_usuario)
+    return Usuario(email_usuario, senha_usuario, tipo_conta, path_foto, id=id_usuario, telefone=telefone)
 
 def criar_usuario(db: sqlite3.Connection, usuario: Usuario) -> int:
 
@@ -43,7 +44,7 @@ def criar_usuario(db: sqlite3.Connection, usuario: Usuario) -> int:
 
     cursor: sqlite3.Cursor = db.cursor()
 
-    dados = (usuario.email, usuario.senha_hashed, usuario.tipo_conta, path_foto)
+    dados = (usuario.email, usuario.senha_hashed, usuario.tipo_conta, path_foto, usuario.telefone)
     cursor.execute(QueriesDB.query_inserir_usuario_novo, dados)
     id_usuario = cursor.lastrowid
     return id_usuario
@@ -151,7 +152,7 @@ def cadastrar_cliente(db: sqlite3.Connection, cliente: Cliente):
     
     cursor: sqlite3.Cursor = db.cursor()
 
-    dados_cliente = (id_usr, cliente.nome_completo, cliente.cpf, cliente.data_nascimento, cliente.telefone)
+    dados_cliente = (id_usr, cliente.nome_completo, cliente.cpf, cliente.data_nascimento)
     cursor.execute(QueriesDB.query_inserir_cliente_novo, dados_cliente)
     
     db.commit()
@@ -180,14 +181,13 @@ def cadastrar_empresa(db: sqlite3.Connection, empresa: Empresa):
 
     db.commit()
 
-
 def buscar_dados_cliente(db: sqlite3.Connection, usuario: Usuario) -> Cliente:
     cursor: sqlite3.Cursor = db.cursor()
 
     dados = (usuario.id,)
     resultados = cursor.execute(QueriesDB.query_buscar_cliente, dados).fetchone()
 
-    return Cliente(usuario.id, usuario.email, usuario.senha_hashed, usuario.tipo_conta, utils.carrega_foto_base64(usuario.foto), resultados[1], resultados[2], resultados[3], resultados[4])
+    return Cliente(usuario.id, usuario.email, usuario.senha_hashed, usuario.tipo_conta, utils.carrega_foto_base64(usuario.foto), resultados[1], resultados[2], resultados[3], usuario.telefone)
 
 def buscar_dados_empresa(db: sqlite3.Connection, usuario: Usuario) -> Empresa:
     cursor: sqlite3.Cursor = db.cursor()
@@ -200,7 +200,7 @@ def buscar_dados_empresa(db: sqlite3.Connection, usuario: Usuario) -> Empresa:
 
     empresa = Empresa(id=usuario.id, email=usuario.email, senha_hashed=usuario.senha_hashed, 
                       tipo_conta=usuario.tipo_conta, foto=utils.carrega_foto_base64(usuario.foto), 
-                      nome_fantasia=resultados[2], cnpj=resultados[1], endereco=endereco, local=local)
+                      nome_fantasia=resultados[2], cnpj=resultados[1], endereco=endereco, local=local, telefone=usuario.telefone)
 
     empresa.num_avaliacoes = resultados[5]
     empresa.soma_avaliacoes = resultados[6]
@@ -226,7 +226,7 @@ def buscar_empresa_por_data(db: sqlite3.Connection, data_partida: datetime.date)
             senha = resultado_usuario[2]
             tipo = resultado_usuario[3]
             foto = resultado_usuario[4]
-
+            telefone = resultado_usuario[5]
 
             local : Local =  buscar_local_por_id(db, resultado[4])
             endereco : Endereco = buscar_endereco_por_id(db, resultado[3])
@@ -244,6 +244,7 @@ def buscar_empresa_por_data(db: sqlite3.Connection, data_partida: datetime.date)
             empresa.local = local
             empresa.num_avaliacoes = resultado[5]
             empresa.soma_avaliacoes = resultado[6]
+            empresa.telefone = telefone
 
             empresa.foto = utils.carrega_foto_base64(empresa.foto)
 
@@ -270,7 +271,7 @@ def buscar_empresa_por_passageiros(db: sqlite3.Connection, num_passageiros: int)
             senha = resultado_usuario[2]
             tipo = resultado_usuario[3]
             foto = resultado_usuario[4]
-
+            telefone = resultado_usuario[5]
 
             local : Local =  buscar_local_por_id(db, resultado[4])
             endereco : Endereco = buscar_endereco_por_id(db, resultado[3])
@@ -288,6 +289,7 @@ def buscar_empresa_por_passageiros(db: sqlite3.Connection, num_passageiros: int)
             empresa.local = local
             empresa.num_avaliacoes = resultado[5]
             empresa.soma_avaliacoes = resultado[6]
+            empresa.telefone = telefone
 
             empresa.foto = utils.carrega_foto_base64(empresa.foto)
 
@@ -310,6 +312,7 @@ def buscar_empresa_por_id (db: sqlite3.Connection, id_empresa: int) -> Empresa:
     senha = resultado_usuario[2]
     tipo = resultado_usuario[3]
     foto = resultado_usuario[4]
+    telefone = resultado_usuario[5]
 
 
     local : Local =  buscar_local_por_id(db, resultado_empresa[4])
@@ -328,6 +331,7 @@ def buscar_empresa_por_id (db: sqlite3.Connection, id_empresa: int) -> Empresa:
     empresa.local = local
     empresa.num_avaliacoes = resultado_empresa[5]
     empresa.soma_avaliacoes = resultado_empresa[6]
+    empresa.telefone = telefone
 
     empresa.foto = utils.carrega_foto_base64(empresa.foto)
     
@@ -405,7 +409,7 @@ def buscador_empresas_nome(db: sqlite3.Connection, string_busca: str, pagina: in
 def atualizar_cliente(db: sqlite3.Connection, cliente: Cliente):
     cursor = db.cursor()
 
-    dados = (cliente.nome_completo, cliente.cpf, cliente.data_nascimento, cliente.telefone, cliente.id)
+    dados = (cliente.nome_completo, cliente.cpf, cliente.data_nascimento, cliente.id)
 
     cursor.execute(QueriesDB.query_atualizar_cliente, dados)
 
@@ -419,7 +423,14 @@ def atualizar_empresa(db: sqlite3.Connection, empresa: Empresa):
 
     cursor.execute(QueriesDB.query_atualizar_empresa, dados)
 
-    # TODO: Atualizar local e endereço
+    dados_local = (empresa.local.latitude, empresa.local.longitude, empresa.local.nome, empresa.local.id)
+
+    cursor.execute(QueriesDB.query_atualizar_local, dados_local)
+
+    dados_endereco = (empresa.endereco.cep, empresa.endereco.rua, empresa.endereco.numero, empresa.endereco.bairro,
+                      empresa.endereco.cidade, empresa.endereco.uf, empresa.endereco.id)
+    
+    cursor.execute(QueriesDB.query_atualizar_endereco, dados_endereco)
 
     db.commit()
 

@@ -18,12 +18,6 @@ def criar_local(db: sqlite3.Connection, local: Local):
     db.commit()
     return id_local
 
-def remover_local():
-    pass
-
-def atualizar_local():
-    pass
-
 def buscar_local_por_id (db: sqlite3.Connection, id_local: int) -> Local:
     cursor = db.cursor()
     dados = (id_local,)

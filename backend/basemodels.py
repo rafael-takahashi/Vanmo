@@ -10,6 +10,7 @@ class CadastroUsuario(BaseModel):
     email: str
     senha: str
     tipo_conta: str
+    telefone: str
 
 class UsuarioLogin(BaseModel):
     email: str
@@ -57,6 +58,7 @@ class AlterarDadosEmpresa(BaseModel):
     cep: str | None = None
     rua: str | None = None
     numero: str | None = None
+    telefone: str | None = None
 
 class DadosAcaoProposta(BaseModel):
     id_proposta: int
@@ -82,9 +84,6 @@ class RespostaVeiculo(BaseModel):
     cor: str
     ano_fabricacao: int
     capacidade: int
-
-class IdEmpresa(BaseModel):
-    id_empresa: int
 
 class IdEmpresa(BaseModel):
     id_empresa: int
@@ -115,6 +114,7 @@ class RespostaEmpresa(BaseModel):
     cnpj: str
     endereco: str
     avaliacao: float
+    telefone: str
 
 class AvaliacaoEmpresa(BaseModel):
     id_empresa: int

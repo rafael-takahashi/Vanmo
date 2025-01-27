@@ -16,6 +16,7 @@ from classes import classe_aluguel, classe_calendario, classe_endereco, classe_l
 from cruds import crud_aluguel, crud_usuario, crud_veiculo, crud_local
 from utils import *
 from basemodels import *
+from testes_main import executar_testes
 
 lista_cidades = []
 objeto_cidades = []
@@ -51,6 +52,7 @@ async def iniciar_app(app: FastAPI):
     thread = threading.Thread(target=loop_diario)
     thread.start()
 
+    # await executar_testes()
     yield
 
 app = FastAPI(lifespan=iniciar_app)
@@ -68,23 +70,6 @@ app.add_middleware(
 oauth2_esquema = OAuth2PasswordBearer(tokenUrl="/usuario/login_legacy")
 
 # Métodos de usuário ----------------------------------------
-
-@app.post("/usuario/registrar_legacy")
-async def registrar_novo_usuario(dados: CadastroUsuario):
-    """
-    Método legado para testar com o /docs do FastAPI
-    """
-
-    usuario = classe_usuario.Usuario(dados.email, dados.senha, dados.tipo_conta, None)
-    db = database.conectar_bd()
-
-    if crud_usuario.obter_usuario_por_nome(db, usuario.email):
-        raise HTTPException(status_code=400, detail="Usuario já existe")
-    
-    usuario.senha_hashed = auth.gerar_hash_senha(usuario.senha_hashed)
-    crud_usuario.criar_usuario(db, usuario)
-    token_acesso = auth.criar_token_acesso(dados={"sub": usuario.email})
-    return {"access_token": token_acesso, "token_type": "bearer"}
 
 @app.post("/usuario/login")
 async def login(dados: UsuarioLogin):
@@ -106,48 +91,9 @@ async def login(dados: UsuarioLogin):
     token_acesso = auth.criar_token_acesso(dados={"sub": usuario.email})
     return {"access_token": token_acesso, "token_type": "bearer"}
 
-@app.post("/usuario/login_legacy")
-async def login_legado(form_data: OAuth2PasswordRequestForm = Depends()):
-    """
-    Login legado para teste com o /docs do FastAPI
-    """
-    db = database.conectar_bd()
-    usuario = auth.autenticar_usuario(db, form_data.username, form_data.password)
-    if not usuario:
-        raise HTTPException(status_code=400, detail="Usuário ou senha incorretos")
-    token_acesso = auth.criar_token_acesso(dados={"sub": usuario.email})
-    return {"access_token": token_acesso, "token_type": "bearer"}
-
-def registrar_novo_usuario(dados: CadastroUsuario) -> tuple[int, int]:
-
-    if not valida_email(dados.email):
-        raise HTTPException(status_code=400, detail="Email inválido")
-
-    db = database.conectar_bd()
-
-    usuario = classe_usuario.Usuario(dados.email, dados.senha, dados.tipo_conta, None)
-
-    if crud_usuario.obter_usuario_por_nome(db, usuario.email):
-        raise HTTPException(status_code=400, detail="Usuario já existe")
-
-    usuario.senha_hashed = auth.gerar_hash_senha(usuario.senha_hashed)
-    id_usuario = crud_usuario.criar_usuario(db, usuario)
-
-    db.close()
-
-    return id_usuario, usuario.senha_hashed
-
 @app.post("/usuario/cadastro/empresa")
 async def registrar_empresa(dados: CadastroEmpresa):
     global lista_cidades
-    
-    cadastro_usuario = CadastroUsuario(
-        email=dados.email,
-        senha=dados.senha,
-        tipo_conta="empresa"
-    )
-    
-    # id_usuario, senha = registrar_novo_usuario(cadastro_usuario)
 
     db = database.conectar_bd()
 
@@ -182,14 +128,6 @@ async def registrar_empresa(dados: CadastroEmpresa):
 
 @app.post("/usuario/cadastro/cliente")
 async def registrar_cliente(dados: CadastroCliente):
-
-    cadastro_usuario = CadastroUsuario(
-        email=dados.email,
-        senha=dados.senha,
-        tipo_conta="cliente"
-    )
-
-    # id_usuario, senha = registrar_novo_usuario(cadastro_usuario)
 
     db = database.conectar_bd()
 
@@ -281,6 +219,9 @@ async def editar_dados_empresa(dados: AlterarDadosEmpresa, token: str = Depends(
         path_foto = f"imagens/usuarios/{usuario.id}.png"
         salva_foto(path_foto, dados.foto)
     
+    if dados.telefone:
+        empresa.telefone = dados.telefone
+
     if dados.nome_fantasia:
         empresa.nome_fantasia = dados.nome_fantasia
 
@@ -291,6 +232,9 @@ async def editar_dados_empresa(dados: AlterarDadosEmpresa, token: str = Depends(
         empresa.endereco.uf = dados.uf
 
     if dados.cidade:
+        if not valida_cidade(dados.cidade):
+            raise HTTPException(status_code=400, detail="Cidade inválida")
+        
         empresa.endereco.cidade = dados.cidade
 
     if dados.bairro:
@@ -766,26 +710,6 @@ async def apagar_veiculo(dados: IdVeiculo, token: str = Depends(oauth2_esquema))
 
     return {"detail": "Veículo removido com sucesso"}
 
-# @app.get("/veiculos/buscar_foto_veiculo")
-# async def buscar_foto_veiculo(dados: IdVeiculo, token: str = Depends(oauth2_esquema)):
-#     """
-#     Busca a foto de um veículo
-
-#     @param token: O token de acesso do usuário
-#     """
-#     db = database.conectar_bd()
-#     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
-
-#     veiculo = crud_veiculo.buscar_veiculo(db, dados.id_veiculo)
-
-#     if veiculo.caminho_foto == "" or veiculo.caminho_foto is None:
-#         return FileResponse("imagens/imagem_veiculo_padrao.png")
-    
-#     if os.path.isfile(veiculo.caminho_foto):
-#         return FileResponse(veiculo.caminho_foto)
-    
-#     return FileResponse("imagens/imagem_veiculo_padrao.png")
-
 # Métodos extras cliente/empresa ----------------------------------------
 
 @app.get("/empresa/buscar_dados_empresa", response_model=RespostaEmpresa)
@@ -805,7 +729,8 @@ async def buscar_dados_empresa(dados: IdEmpresa, token: str = Depends(oauth2_esq
     empresa = crud_usuario.buscar_empresa_por_id(db, id_empresa)
 
     response_data = RespostaEmpresa(foto=empresa.foto, nome_fantasia=empresa.nome_fantasia, cnpj=empresa.cnpj,
-                                    endereco=str(empresa.endereco), avaliacao=(empresa.soma_avaliacoes/empresa.num_avaliacoes))
+                                    endereco=str(empresa.endereco), avaliacao=(empresa.soma_avaliacoes/empresa.num_avaliacoes),
+                                    telefone=empresa.telefone)
 
     return response_data
 
