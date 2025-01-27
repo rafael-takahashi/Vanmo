@@ -3,18 +3,19 @@ import os
 import threading
 import time
 
-from fastapi import FastAPI, Depends, HTTPException, File, UploadFile
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, Depends, HTTPException #, File, UploadFile
+# from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List
+# from pydantic import BaseModel
+# from typing import List
 from contextlib import asynccontextmanager
 
 import database, auth
 from classes import classe_aluguel, classe_calendario, classe_endereco, classe_local, classe_usuario, classe_veiculo
 from cruds import crud_aluguel, crud_usuario, crud_veiculo, crud_local
 from utils import *
+from basemodels import *
 
 lista_cidades = []
 objeto_cidades = []
@@ -25,7 +26,6 @@ def loop_diario():
 
     OBS: Tem que ser executada em uma thread separada para não travar o programa
     """
-    print("Inicializou o loop diario")
     while True:
         db = database.conectar_bd()
 
@@ -41,12 +41,8 @@ async def iniciar_app(app: FastAPI):
     """
     global objeto_cidades
 
-    # Criar tabelas no banco de dados caso elas não existam
     conexao = database.conectar_bd()
     database.criar_tabelas(conexao)
-
-    # TODO: Função que roda na inicialização do sistema e uma vez ao dia atualizando os status dos aluguéis
-    # que já passaram das datas de vencimento
 
     lista_cidades = carrega_cidades()
 
@@ -62,7 +58,7 @@ app = FastAPI(lifespan=iniciar_app)
 # Configuração do CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -72,13 +68,6 @@ app.add_middleware(
 oauth2_esquema = OAuth2PasswordBearer(tokenUrl="/usuario/login_legacy")
 
 # Métodos de usuário ----------------------------------------
-
-# TODO: Colocar todas as classes modelo em um arquivo separado
-
-class CadastroUsuario(BaseModel):
-    email: str
-    senha: str
-    tipo_conta: str
 
 @app.post("/usuario/registrar_legacy")
 async def registrar_novo_usuario(dados: CadastroUsuario):
@@ -96,10 +85,6 @@ async def registrar_novo_usuario(dados: CadastroUsuario):
     crud_usuario.criar_usuario(db, usuario)
     token_acesso = auth.criar_token_acesso(dados={"sub": usuario.email})
     return {"access_token": token_acesso, "token_type": "bearer"}
-
-class UsuarioLogin(BaseModel):
-    email: str
-    senha: str
 
 @app.post("/usuario/login")
 async def login(dados: UsuarioLogin):
@@ -132,27 +117,6 @@ async def login_legado(form_data: OAuth2PasswordRequestForm = Depends()):
         raise HTTPException(status_code=400, detail="Usuário ou senha incorretos")
     token_acesso = auth.criar_token_acesso(dados={"sub": usuario.email})
     return {"access_token": token_acesso, "token_type": "bearer"}
-
-class CadastroCliente(BaseModel):
-    email: str
-    senha: str
-    nome_completo: str
-    cpf: str
-    data_nascimento: str
-    telefone: str
-
-class CadastroEmpresa(BaseModel):
-    email: str
-    senha: str
-    nome_fantasia: str
-    telefone: str
-    cnpj: str
-    uf: str
-    cidade: str
-    bairro: str
-    cep: str
-    rua: str
-    numero: str
 
 def registrar_novo_usuario(dados: CadastroUsuario) -> tuple[int, int]:
 
@@ -254,28 +218,6 @@ async def apagar_usuario(token: str = Depends(oauth2_esquema)):
     crud_usuario.remover_usuario(db, usuario_atual)
 
     return {"detail": "Usuario removido com sucesso"}
-
-class AlterarDadosCliente(BaseModel):
-    email: str | None = None
-    senha: str | None = None
-    foto: UploadFile | None = None
-    nome_completo: str | None = None
-    cpf: str | None = None
-    data_nascimento: str | None = None
-    telefone: str | None = None
-
-class AlterarDadosEmpresa(BaseModel):
-    email: str | None = None
-    senha: str | None = None
-    foto: UploadFile | None = None
-    nome_fantasia: str | None = None
-    cnpj: str | None = None
-    uf: str | None = None
-    cidade: str | None = None
-    bairro: str | None = None
-    cep: str | None = None
-    rua: str | None = None
-    numero: str | None = None
 
 @app.put("/usuario/alterar_dados/cliente")
 async def editar_dados_cliente(dados: AlterarDadosCliente, token: str = Depends(oauth2_esquema)):
@@ -388,11 +330,6 @@ async def buscar_dados_cadastrais_empresa(token: str = Depends(oauth2_esquema)):
 # Métodos de propostas ----------------------------------------
 
 @app.post("/propostas/aceitar_ou_rejetar_proposta")
-
-class DadosAcaoProposta(BaseModel):
-    id_proposta: int
-    opcao: bool
-
 async def aceitar_ou_rejeitar_proposta(dados: DadosAcaoProposta, token: str = Depends(oauth2_esquema)):
     """
     Aceita ou rejeita uma proposta feita para uma empresa
@@ -451,10 +388,6 @@ async def buscar_todas_propostas_usuario(token: str = Depends(oauth2_esquema)):
         return {"detail" : "Nenhuma proposta encontrada para o cliente.",
                 "data" : []}
 
-class IdProposta(BaseModel):
-    id_proposta: int
-        
-
 @app.get("/propostas/buscar_dados_proposta")
 async def buscar_dados_proposta(dados: IdProposta, token: str = Depends(oauth2_esquema)):
     """
@@ -479,15 +412,6 @@ async def buscar_dados_proposta(dados: IdProposta, token: str = Depends(oauth2_e
         raise HTTPException(status_code=400, detail="Proposta não pertence ao usuário")
     
     return aluguel
-
-class CriarProposta(BaseModel):
-    id_empresa: int
-    id_veiculo: int
-    cidade_saida: str
-    cidade_chegada: str
-    distancia_extra_km: float
-    data_saida: datetime.date
-    data_chegada: datetime.date
 
 @app.post("/propostas/criar_proposta/")
 async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esquema)):
@@ -599,16 +523,6 @@ async def cancelar_proposta(dados: IdProposta, token: str = Depends(oauth2_esque
     
 # Métodos de veículos ----------------------------------------
 
-class CadastrarVeiculo(BaseModel):
-    nome_veiculo: str
-    placa_veiculo: str
-    custo_por_km: float
-    custo_base: float
-    cor: str
-    ano_fabricacao: int
-    capacidade: int
-    foto: UploadFile
-
 @app.post("/veiculos/cadastrar_veiculo/")
 async def cadastrar_veiculo(dados: CadastrarVeiculo, token: str = Depends(oauth2_esquema)):
     """
@@ -657,16 +571,6 @@ async def cadastrar_veiculo(dados: CadastrarVeiculo, token: str = Depends(oauth2
     salva_foto(caminho_da_foto, dados.foto)
 
     return {"detail": "Veículo cadastrado com sucesso!"}
-
-class EditarVeiculo(BaseModel):
-    id_veiculo: int
-    nome_veiculo: str | None = None,
-    placa_veiculo: str | None = None,
-    custo_por_km: float | None = None,
-    custo_base: float | None = None,
-    foto: UploadFile | None = None,
-    cor: str | None = None,
-    ano_fabricacao: int | None = None,
 
 @app.put("/veiculos/editar_veiculo")
 async def editar_veiculo(dados: EditarVeiculo, token: str = Depends(oauth2_esquema)):
@@ -720,12 +624,6 @@ async def editar_veiculo(dados: EditarVeiculo, token: str = Depends(oauth2_esque
 
     return {"detail": "Veículo editado com sucesso!"}
 
-class IdEmpresa(BaseModel):
-    id_empresa: int
-
-class IdEmpresa(BaseModel):
-    id_empresa: int
-
 @app.get("/veiculos/buscar_veiculos_empresa")
 async def buscar_todos_veiculos_empresa(dados: IdEmpresa):
     """
@@ -745,24 +643,6 @@ async def buscar_todos_veiculos_empresa(dados: IdEmpresa):
     # auth.obter_usuario_atual(db, token)
 
     return crud_veiculo.listar_veiculos(db, dados.id_empresa)
-
-class IdVeiculo(BaseModel):
-    id_veiculo: int
-
-class RespostaVeiculo(BaseModel):
-    id_veiculo: int
-    nome_veiculo: str
-    placa_veiculo: str
-
-    datas_indisponiveis: list[datetime.date]
-    
-    custo_por_km: float
-    custo_base: float
-    
-    foto: str
-    cor: str
-    ano_fabricacao: int
-    capacidade: int
 
 @app.get("/veiculos/buscar_dados_veiculo", response_model=RespostaVeiculo)
 async def buscar_dados_veiculo(dados: IdVeiculo, token: str = Depends(oauth2_esquema)):
@@ -842,13 +722,6 @@ async def apagar_veiculo(dados: IdVeiculo, token: str = Depends(oauth2_esquema))
 
 # Métodos extras cliente/empresa ----------------------------------------
 
-class RespostaEmpresa(BaseModel):
-    foto: str
-    nome_fantasia: str
-    cnpj: str
-    endereco: str
-    avaliacao: float
-
 @app.get("/empresa/buscar_dados_empresa", response_model=RespostaEmpresa)
 async def buscar_dados_empresa(dados: IdEmpresa, token: str = Depends(oauth2_esquema)):
     """
@@ -869,10 +742,6 @@ async def buscar_dados_empresa(dados: IdEmpresa, token: str = Depends(oauth2_esq
                                     endereco=str(empresa.endereco), avaliacao=(empresa.soma_avaliacoes/empresa.num_avaliacoes))
 
     return response_data
-
-class AvaliacaoEmpresa(BaseModel):
-    id_empresa: int
-    avaliacao: int
 
 @app.put("/empresa/avaliar_empresa")
 async def avaliar_empresa(dados: AvaliacaoEmpresa, token: str = Depends(oauth2_esquema)):
@@ -904,12 +773,8 @@ async def avaliar_empresa(dados: AvaliacaoEmpresa, token: str = Depends(oauth2_e
 
     return {"detail": "Avaliação feita com sucesso"}
     
-class BuscaEmpresa(BaseModel):
-    nome_busca: str
-    pagina: int
-
 @app.get("/busca/buscar_empresas/nome")
-async def buscar_empresas_nome(dados: BuscaEmpresa, token: str = Depends(oauth2_esquema)):
+async def buscar_empresas_nome(dados: BuscaEmpresaNome, token: str = Depends(oauth2_esquema)):
     """
     Busca as empresas a partir do nome
 
@@ -927,12 +792,6 @@ async def buscar_empresas_nome(dados: BuscaEmpresa, token: str = Depends(oauth2_
     nome_busca = nome_busca + "%"
 
     return crud_usuario.buscador_empresas_nome(db, nome_busca, pagina)
-
-class CriteriosBuscaEmpresa(BaseModel):
-    data_de_partida: datetime.date | None = None,
-    qtd_passageiros: int | None = None,
-    latitude_partida: float | None = None, 
-    longitude_partida: float | None = None,
 
 @app.get("/busca/buscar_empresas/criterio")
 async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa, token: str = Depends(oauth2_esquema)):
