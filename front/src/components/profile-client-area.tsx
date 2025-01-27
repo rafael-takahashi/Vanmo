@@ -44,6 +44,33 @@ const PersonalProfile = z.object({
 type PersonalProfileForm = z.infer<typeof PersonalProfile>
 
 export default function ProfileClientArea() {
+  const [photo, setPhoto] = useState<File | null>(null)
+  const [error, setError] = useState<string | null>(null) 
+  const [preview, setPreview] = useState<string | null>(null)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+
+    // Validate the file
+    if (!file) {
+      setError('Please select a file.')
+      setPhoto(null)
+      setPreview(null)
+      return
+    }
+
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      setError('Only JPEG, PNG, and JPG files are allowed.')
+      setPhoto(null)
+      setPreview(null)
+      return
+    }
+
+    setPhoto(file)
+    setError(null)
+    setPreview(URL.createObjectURL(file))
+  }
+
   const token = Cookies.get('auth_token')
   const [originalData, setOriginalData] = useState<PersonalProfileForm | null>(
     null,
@@ -95,10 +122,11 @@ export default function ProfileClientArea() {
       if (data.phone !== originalData?.phone) updatedFields.phone = data.phone
 
       // Se houver alterações, envia apenas os campos modificados
-      if (Object.keys(updatedFields).length > 0) {
+      if (Object.keys(updatedFields).length > 0 || photo) {
         await mutateAsync({
           ...updatedFields,
           token,
+          photo: photo,
         })
         console.log(updatedFields)
       } else {
@@ -176,6 +204,32 @@ export default function ProfileClientArea() {
                           className="input-bordered col-span-3"
                           {...register('phone')}
                         />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="phone" className="text-right">
+                          Foto
+                        </label>
+                        <input
+                          id="photo"
+                          type="file"
+                          accept={ALLOWED_MIME_TYPES.join(',')}
+                          multiple
+                          onChange={handleFileChange}
+                        />
+                        {error && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {error}
+                          </p>
+                        )}
+                        {preview && (
+                          <div className="mt-2">
+                            <img
+                              src={preview}
+                              alt="Preview"
+                              className="h-20 w-20 object-cover rounded"
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
 

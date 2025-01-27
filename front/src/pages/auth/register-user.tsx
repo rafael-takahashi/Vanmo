@@ -23,7 +23,7 @@ export function RegisterUser() {
           </h1>
           <span>
             Você será redirecionado para a{' '}
-            <span className="underline">página inicial</span> em alguns
+            <span className="underline">página de login</span> em alguns
             instantes...
           </span>
         </div>
