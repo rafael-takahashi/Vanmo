@@ -38,6 +38,7 @@ export async function registerBusiness({
     uf: stateAddress,
     cidade: cityAddress,
     bairro: districtAddress,
+    telefone: phone,
     cep,
     rua: streetAddress,
     numero: numberAddress,

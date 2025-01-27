@@ -79,7 +79,7 @@ export default function FormBusiness({ setSuccess }: FormBusinessProps) {
   useEffect(() => {
     if (data) {
       setValue('cityAddress', data.localidade)
-      setValue('stateAddress', data.estado)
+      setValue('stateAddress', data.uf)
       setValue('streetAddress', data.logradouro)
       setValue('districtAddress', data.bairro)
     }
