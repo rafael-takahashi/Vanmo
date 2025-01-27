@@ -522,7 +522,71 @@ async def cancelar_proposta(dados: IdProposta, token: str = Depends(oauth2_esque
     crud_aluguel.remover_aluguel(db, dados.id_proposta)
 
     return {"detail": "Proposta cancelada com sucesso!"}    
+
+@app.post("/propostas/calcular_custo/")
+async def verificar_custo_proposta(dados: CriarProposta, token: str = Depends(oauth2_esquema)):
+    global lista_cidades
+    """
+    Calcula o custo de uma proposta de um aluguel para retornar ao cliente
+
+    @param id_empresa: O ID da empresa que receberá a proposta
+    @param id_veiculo: O ID do veículo que se deseja locar
+    @param latitude_partida: A coordenada geográfica do ponto de partida
+    @param longitude_partida: A coordenada geográfica do ponto de partida
+    @param latitude_chegada: A coordenada geográfica do ponto de chegada
+    @param longitude_chegada: A coordenada geográfica do ponto de chegada
+    @param distancia_extra_km: A distância extra que poderá ser percorrida pelo Cliente
+    @param data_saida: A data que o cliente deseja partir com o veículo
+    @param data_chegada: A data prevista de retorno do cliente
+    @param token: O token de acesso do usuário
+    """
+
+    db = database.conectar_bd()
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+
+    if not valida_cidade(dados.cidade_saida, lista_cidades):
+        raise HTTPException(status_code=400, detail="Cidade de partida inválida")
+
+    if not valida_cidade(dados.cidade_chegada, lista_cidades):
+        raise HTTPException(status_code=400, detail="Cidade de chegada inválida")
     
+    latitude_partida, longitude_partida = busca_latitude_longitude_de_cidade(dados.cidade_saida)
+
+    latitude_chegada, longitude_chegada = busca_latitude_longitude_de_cidade(dados.cidade_chegada)
+
+    data_saida = data_saida
+    data_chegada = data_chegada
+
+    if usuario.tipo_conta != "cliente":
+        raise HTTPException(status_code=400, detail="Tipo de usuário não é cliente")
+    
+    if not crud_veiculo.verificar_veiculo_empresa(db, dados.id_veiculo, dados.id_empresa):
+        raise HTTPException(status_code=400, detail="Veículo não pertence a empresa")
+    
+    if not crud_veiculo.verificar_disponibilidade_veiculo(db, dados.id_veiculo, dados.data_saida, dados.data_chegada):
+        raise HTTPException(status_code=400, detail="Veículo não disponível para o período escolhido")
+
+    if (dados.data_chegada > dados.data_saida):
+        raise HTTPException(status_code=400, detail="Datas inválidas: data de chegada anterior a data de saída")
+
+    veiculo: classe_veiculo.Veiculo = crud_veiculo.buscar_veiculo(db, dados.id_veiculo)
+    if not veiculo:
+        raise HTTPException(status_code=400, detail="Veículo não encontrado")
+
+    aluguel: classe_aluguel.Aluguel = classe_aluguel.Aluguel(None, usuario.id, dados.id_empresa, dados.id_veiculo)
+    aluguel.adicionar_datas(dados.data_saida, dados.data_chegada)
+
+    local_partida: classe_local.Local = classe_local.Local(latitude_partida, longitude_partida)
+    local_partida.id = crud_local.criar_local(db, local_partida)
+    local_chegada: classe_local.Local = classe_local.Local(latitude_chegada, longitude_chegada)
+    local_chegada.id = crud_local.criar_local(db, local_chegada)
+
+    aluguel.adicionar_locais(local_partida, local_chegada)
+    aluguel.adicionar_distancia_extra(dados.distancia_extra_km)
+    aluguel.calcular_valor_total(veiculo.custo_por_km, veiculo.custo_base)
+
+    return aluguel.valor_total
+
 # Métodos de veículos ----------------------------------------
 
 @app.post("/veiculos/cadastrar_veiculo/")
