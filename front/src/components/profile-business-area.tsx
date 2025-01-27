@@ -114,8 +114,9 @@ export default function ProfileBusinessArea() {
   }
 
   useEffect(() => {
-    fetchAndSetVehicles(data?.id)
-  }, []);
+    if (data?.id)
+      fetchAndSetVehicles(data?.id)
+  }, [data?.id]);
 
   async function handleEditProfile(data: BusinessProfileForm) {
     try {
