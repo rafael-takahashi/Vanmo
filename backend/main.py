@@ -785,7 +785,7 @@ async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa):
     """
     Busca as empresas a partir de outros critérios
 
-    @param criterio:
+    @param criterios: (Opcionais) Data de partida, quantidade de passageiros, latitude partida, longitude partida e página
     @param token: O token de acesso do usuário
     """
     db = database.conectar_bd()

@@ -501,7 +501,7 @@ def atualizar_empresa(db: sqlite3.Connection, empresa: Empresa):
 
 def atualizar_usuario(db: sqlite3.Connection, usuario: Usuario):
     cursor = db.cursor()
-    dados = (usuario.email, usuario.senha_hashed, usuario.foto, usuario.id_usuario)
+    dados = (usuario.email, usuario.senha_hashed, usuario.foto, usuario.telefone, usuario.id_usuario)
 
     cursor.execute(QueriesDB.query_atualizar_usuario, dados)
 
