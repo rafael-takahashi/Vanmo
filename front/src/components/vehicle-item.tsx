@@ -3,6 +3,7 @@ import Cookies from 'js-cookie'
 import garcia from '../assets/garcia.jpg'
 import { Pencil, Trash } from '@phosphor-icons/react';
 import { deleteVehicle } from '@/api/deleteVehicle';
+import { toast } from 'sonner';
 
 interface Vehicle {
     ano_fabricacao: number;
@@ -19,7 +20,7 @@ interface Vehicle {
   }
   
 interface VehicleItemProps {
-vehicle: Vehicle;
+    vehicle: Vehicle;
 }
 
 export default function VehicleItem({ vehicle }: VehicleItemProps) {
@@ -28,15 +29,16 @@ export default function VehicleItem({ vehicle }: VehicleItemProps) {
         const token = Cookies.get('auth_token');
         
         if (!token) {
-          console.error('No authorization token found.');
+          console.error('No authorization token found.')
           return;
         }
       
         try {
-          await deleteVehicle({ id_veiculo, token });
-          console.log('Vehicle deleted successfully');
-        } catch (error) {
-          console.error('Failed to delete vehicle:', error);
+          await deleteVehicle({ id_veiculo, token })
+          toast.success('Vehicle deleted successfully')
+          window.location.reload();
+        } catch {
+          toast.error('Failed to delete vehicle')
         }
     };
 

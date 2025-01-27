@@ -34,10 +34,12 @@ def remover_veiculo(db: sqlite3.Connection, id_veiculo: int):
     
     obj = buscar_veiculo(db, id_veiculo)
 
-    if os.path.exists(obj.caminho_foto):
-        os.remove(obj.caminho_foto)
+    #if os.path.exists(obj.caminho_foto):
+        #os.remove(obj.caminho_foto)
 
-    cursor.execute(QueriesDB.query_remover_veiculo, id_veiculo)
+    cursor.execute(QueriesDB.query_remover_veiculo, dados)
+
+    db.commit()
 
 # Apenas um específico
 def buscar_veiculo(db: sqlite3.Connection, id_veiculo: int) -> classe_veiculo.Veiculo: 

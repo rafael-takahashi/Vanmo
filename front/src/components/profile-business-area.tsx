@@ -456,6 +456,8 @@ export default function ProfileBusinessArea() {
         </div>
         <div className="flex items-end gap-4 mt-14">
           <h2 className="text-white text-2xl">Veículos</h2>
+          {
+          vehicles.length > 2 && 
           <span
             className="text-white text-sm font-thin cursor-pointer"
             onClick={() => {
@@ -464,7 +466,7 @@ export default function ProfileBusinessArea() {
           >
             Ver Mais
           </span>
-
+          }
           <Plus
             size={24}
             color="#6af42a"

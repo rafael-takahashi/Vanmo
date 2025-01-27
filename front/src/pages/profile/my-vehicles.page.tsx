@@ -6,8 +6,12 @@ import SideMenuProfile from '@/components/side-menu-profile'
 import VehicleItem from '@/components/vehicle-item'
 import { useEffect, useState } from 'react'
 import { getBusinessVehicles } from '@/api/getBusinessVehicles'
+import { Plus } from '@phosphor-icons/react'
+import { useNavigate } from 'react-router'
 
 export default function MyVehiclesPage() {
+  const navigate = useNavigate()
+
   const token = Cookies.get('auth_token')
 
   const { data } = useQuery({
@@ -34,9 +38,22 @@ export default function MyVehiclesPage() {
         } 
       />
       <div className="col-span-2 bg-primary-foreground p-10 rounded-md">
-        <h1 className="text-xl text-white mb-4">Meus Veículos</h1>
+        <div className='flex items-center mb-4'>
+          <h1 className="text-xl text-white">Meus Veículos</h1>
+          <Plus
+              size={24}
+              color="#6af42a"
+              className="ml-auto cursor-pointer"
+              onClick={() => navigate('/profile/add-vehicle')}
+          />
+        </div>
           {vehicles && vehicles.map((vehicle) => (
-            <VehicleItem vehicle={vehicle} key={vehicle.id_veiculo} />
+            <div className='mb-6'>
+              <VehicleItem
+                vehicle={vehicle} 
+                key={vehicle.id_veiculo}
+              />
+             </div>
           ))}
       </div>
     </main>
