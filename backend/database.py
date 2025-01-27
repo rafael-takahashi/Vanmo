@@ -60,6 +60,7 @@ class QueriesDB:
     query_atualizar_empresa = "UPDATE Empresa SET cpnj = ?, nome_fantasia = ? WHERE id_usuario = ?"
     query_buscar_empresa_por_data = "SELECT e.* FROM Empresa e JOIN Veiculo v ON e.id_usuario = v.id_empresa WHERE v.id_veiculo NOT IN (SELECT c.id_veiculo FROM Calendario c WHERE c.data_indisponivel = ?)"
     query_buscar_empresa_por_passageiros = "SELECT e.* FROM Empresa e JOIN Veiculo v ON e.id_veiculo = v.id_empresa WHERE v.capacidade >= ?"
+    query_buscar_empresa_por_local = "SELECT e.* FROM Empresa e JOIN Local l ON e.id_local = l.id_local WHERE (l.latitude = ? AND l.longitude = ?)"
 
     query_inserir_local_novo = "INSERT INTO Local (latitude, longitude, nome) VALUES (?, ?, ?) RETURNING id_local"
     query_buscar_local_por_id = "SELECT * FROM Local WHERE id_local = ?"

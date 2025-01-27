@@ -790,25 +790,39 @@ async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa, token: str = De
     @param criterio:
     @param token: O token de acesso do usuário
     """
-    empresas = set()
+    db = database.conectar_bd()
+
+    empresas_data = set()
+    empresas_passageiros = set()
+    empresas_local = set()
 
     if dados.data_de_partida:
-        resultados = crud_usuario.buscar_empresa_por_data(dados.data_de_partida)
+        resultados = crud_usuario.buscar_empresa_por_data(db, dados.data_de_partida)
         for resultado in resultados:
-            empresas.add(resultado)
+            empresas_data.add(resultado)
 
     if dados.qtd_passageiros:
-        resultados = crud_usuario.buscar_empresa_por_passageiros(dados.qtd_passageiros)
+        resultados = crud_usuario.buscar_empresa_por_passageiros(db, dados.qtd_passageiros)
         for resultado in resultados:
-            empresas.add(resultado) 
+            empresas_passageiros.add(resultado) 
 
     if dados.latitude_partida and dados.longitude_partida:
-        pass
-    
-    # TODO: paginação
-    # TODO: lógica de combinação dos critérios
+        resultados = crud_usuario.buscar_empresas_por_local(db, dados.latitude_partida, dados.longitude_partida)
+        for resultado in resultados:
+            empresas_local.add(resultado) 
 
-    pass
+    conjuntos = [empresas_data, empresas_passageiros, empresas_local]
+    conjuntos_nao_vazios = [conjunto for conjunto in conjuntos if conjunto]  # Apenas conjuntos não vazios
+
+    if conjuntos_nao_vazios:
+        empresas_intersecao = set.intersection(*conjuntos_nao_vazios)
+    else:
+        empresas_intersecao = set()
+
+    inicio_pag = 10 * (dados.pagina - 1)
+    fim_pag = inicio_pag + 9
+
+    return list(empresas_intersecao)[inicio_pag:fim_pag]
 
 @app.get("/cidades/lista_de_cidades")
 async def busca_lista_cidades():

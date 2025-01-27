@@ -129,6 +129,7 @@ class CriteriosBuscaEmpresa(BaseModel):
     qtd_passageiros: int | None = None
     latitude_partida: float | None = None
     longitude_partida: float | None = None
+    pagina: int = 1
 
 class CriarProposta(BaseModel):
     id_empresa: int
