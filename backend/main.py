@@ -642,8 +642,8 @@ async def editar_veiculo(dados: EditarVeiculo, token: str = Depends(oauth2_esque
 
     return {"detail": "Veículo editado com sucesso!"}
 
-@app.get("/veiculos/buscar_veiculos_empresa/{id_empresa}")
-async def buscar_todos_veiculos_empresa(id_empresa: int):
+@app.get("/veiculos/buscar_veiculos_empresa/{id_empresa}/{pagina}")
+async def buscar_todos_veiculos_empresa(id_empresa: int, pagina: int):
     """
     Busca todos os veículos de uma empresa
 
@@ -651,16 +651,16 @@ async def buscar_todos_veiculos_empresa(id_empresa: int):
     @param token: O token de acesso do usuário
     """
 
+    if pagina < 1:
+        return {"error": "A página deve ser maior ou igual a 1."}
+    
     db = database.conectar_bd()
 
-    # TODO: organizar resultado por páginas
+    resultados = crud_veiculo.listar_veiculos(db, id_empresa)
+    inicio_pag = 10 * (pagina - 1)
+    fim_pag = inicio_pag + 9
 
-    # não precisa estar logado para buscar os veículos
-    # auth.obter_usuario_atual(db, token)
-
-    print(id_empresa)
-
-    return crud_veiculo.listar_veiculos(db, id_empresa)
+    return resultados[inicio_pag:fim_pag+1]
 
 @app.get("/veiculos/buscar_dados_veiculo/{id_veiculo}", response_model=RespostaVeiculo)
 async def buscar_dados_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):
@@ -792,6 +792,8 @@ async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa):
     """
     db = database.conectar_bd()
 
+    if dados.pagina < 1:
+        return {"error": "A página deve ser maior ou igual a 1."}
 
     if (not dados.data_de_partida) and (not dados.qtd_passageiros) and (not dados.latitude_partida) and (not dados.longitude_partida):
         todas_empresas = crud_usuario.buscar_todas_empresas(db)
@@ -838,7 +840,7 @@ async def buscar_empresas_criterio(dados: CriteriosBuscaEmpresa):
 
     inicio_pag = 10 * (dados.pagina - 1)
     fim_pag = inicio_pag + 9
-    return todas_empresas[inicio_pag:fim_pag]
+    return todas_empresas[inicio_pag:fim_pag+1]
 
 @app.get("/cidades/lista_de_cidades")
 async def busca_lista_cidades():
