@@ -39,7 +39,7 @@ async def iniciar_app(app: FastAPI):
     """
         Função chamada ao inicializar o sistema
     """
-    global objeto_cidades
+    global objeto_cidades, lista_cidades
 
     conexao = database.conectar_bd()
     database.criar_tabelas(conexao)
@@ -58,7 +58,7 @@ app = FastAPI(lifespan=iniciar_app)
 # Configuração do CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -139,6 +139,7 @@ def registrar_novo_usuario(dados: CadastroUsuario) -> tuple[int, int]:
 
 @app.post("/usuario/cadastro/empresa")
 async def registrar_empresa(dados: CadastroEmpresa):
+    global lista_cidades
     
     cadastro_usuario = CadastroUsuario(
         email=dados.email,
@@ -155,7 +156,7 @@ async def registrar_empresa(dados: CadastroEmpresa):
     if not valida_uf(dados.uf):
         raise HTTPException(status_code=400, detail="UF inválido, formato necessário: 'PR', 'SP', 'RJ', etc.")
 
-    if not valida_cidade(dados.cidade):
+    if not valida_cidade(dados.cidade, lista_cidades):
         raise HTTPException(status_code=400, detail="Nome da cidade inválido")
 
     endereco: classe_endereco.Endereco = classe_endereco.Endereco(dados.uf, dados.cidade, dados.bairro, dados.cep, 
@@ -415,6 +416,7 @@ async def buscar_dados_proposta(dados: IdProposta, token: str = Depends(oauth2_e
 
 @app.post("/propostas/criar_proposta/")
 async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esquema)):
+    global lista_cidades
     """
     Cria uma proposta de aluguel de um cliente para uma empresa envolvendo um veículo
 
@@ -436,10 +438,10 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
     id_empresa = dados.id_empresa
     id_veiculo = dados.id_veiculo
 
-    if not valida_cidade(dados.cidade_saida):
+    if not valida_cidade(dados.cidade_saida, lista_cidades):
         raise HTTPException(status_code=400, detail="Cidade de partida inválida")
 
-    if not valida_cidade(dados.cidade_chegada):
+    if not valida_cidade(dados.cidade_chegada, lista_cidades):
         raise HTTPException(status_code=400, detail="Cidade de chegada inválida")
     
     latitude_partida, longitude_partida = busca_latitude_longitude_de_cidade(dados.cidade_saida)
