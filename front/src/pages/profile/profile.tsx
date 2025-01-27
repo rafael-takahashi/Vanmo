@@ -11,7 +11,7 @@ import SideMenuProfile from '@/components/side-menu-profile'
 export default function Profile() {
   const token = Cookies.get('auth_token')
 
-  const { data: dataClient, isSuccess: isClientSuccess } = useQuery({
+  const { data: dataClient } = useQuery({
     queryKey: ['userClient', token],
     queryFn: () => getUserClient({ token }),
     enabled: !!token,
@@ -19,7 +19,7 @@ export default function Profile() {
   })
 
   // Segunda requisição: buscar os dados da empresa apenas se a requisição do cliente falhar
-  const { data: dataBusiness, isSuccess: isBusinessSuccess } = useQuery({
+  const { data: dataBusiness } = useQuery({
     queryKey: ['userBusiness', token],
     queryFn: () => getUserBusiness({ token }),
     enabled: !!token, // Só habilita se a requisição do cliente falhar

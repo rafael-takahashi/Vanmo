@@ -5,15 +5,15 @@ import garcia from '../assets/garcia.jpg'
 import { Button } from './ui/button'
 
 interface SideMenuProfileProps {
-  fullName: string
-  photo: string
+  fullName: string | undefined
+  // photo: string
   typeAccount: 'cliente' | 'empresa'
 }
 
 export default function SideMenuProfile({
   typeAccount,
   fullName,
-  photo,
+  // photo,
 }: SideMenuProfileProps) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
