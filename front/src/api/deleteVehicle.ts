@@ -1,19 +1,19 @@
 import { api } from '@/lib/axios'
 
 interface deleteVehicleBody {
-    id_veiculo: number
-    token: string | undefined
+  id_veiculo: number
+  token: string | undefined
 }
 
 export async function deleteVehicle({ id_veiculo, token }: deleteVehicleBody) {
   try {
     const response = await api.delete('/veiculos/apagar_veiculo', {
-        params: {
-            id_veiculo: id_veiculo,
-        },
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
+      params: {
+        id_veiculo,
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     })
     return response.data
   } catch (error: any) {
