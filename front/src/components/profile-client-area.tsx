@@ -8,7 +8,7 @@ import { useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 
 import { editProfileUserClient } from '@/api/editUserClient'
-import { getProposals } from '@/api/getProposals'
+import { getUserProposals } from '@/api/proposals/getUserProposals'
 import { getUserClient } from '@/api/getUserClient'
 
 import ProposalItem from './proposal-item'
@@ -88,7 +88,7 @@ export default function ProfileClientArea() {
 
   const { data: proposalsList } = useQuery({
     queryKey: ['proposals-user', token],
-    queryFn: () => getProposals({ token }),
+    queryFn: () => getUserProposals({ token }),
   })
 
   const { mutateAsync } = useMutation({
@@ -341,7 +341,7 @@ export default function ProfileClientArea() {
         </div>
         <div className="flex flex-col gap-4 mt-4">
           {proposalsList && proposalsList.length > 0 ? (
-            proposalsList.map((proposal) => (
+            proposalsList.map((proposal : any) => (
               <ProposalItem key={proposal.id} type="cliente" />
             ))
           ) : (

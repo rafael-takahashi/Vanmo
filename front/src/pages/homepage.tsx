@@ -1,4 +1,5 @@
 import 'swiper/css'
+import Cookies from 'js-cookie'
 
 import { MapPin } from '@phosphor-icons/react'
 import { useNavigate } from 'react-router'
@@ -9,8 +10,32 @@ import SearchArea from '@/components/search-area'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 import garcia from '../assets/garcia.jpg'
+import { getProposalData } from '@/api/proposals/getProposalData'
+import { createProposal } from '@/api/proposals/createProposal'
 
 export function HomePage() {
+
+  const token = Cookies.get('auth_token')
+  
+  const tsDate = new Date();
+
+  // Get the ISO string from the Date object
+  const isoString = tsDate.toISOString(); // Returns a string like "2025-01-27T15:30:00.000Z"
+
+  // Now you can safely use split on the string
+  const dateOnly = isoString.split('T')[0]; // "2025-01-27"
+
+  createProposal({id_empresa: 1,
+    id_veiculo: 1,
+    cidade_saida: 'Maringá',
+    cidade_chegada: 'Curitiba',
+    distancia_extra_km: 0,
+    data_saida: dateOnly,
+    data_chegada: dateOnly,
+    token}).then((response) => {
+    console.log(response)
+  })
+
   const navigate = useNavigate()
 
   return (
