@@ -120,7 +120,7 @@ async def registrar_empresa(dados: CadastroEmpresa):
     empresa: classe_usuario.Empresa = classe_usuario.Empresa(0, email=dados.email, senha_hashed=dados.senha, tipo_conta="empresa", foto="",
                                                              nome_fantasia=dados.nome_fantasia, cnpj=dados.cnpj, endereco=endereco, local=local, telefone=dados.telefone)
     
-    empresa.id = 0
+    empresa.id_usuario = 0
 
     crud_usuario.cadastrar_empresa(db, empresa)
 
@@ -179,7 +179,7 @@ async def editar_dados_cliente(dados: AlterarDadosCliente, token: str = Depends(
         
         valida_foto(dados.foto)
 
-        path_foto = f"imagens/usuarios/{usuario.id}.png"
+        path_foto = f"imagens/usuarios/{usuario.id_usuario}.png"
         salva_foto(path_foto, dados.foto)
 
     if dados.nome_completo: 
@@ -216,7 +216,7 @@ async def editar_dados_empresa(dados: AlterarDadosEmpresa, token: str = Depends(
         
         valida_foto(dados.foto)
 
-        path_foto = f"imagens/usuarios/{usuario.id}.png"
+        path_foto = f"imagens/usuarios/{usuario.id_usuario}.png"
         salva_foto(path_foto, dados.foto)
     
     if dados.telefone:
@@ -298,7 +298,7 @@ async def aceitar_ou_rejeitar_proposta(dados: DadosAcaoProposta, token: str = De
     if aluguel is None:
         raise HTTPException(status_code=404, detail="Proposta não encontrada")
     
-    if aluguel.id_empresa != usuario.id:
+    if aluguel.id_empresa != usuario.id_usuario:
         raise HTTPException(status_code=400, detail="Proposta não pertence ao usuário")
     
     if aluguel.estado_aluguel != "proposto":
@@ -325,7 +325,7 @@ async def buscar_todas_propostas_usuario(token: str = Depends(oauth2_esquema)):
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
     # Buscar as propostas desse usuário e retornar
-    alugueis = crud_aluguel.buscar_alugueis_usuario_id(db, usuario.id)
+    alugueis = crud_aluguel.buscar_alugueis_usuario_id(db, usuario.id_usuario)
 
     if alugueis:
         return alugueis
@@ -333,8 +333,8 @@ async def buscar_todas_propostas_usuario(token: str = Depends(oauth2_esquema)):
         return {"detail" : "Nenhuma proposta encontrada para o cliente.",
                 "data" : []}
 
-@app.get("/propostas/buscar_dados_proposta")
-async def buscar_dados_proposta(dados: IdProposta, token: str = Depends(oauth2_esquema)):
+@app.get("/propostas/buscar_dados_proposta/{id_proposta}")
+async def buscar_dados_proposta(id_proposta: str, token: str = Depends(oauth2_esquema)):
     """
     Busca os dados específicos de uma proposta única
 
@@ -342,18 +342,18 @@ async def buscar_dados_proposta(dados: IdProposta, token: str = Depends(oauth2_e
     @param token: O token de acesso daquele usuário
     """
 
-    id_proposta = dados.id_proposta
+    id_proposta = int(id_proposta)
 
     db = database.conectar_bd()
 
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
-    aluguel = crud_aluguel.buscar_aluguel(db, dados.id_proposta)
+    aluguel = crud_aluguel.buscar_aluguel(db, id_proposta)
 
     if aluguel is None:
         raise HTTPException(status_code=404, detail="Proposta não encontrada")
     
-    if aluguel.id_empresa != usuario.id and aluguel.id_cliente != usuario.id:
+    if aluguel.id_empresa != usuario.id_usuario and aluguel.id_cliente != usuario.id_usuario:
         raise HTTPException(status_code=400, detail="Proposta não pertence ao usuário")
     
     return aluguel
@@ -416,7 +416,7 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
     if not veiculo:
         raise HTTPException(status_code=400, detail="Veículo não encontrado")
 
-    aluguel: classe_aluguel.Aluguel = classe_aluguel.Aluguel(None, usuario.id, dados.id_empresa, dados.id_veiculo)
+    aluguel: classe_aluguel.Aluguel = classe_aluguel.Aluguel(None, usuario.id_usuario, dados.id_empresa, dados.id_veiculo)
     aluguel.adicionar_datas(dados.data_saida, dados.data_chegada)
 
     local_partida: classe_local.Local = classe_local.Local(latitude_partida, longitude_partida)
@@ -457,7 +457,7 @@ async def cancelar_proposta(dados: IdProposta, token: str = Depends(oauth2_esque
     if aluguel is None:
         raise HTTPException(status_code=404, detail="Proposta não encontrada")
     
-    if aluguel.id_cliente != usuario.id:
+    if aluguel.id_cliente != usuario.id_usuario:
         raise HTTPException(status_code=400, detail="Proposta não pertence ao cliente")
     
     if aluguel.estado_aluguel != "proposto":
@@ -517,7 +517,7 @@ async def verificar_custo_proposta(dados: CriarProposta, token: str = Depends(oa
     if not veiculo:
         raise HTTPException(status_code=400, detail="Veículo não encontrado")
 
-    aluguel: classe_aluguel.Aluguel = classe_aluguel.Aluguel(None, usuario.id, dados.id_empresa, dados.id_veiculo)
+    aluguel: classe_aluguel.Aluguel = classe_aluguel.Aluguel(None, usuario.id_usuario, dados.id_empresa, dados.id_veiculo)
     aluguel.adicionar_datas(dados.data_saida, dados.data_chegada)
 
     local_partida: classe_local.Local = classe_local.Local(latitude_partida, longitude_partida)
@@ -570,13 +570,13 @@ async def cadastrar_veiculo(dados: CadastrarVeiculo, token: str = Depends(oauth2
     if not valida_placa(placa_veiculo):
         raise HTTPException(status_code=400, detail="Placa do veículo inválida")
 
-    veiculo: classe_veiculo.Veiculo = classe_veiculo.Veiculo(None, usuario.id, dados.nome_veiculo, placa_veiculo)
+    veiculo: classe_veiculo.Veiculo = classe_veiculo.Veiculo(None, usuario.id_usuario, dados.nome_veiculo, placa_veiculo)
     veiculo.adicionar_custos(dados.custo_por_km, dados.custo_base)
     veiculo.adicionar_dados(None, dados.cor, dados.ano_fabricacao, dados.capacidade)
     
     id_veiculo = crud_veiculo.criar_veiculo(db, veiculo)
 
-    caminho_da_foto = f"imagens/veiculos/{usuario.id}-{id_veiculo}.png"
+    caminho_da_foto = f"imagens/veiculos/{usuario.id_usuario}-{id_veiculo}.png"
     
     if dados.foto is not None: salva_foto(caminho_da_foto, dados.foto)
 
@@ -604,7 +604,7 @@ async def editar_veiculo(dados: EditarVeiculo, token: str = Depends(oauth2_esque
     if usuario.tipo_conta != "empresa":
         raise HTTPException(status_code=400, detail="Tipo de usuário não é empresa")
 
-    if not crud_veiculo.verificar_veiculo_empresa(db, dados.id_veiculo, usuario.id):
+    if not crud_veiculo.verificar_veiculo_empresa(db, dados.id_veiculo, usuario.id_usuario):
         raise HTTPException(status_code=400, detail="O veículo não pertence à empresa")
 
     veiculo: classe_veiculo.Veiculo = crud_veiculo.buscar_veiculo(db, dados.id_veiculo)
@@ -695,7 +695,7 @@ async def apagar_veiculo(dados: IdVeiculo, token: str = Depends(oauth2_esquema))
     if usuario_atual.tipo_conta != "empresa":
         raise HTTPException(status_code=400, detail="Usuário não é uma empresa para apagar veículo")
     
-    if not crud_veiculo.verificar_veiculo_empresa(db, id_veiculo, usuario_atual.id):
+    if not crud_veiculo.verificar_veiculo_empresa(db, id_veiculo, usuario_atual.id_usuario):
         raise HTTPException(status_code=400, detail="Veículo pertence a outra empresa")
     
     if crud_veiculo.verificar_alugueis_veiculo(db, id_veiculo):
@@ -754,11 +754,11 @@ async def avaliar_empresa(dados: AvaliacaoEmpresa, token: str = Depends(oauth2_e
     if avaliacao <= 0 or avaliacao >= 5:
         raise HTTPException(status_code=400, detail="Nota deve estar entre 0 e 5")
 
-    if crud_usuario.verificar_se_avaliacao_ja_feita(db, usuario.id, id_empresa):
-        crud_usuario.atualizar_avaliacao(db, usuario.id, id_empresa, avaliacao)
+    if crud_usuario.verificar_se_avaliacao_ja_feita(db, usuario.id_usuario, id_empresa):
+        crud_usuario.atualizar_avaliacao(db, usuario.id_usuario, id_empresa, avaliacao)
         return {"detail": "Avaliação atualizada com sucesso"}
 
-    crud_usuario.avaliar_empresa(db, usuario.id, id_empresa, avaliacao)
+    crud_usuario.avaliar_empresa(db, usuario.id_usuario, id_empresa, avaliacao)
 
     return {"detail": "Avaliação feita com sucesso"}
     
