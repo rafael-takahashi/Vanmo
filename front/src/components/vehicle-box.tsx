@@ -3,8 +3,37 @@ import { useNavigate } from 'react-router'
 import garcia from '../assets/garcia.jpg'
 import { Button } from './ui/button'
 
-export function VehicleBox() {
+interface VehicleBoxProps {
+  ano_fabricacao: number
+  capacidade: number
+  cor: string
+  custo_base: number
+  custo_por_km: number
+  id_veiculo: number
+  id_empresa: number
+  nome_veiculo: string
+  placa_veiculo: string
+  custo_da_viagem: number
+}
+
+export function VehicleBox({
+  ano_fabricacao,
+  capacidade,
+  cor,
+  custo_base,
+  custo_da_viagem,
+  custo_por_km,
+  id_empresa,
+  id_veiculo,
+  nome_veiculo,
+  placa_veiculo,
+}: VehicleBoxProps) {
   const navigate = useNavigate()
+
+  const valorFormatado = new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(custo_da_viagem)
 
   const handleProposalButtonClick = () => {
     //
@@ -22,23 +51,25 @@ export function VehicleBox() {
         />
       </div>
       <div className="flex-1 flex flex-col ml-4">
-        <h2 className="text-center text-xl font-bold">Onibus X</h2>
+        <h2 className="text-center text-xl font-bold">{nome_veiculo}</h2>
 
         <p className="text-primary-foreground">
-          Modelo: <span className="text-primary font-semibold">Modelo X</span>
+          Cor: <span className="text-primary font-semibold">{cor}</span>
         </p>
 
         <p className="text-primary-foreground">
-          Ano: <span className="text-primary font-semibold">2000</span>
+          Ano:{' '}
+          <span className="text-primary font-semibold">{ano_fabricacao}</span>
         </p>
 
         <p className="text-primary-foreground">
-          Capacidade: <span className="text-primary font-semibold">60</span>
+          Capacidade:{' '}
+          <span className="text-primary font-semibold">{capacidade}</span>
         </p>
 
         <p className="text-primary-foreground">
           Valor base para a viagem:{' '}
-          <span className="text-primary font-semibold">R$6000,00</span>
+          <span className="text-primary font-semibold">{valorFormatado}</span>
         </p>
 
         <Button

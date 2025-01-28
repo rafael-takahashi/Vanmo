@@ -93,44 +93,44 @@ export default function SearchArea() {
   return (
     <form
       onSubmit={handleSubmit(handleSearch)}
-      className="w-full flex flex-col gap-4 bg-primary-foreground rounded-md p-8 mt-8 shadow-xl"
+      className="w-full flex flex-col gap-2 bg-primary-foreground rounded-md py-5 px-8 shadow-xl"
     >
-      <h2 className="text-background ml-4 text-2xl font-bold">Fretamento</h2>
+      <h2 className="text-background text-2xl font-bold">Fretamento</h2>
 
       <div className="flex gap-4 justify-between">
         <div className="relative">
           <label
             htmlFor=""
-            className="absolute left-10 text-xl font-semibold top-1 "
+            className="absolute left-10 text-lg font-semibold top-1 "
           >
             Partida
           </label>
           <LocationInput register={register} setValue={setValue} field="from" />
-          <MapPin size={32} className="absolute top-11 left-1" />
+          <MapPin size={24} className="absolute top-[34px] left-2" />
         </div>
         <div className="relative">
           <label
             htmlFor=""
-            className="absolute left-10 text-xl font-semibold top-1 "
+            className="absolute left-10 text-lg font-semibold top-1 "
           >
             Destino
           </label>
           <LocationInput register={register} setValue={setValue} field="to" />
-          <MapPin size={32} className="absolute top-11 left-1" />
+          <MapPin size={24} className="absolute top-[34px] left-2" />
         </div>
-        <div className="w-[600px] bg-white rounded-md flex flex-col">
-          <label className="text-xl font-semibold ml-10 mt-1">
+        <div className="w-[600px] h-fit bg-white rounded-md flex flex-col">
+          <label className="text-lg font-semibold ml-10 mt-1">
             Data de ida/retorno
           </label>
-          <div className="grid grid-cols-2 mt-2 text-xl">
+          <div className="grid grid-cols-2 text-xl">
             <Controller
               name="dateFrom"
               control={control}
               render={({ field: { onChange, value } }) => (
                 <Popover>
                   <PopoverTrigger asChild>
-                    <div className="flex gap-2 cursor-pointer items-center border-none p-2 rounded">
-                      <CalendarIcon />
+                    <div className="flex gap-2 cursor-pointer items-center border-none pb-2 pt-[2px] px-2 rounded text-base">
+                      <CalendarIcon size={20} />
                       <span>
                         {value ? format(value, 'PPP') : 'Selecione uma data'}
                       </span>
@@ -157,8 +157,8 @@ export default function SearchArea() {
               render={({ field: { onChange, value } }) => (
                 <Popover>
                   <PopoverTrigger asChild>
-                    <div className="flex gap-2 cursor-pointer items-center border-none p-2 rounded">
-                      <CalendarIcon />
+                    <div className="flex gap-2 cursor-pointer items-center border-none pb-2 pt-[2px] px-2 rounded text-base">
+                      <CalendarIcon size={20} />
                       <span>
                         {value ? format(value, 'PPP') : 'Selecione uma data'}
                       </span>
@@ -184,17 +184,17 @@ export default function SearchArea() {
         <div className="relative">
           <label
             htmlFor=""
-            className="absolute left-10 text-xl font-semibold top-1 "
+            className="absolute left-10 text-lg font-semibold top-1 "
           >
             Passageiros
           </label>
           <Input
             type="text"
-            className="input-bordered h-[96px] !text-xl !pt-8 !pl-10 !w-[180px]"
+            className="input-bordered h-fit !text-base !pt-8 !pl-9 !w-[180px]"
             placeholder="Qtd"
             {...register('numberPassengers')}
           />
-          <User size={32} className="absolute top-11 left-1" />
+          <User size={20} className="absolute top-[34px] left-2" />
         </div>
       </div>
 

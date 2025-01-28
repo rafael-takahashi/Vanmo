@@ -48,11 +48,11 @@ export default function LocationInput({
 
   // Tratamento para remover as aspas extras de cada cidade
   const citiesWithoutQuotes = data
-    ? data.map((city) => city.replace(/"/g, '')) // Remove todas as aspas duplas
+    ? data.map((city: string) => city.replace(/"/g, '')) // Remove todas as aspas duplas
     : []
 
   // Filtra as cidades com base no input do usuário
-  const filteredCities = citiesWithoutQuotes.filter((city) =>
+  const filteredCities = citiesWithoutQuotes.filter((city: string) =>
     city.toLowerCase().includes(value.toLowerCase()),
   )
 
@@ -76,7 +76,7 @@ export default function LocationInput({
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              className="h-[96px] !text-lg !pt-8 !pl-12 !w-[230px] flex justify-between bg-white"
+              className="h-fit !text-base !pt-8 !pl-9 !w-[230px] flex justify-between bg-white"
             >
               {value || 'Insira uma cidade'}
               <ChevronsUpDown className="opacity-50" />
@@ -97,25 +97,27 @@ export default function LocationInput({
                 <CommandEmpty>Cidade não encontrada.</CommandEmpty>
                 <CommandGroup>
                   {filteredCities.length > 0 ? (
-                    filteredCities.slice(0, 10).map((city, index) => (
-                      <CommandItem
-                        key={index}
-                        value={city}
-                        onSelect={(currentValue) => {
-                          setValueLocal(currentValue) // Atualiza o valor local
-                          setValue(field, currentValue) // Registra o valor no formulário
-                          setOpen(false) // Fecha o popover após seleção
-                        }}
-                      >
-                        {city}
-                        <Check
-                          className={cn(
-                            'ml-auto',
-                            value === city ? 'opacity-100' : 'opacity-0',
-                          )}
-                        />
-                      </CommandItem>
-                    ))
+                    filteredCities
+                      .slice(0, 10)
+                      .map((city: string, index: number) => (
+                        <CommandItem
+                          key={index}
+                          value={city}
+                          onSelect={(currentValue) => {
+                            setValueLocal(currentValue) // Atualiza o valor local
+                            setValue(field, currentValue) // Registra o valor no formulário
+                            setOpen(false) // Fecha o popover após seleção
+                          }}
+                        >
+                          {city}
+                          <Check
+                            className={cn(
+                              'ml-auto',
+                              value === city ? 'opacity-100' : 'opacity-0',
+                            )}
+                          />
+                        </CommandItem>
+                      ))
                   ) : (
                     <CommandEmpty>Cidade não encontrada.</CommandEmpty>
                   )}

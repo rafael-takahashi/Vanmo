@@ -2,6 +2,7 @@ import { useSearchParams } from 'react-router'
 
 import { Results } from '@/components/results'
 import SearchArea from '@/components/search-area'
+import { Separator } from '@/components/ui/separator'
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams()
@@ -13,12 +14,15 @@ export default function SearchPage() {
 
   return (
     <main>
-      <SearchArea />
+      <div className="mt-16">
+        <SearchArea />
+      </div>
 
-      <div className="ml-8 mt-6">
+      <div className="mt-6">
         <span className="text-2xl font-bold text-primary-foreground">
           Resultados da busca
         </span>
+
         {searchParams && (
           <span className="ml-6 text-primary-foreground font-semibold">
             Partida:{` `}
@@ -30,6 +34,8 @@ export default function SearchPage() {
           </span>
         )}
       </div>
+
+      <Separator className="my-4" />
 
       <Results />
     </main>

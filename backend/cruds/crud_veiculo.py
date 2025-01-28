@@ -62,7 +62,7 @@ def buscar_veiculo(db: sqlite3.Connection, id_veiculo: int) -> classe_veiculo.Ve
     for data in datas_indisponiveis:
         veiculo.calendario_disponibilidade.datas_indisponiveis.append(data)
 
-    veiculo.caminho_foto = utils.carrega_foto_base64(veiculo.caminho_foto, True)
+    # veiculo.caminho_foto = utils.carrega_foto_base64(veiculo.caminho_foto, True)
 
     return veiculo
 

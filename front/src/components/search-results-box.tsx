@@ -1,9 +1,35 @@
+import { MapPin, Phone, Star } from '@phosphor-icons/react'
 import { format } from 'date-fns'
 import { useNavigate, useSearchParams } from 'react-router'
 
 import garcia from '../assets/garcia.jpg'
 
-export function SearchResults() {
+interface Endereco {
+  bairro: string
+  cep: string
+  cidade: string
+  numero: string
+  rua: string
+  uf: string
+}
+
+interface SearchResultsProps {
+  idBusiness: number
+  fantasyName: string
+  rate: number
+  phone: string
+  address: Endereco
+  photo: string
+}
+
+export function SearchResults({
+  address,
+  fantasyName,
+  idBusiness,
+  phone,
+  photo,
+  rate,
+}: SearchResultsProps) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const from = searchParams.get('from')
@@ -44,7 +70,7 @@ export function SearchResults() {
         state.delete('numberPassengers')
       }
 
-      navigate('/empresa/viacao+garcia')
+      navigate(`/empresa/${idBusiness}`)
 
       return state
     })
@@ -52,38 +78,32 @@ export function SearchResults() {
 
   return (
     <div
-      className="bg-white rounded-md p-4 flex cursor-pointer shadow-lg"
+      className="bg-white w-[280px] rounded-md flex flex-col cursor-pointer shadow-lg pb-6"
       onClick={() => handleNavigateSearchResult()}
     >
-      <div className="w-[280px] h-[180px] overflow-hidden">
+      <div className="w-full h-[180px] overflow-hidden">
         <img
           src={garcia}
           alt=""
-          className="w-full h-full object-cover object-center rounded-md"
+          className="w-full h-full object-cover object-center rounded-md shadow-lg"
         />
       </div>
-      <div className="flex-1 ml-4">
-        <h2 className="text-center text-xl font-bold">Viação Garcia</h2>
-
-        <p className="text-primary-foreground mt-4">
-          Cidade: <span className="text-primary font-semibold">Maringá</span>
-        </p>
-
-        <p className="text-primary-foreground">
-          Estado: <span className="text-primary font-semibold">PR</span>
-        </p>
-
-        <p className="text-primary-foreground">
-          Bairro: <span className="text-primary font-semibold">Zona 7</span>
-        </p>
-
-        <p className="text-primary-foreground">
-          Rua: <span className="text-primary font-semibold">Rua XYZ, 42</span>
-        </p>
-
-        <p className="text-primary-foreground mt-auto">
-          Avaliação: <span className="text-primary font-semibold">4.5</span>
-        </p>
+      <h2 className="text-center text-2xl font-semibold mt-3">{fantasyName}</h2>
+      <div className="flex flex-col ml-2 text-base">
+        <div className="flex gap-1 items-center mt-1">
+          <MapPin size={20} weight="fill" />
+          <span>
+            {address.cidade}-{address.uf}
+          </span>
+        </div>
+        <div className="flex gap-1 items-center mt-1">
+          <Phone size={20} weight="fill" />
+          <span>{phone}</span>
+        </div>
+        <div className="flex gap-1 items-center mt-1">
+          Avaliação: {rate}
+          <Star size={20} weight="fill" color="yellow" />
+        </div>
       </div>
     </div>
   )

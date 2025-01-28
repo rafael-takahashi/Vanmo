@@ -19,7 +19,7 @@ export interface Business {
   nome_fantasia: string
   cnpj: string
   endereco: Endereco
-  avaliacoes: number
+  avaliacao: number
   telefone: string
 }
 
@@ -27,7 +27,7 @@ export async function getDataBusiness({
   idEmpresa,
 }: GetDataBusinessParams): Promise<Business> {
   try {
-    const response = await api.get(`/busca/buscar_dados_empresa/${idEmpresa}`)
+    const response = await api.get(`/empresa/buscar_dados_empresa/${idEmpresa}`)
 
     return response.data
   } catch (error) {

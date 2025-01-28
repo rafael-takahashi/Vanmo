@@ -768,7 +768,7 @@ async def buscar_veiculos_criterio(id_empresa: int, data_de_partida: datetime.da
 
             aluguel.calcular_valor_total(veiculo.custo_por_km, veiculo.custo_base)
 
-            veiculos_filtrados.append((veiculo, aluguel.valor_total))
+            veiculos_filtrados.append({**veiculo.__dict__, "custo_da_viagem": aluguel.valor_total})
 
     inicio_pag = 10 * (pagina - 1)
     fim_pag = inicio_pag + 9
