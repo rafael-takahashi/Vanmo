@@ -1,5 +1,8 @@
+import Cookies from 'js-cookie'
 import { useNavigate } from 'react-router'
+import { useQuery } from '@tanstack/react-query'
 
+import { getTypeAccount } from '../api/getTypeAccount'
 import garcia from '../assets/garcia.jpg'
 import { Button } from './ui/button'
 
@@ -30,6 +33,14 @@ export function VehicleBox({
   placa_veiculo,
   proposal,
 }: VehicleBoxProps) {
+  const token = Cookies.get('auth_token')
+  
+  const { data } = useQuery({
+    queryKey: ['user', token],
+    queryFn: async () => await getTypeAccount({ token }),
+    enabled: !!token,
+  })
+
   const navigate = useNavigate()
 
   const valorFormatado = new Intl.NumberFormat('pt-BR', {
@@ -77,6 +88,7 @@ export function VehicleBox({
         <Button
           className="mt-auto h-8 flex justify-center items-center text-sm font-semibold self-end shadow-lg"
           onClick={handleProposalButtonClick}
+          disabled={data?.tipo_usuario === 'cliente' ? false : true}
         >
           Proposta
         </Button>
