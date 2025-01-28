@@ -108,7 +108,7 @@ async def registrar_empresa(dados: CadastroEmpresa):
     endereco: classe_endereco.Endereco = classe_endereco.Endereco(dados.uf, dados.cidade, dados.bairro, dados.cep, 
                                                                   dados.rua, dados.numero, None)
 
-    latitude, longitude = busca_latitude_longitude_de_cidade(dados.cidade, lista_cidades)
+    latitude, longitude = busca_latitude_longitude_de_cidade(dados.cidade, lista_cidades, dados.uf)
 
     # OBS: Aqui entraria a validação de cnpj com o formato certinho e os dígitos verificadores
     # mas assim como no CPF, nós decidimos não deixar isso em efeito para a demonstração inicial
@@ -788,9 +788,10 @@ async def buscar_empresas_nome(nome_busca: str):
 
     return crud_usuario.buscador_empresas_nome(db, nome_busca)
 
-@app.get("/busca/buscar_empresas/criterio/{data_de_partida}/{qtd_passageiros}/{latitude_partida}/{longitude_partida}/{pagina}")
+@app.get("/busca/buscar_empresas/criterio/{data_de_partida}/{qtd_passageiros}/{local_partida}/{pagina}")
 async def buscar_empresas_criterio(data_de_partida: datetime.date | None = None, qtd_passageiros: int | None = None, 
-                                   latitude_partida: float | None = None, longitude_partida: float | None = None, pagina: int = 1):
+                                   local_partida: str | None = None, pagina: int = 1):
+    global lista_cidades
     """
     Busca as empresas a partir de outros critérios
 
@@ -798,6 +799,10 @@ async def buscar_empresas_criterio(data_de_partida: datetime.date | None = None,
     @param token: O token de acesso do usuário
     """
     db = database.conectar_bd()
+
+    cidade, uf = tuple(local_partida.split(","))
+
+    latitude_partida, longitude_partida = busca_latitude_longitude_de_cidade(cidade, lista_cidades, uf)
 
     if pagina < 1:
         return {"error": "A página deve ser maior ou igual a 1."}

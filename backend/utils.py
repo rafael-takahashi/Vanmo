@@ -71,7 +71,7 @@ def remove_acentos(texto: str) -> str:
         c for c in unicodedata.normalize('NFD', texto) if unicodedata.category(c) != 'Mn'
     )
 
-def busca_latitude_longitude_de_cidade(nome_cidade: str, lista_cidades: list[Cidade]) -> tuple[float, float]:
+def busca_latitude_longitude_de_cidade(nome_cidade: str, lista_cidades: list[Cidade], uf: str | None = None) -> tuple[float, float]:
     """
     Busca as coordenadas (latitude e longitude) de uma cidade a partir do nome, ignorando acentuação e cê-cedilha.
     
@@ -80,9 +80,18 @@ def busca_latitude_longitude_de_cidade(nome_cidade: str, lista_cidades: list[Cid
     @return: Tupla com latitude e longitude da cidade
     """
     nome_cidade_normalizado = remove_acentos(nome_cidade.lower())
+
+    uf_normalizado = None
+    if uf:
+        uf_normalizado = remove_acentos(uf.lower()).replace(" ", "")
+
     for cidade in lista_cidades:
         if remove_acentos(cidade.nome.lower()) == nome_cidade_normalizado:
-            return cidade.latitude, cidade.longitude
+            if uf:
+                if remove_acentos(cidade.uf.lower()) == uf_normalizado:
+                    return cidade.latitude, cidade.longitude
+            else:
+                return cidade.latitude, cidade.longitude
     raise ValueError("Cidade não encontrada na lista")
 
 def valida_cpf(cpf: str) -> bool:
