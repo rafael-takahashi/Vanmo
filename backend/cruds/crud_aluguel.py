@@ -62,18 +62,18 @@ def buscar_alugueis_usuario_id(db: sqlite3.Connection, id_usuario: int, tipo_con
             item.adicionar_distancia_extra(aluguel[9])
             item.estado_aluguel = aluguel[5]
 
-            cliente = buscar_usuario_por_id(db, aluguel.id_cliente)
+            cliente = buscar_usuario_por_id(db, item.id_cliente)
             cliente = buscar_dados_cliente(db, cliente)
             cliente.email = ""
             cliente.senha_hashed = ""
 
-            empresa = buscar_usuario_por_id(db, aluguel.id_empresa)
+            empresa = buscar_usuario_por_id(db, item.id_empresa)
             empresa = buscar_dados_empresa(db, empresa)
             empresa.email = ""
             empresa.senha_hashed = ""
 
-            aluguel.id_cliente = cliente
-            aluguel.id_empresa = empresa
+            item.id_cliente = cliente
+            item.id_empresa = empresa
             
             resultado_busca.append(item)
         return resultado_busca
