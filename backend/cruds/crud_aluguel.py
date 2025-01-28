@@ -64,12 +64,10 @@ def buscar_alugueis_usuario_id(db: sqlite3.Connection, id_usuario: int, tipo_con
 
             cliente = buscar_usuario_por_id(db, item.id_cliente)
             cliente = buscar_dados_cliente(db, cliente)
-            cliente.email = ""
             cliente.senha_hashed = ""
 
             empresa = buscar_usuario_por_id(db, item.id_empresa)
             empresa = buscar_dados_empresa(db, empresa)
-            empresa.email = ""
             empresa.senha_hashed = ""
 
             item.id_cliente = cliente
@@ -108,17 +106,15 @@ def buscar_alugueis_usuario_id_por_status(db: sqlite3.Connection, id_usuario: in
 
             cliente = buscar_usuario_por_id(db, item.id_cliente)
             cliente = buscar_dados_cliente(db, cliente)
-            cliente.email = ""
             cliente.senha_hashed = ""
 
             empresa = buscar_usuario_por_id(db, item.id_empresa)
             empresa = buscar_dados_empresa(db, empresa)
-            empresa.email = ""
             empresa.senha_hashed = ""
 
             item.id_cliente = cliente
             item.id_empresa = empresa
-            
+
             resultado_busca.append(item)
         return resultado_busca
 
@@ -141,12 +137,10 @@ def buscar_aluguel(db: sqlite3.Connection, id_aluguel: int) -> Aluguel | None:
 
     cliente = buscar_usuario_por_id(db, aluguel.id_cliente)
     cliente = buscar_dados_cliente(db, cliente)
-    cliente.email = ""
     cliente.senha_hashed = ""
 
     empresa = buscar_usuario_por_id(db, aluguel.id_empresa)
     empresa = buscar_dados_empresa(db, empresa)
-    empresa.email = ""
     empresa.senha_hashed = ""
 
     aluguel.id_cliente = cliente
