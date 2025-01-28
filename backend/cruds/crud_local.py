@@ -15,6 +15,9 @@ def criar_local(db: sqlite3.Connection, local: Local):
     cursor.execute(QueriesDB.query_inserir_local_novo, dados)
     id_local: int = cursor.lastrowid
     
+    # Como o local é parte do aluguel, o commit só pode ser dado após as demais operações
+    # dele serem feitas
+
     # if db.in_transaction:
     #     db.rollback()
 
