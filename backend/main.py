@@ -204,7 +204,7 @@ async def buscar_tipo_usuario(token: str = Depends(oauth2_esquema)):
 
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
-    return {"tipo_usuario": usuario.tipo_conta}
+    return {"tipo_usuario": usuario.tipo_conta, "id_usuario": usuario.id_usuario}
 
 @app.put("/usuario/alterar_dados/empresa")
 async def editar_dados_empresa(dados: AlterarDadosEmpresa, token: str = Depends(oauth2_esquema)):

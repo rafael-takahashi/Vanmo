@@ -1,10 +1,10 @@
 import { api } from '@/lib/axios'
 
 interface FetchBusinessByFiltersParams {
-  data_de_partida: string
-  local_partida: string
-  qtd_passageiros: string
-  pagina: number
+  data_de_partida?: string
+  local_partida?: string
+  qtd_passageiros?: string
+  pagina?: number
 }
 
 interface Endereco {

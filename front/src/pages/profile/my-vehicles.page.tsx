@@ -4,8 +4,8 @@ import Cookies from 'js-cookie'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import { getBusinessVehicles } from '@/api/vehicles/getBusinessVehicles'
 import { getUserBusiness } from '@/api/getUserBusiness'
+import { getBusinessVehicles } from '@/api/vehicles/getBusinessVehicles'
 import SideMenuProfile from '@/components/side-menu-profile'
 import VehicleItem from '@/components/vehicle-item'
 
@@ -31,7 +31,11 @@ export default function MyVehiclesPage() {
 
   return (
     <main className="grid grid-cols-3 gap-4 mt-20">
-      <SideMenuProfile typeAccount={'empresa'} fullName={data?.nome_fantasia} />
+      <SideMenuProfile
+        typeAccount={'empresa'}
+        fullName={data?.nome_fantasia}
+        idUsuario={data?.id_usuario}
+      />
       <div className="col-span-2 bg-primary-foreground p-10 rounded-md">
         <div className="flex items-center mb-4">
           <h1 className="text-xl text-white">Meus Veículos</h1>

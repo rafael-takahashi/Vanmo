@@ -1,6 +1,7 @@
 import {
   Book,
   CarProfile,
+  Link,
   Signature,
   SignOut,
   VectorTwo,
@@ -10,22 +11,22 @@ import { useNavigate, useSearchParams } from 'react-router'
 
 import garcia from '../assets/garcia.jpg'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
-import { Button } from './ui/button'
 
 interface SideMenuProfileProps {
   fullName: string | undefined
   // photo: string
   typeAccount: 'cliente' | 'empresa'
+  idUsuario: number
 }
 
 export default function SideMenuProfile({
   typeAccount,
   fullName,
+  idUsuario,
   // photo,
 }: SideMenuProfileProps) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-
   const status = searchParams.get('status')
 
   const url = window.location.pathname
@@ -260,6 +261,16 @@ export default function SideMenuProfile({
               navigate('/login')
             }}
           />
+
+          {typeAccount === 'empresa' && (
+            <Link
+              size={36}
+              className="absolute top-4 right-4 cursor-pointer p-2 rounded-xl transition-all duration-300 hover:bg-slate-700"
+              onClick={() => {
+                navigate(`/empresa/${idUsuario}`)
+              }}
+            />
+          )}
         </div>
       )}
     </>

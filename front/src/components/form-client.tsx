@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
+import { parse, subDays } from 'date-fns'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
@@ -11,6 +12,7 @@ import { registerClient } from '@/api/registerClient'
 
 import { Button } from './ui/button'
 import { Input } from './ui/input'
+import MaskedInput from './ui/maskedinput'
 
 const registerUserPersonSchema = z
   .object({
@@ -62,14 +64,15 @@ export default function FormClient({ setSuccess }: FormClientProps) {
 
   async function handleUserPersonRegister(data: RegisterUserPersonForm) {
     try {
-      const formattedDate = new Date(data.dateOfBirth)
+      const parsedDate = parse(data.dateOfBirth, 'dd/MM/yyyy', new Date())
+      const dateOfBirth = subDays(parsedDate, 1)
 
       await mutateAsync({
         email: data.email,
         password: data.password,
         typeAccount: data.typeAccount,
         fullName: data.fullName,
-        dateOfBirth: formattedDate,
+        dateOfBirth,
         cpf: data.cpf,
         phone: data.phone,
       })
@@ -116,18 +119,20 @@ export default function FormClient({ setSuccess }: FormClientProps) {
           {...registerUserPerson('email')}
         />
 
-        <Input
+        <MaskedInput
+          mask="(99) 99999-9999"
           type="text"
           placeholder="Telefone celular*"
           className="input-bordered col-span-1"
           {...registerUserPerson('phone')}
         />
 
-        <Input
-          type="date"
+        <MaskedInput
+          id="date"
+          mask="99/99/9999" // Formato de data DD/MM/YYYY
           placeholder="Data de nascimento*"
-          className="input-bordered col-span-1"
           {...registerUserPerson('dateOfBirth')}
+          className="input-bordered col-span-1"
         />
 
         <Input

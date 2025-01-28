@@ -5,6 +5,7 @@ interface getTypeAccountHeader {
 
 interface getTypeAccountResponse {
   tipo_usuario: string
+  id_usuario: number
 }
 
 export async function getTypeAccount({ token }: getTypeAccountHeader) {

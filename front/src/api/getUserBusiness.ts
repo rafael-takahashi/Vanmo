@@ -18,7 +18,7 @@ interface getUserBusinessResponse {
   email: string
   endereco: Endereco
   foto: string
-  id: number
+  id_usuario: number
   nome_fantasia: string
   num_avaliacoes: number
   soma_avaliacoes: number

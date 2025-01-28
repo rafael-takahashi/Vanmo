@@ -38,6 +38,7 @@ export default function Profile() {
             ? dataBusiness?.nome_fantasia
             : dataClient?.nome_completo
         }
+        idUsuario={data?.id_usuario}
       />
 
       {data?.tipo_usuario === 'cliente' && <ProfileClientArea />}

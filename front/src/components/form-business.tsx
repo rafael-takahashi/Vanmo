@@ -12,6 +12,7 @@ import { searchCEP, searchCepResponse } from '@/api/searchCEP'
 
 import { Button } from './ui/button'
 import { Input } from './ui/input'
+import MaskedInput from './ui/maskedinput'
 
 const registerUserBusinessSchema = z
   .object({
@@ -144,7 +145,8 @@ export default function FormBusiness({ setSuccess }: FormBusinessProps) {
           {...registerUserBusiness('email')}
         />
 
-        <Input
+        <MaskedInput
+          mask="(99) 99999-9999"
           type="text"
           placeholder="Telefone para contato*"
           className="input-bordered col-span-2"
