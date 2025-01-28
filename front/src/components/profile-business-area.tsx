@@ -9,9 +9,11 @@ import { z } from 'zod'
 
 import { editProfileUserBusiness } from '@/api/editUserBusiness'
 import { getUserBusiness } from '@/api/getUserBusiness'
+import { getUserProposals } from '@/api/proposals/getUserProposals'
 import { getBusinessVehicles } from '@/api/vehicles/getBusinessVehicles'
 
 import ProposalItem from './proposal-item'
+import TableVehicles from './table-vehicles'
 import { Button } from './ui/button'
 import {
   Dialog,
@@ -24,7 +26,6 @@ import {
 import { Input } from './ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 import VehicleItem from './vehicle-item'
-import { getUserProposals } from '@/api/proposals/getUserProposals'
 
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/jpg']
 
@@ -110,15 +111,15 @@ export default function ProfileBusinessArea() {
 
       setOriginalData(initialData) // Armazena os dados originais no estado
       reset(initialData)
-      fetchAndSetVehicles(data?.id_usuario)
+      // fetchAndSetVehicles(data?.id_usuario)
     }
   }, [data, reset])
 
-  const [vehicles, setVehicles] = useState<any[]>([])
+  // const [vehicles, setVehicles] = useState<any[]>([])
 
-  const fetchAndSetVehicles = async (businessId: number | undefined) => {
-    setVehicles(await getBusinessVehicles(businessId, 1))
-  }
+  // const fetchAndSetVehicles = async (businessId: number | undefined) => {
+  //   setVehicles(await getBusinessVehicles(businessId, 1))
+  // }
 
   async function handleEditProfile(data: BusinessProfileForm) {
     try {
@@ -455,29 +456,29 @@ export default function ProfileBusinessArea() {
         <div className="flex flex-col gap-4 mt-4">
           {proposalsList && proposalsList.length > 0 ? (
             proposalsList
-            .slice(0, 2)
-            .map((proposal: any) => (
-              <ProposalItem 
-                proposal={proposal} 
-                key={proposal.id_aluguel} 
-                type="empresa" />
-            ))
+              .slice(0, 2)
+              .map((proposal: any) => (
+                <ProposalItem
+                  proposal={proposal}
+                  key={proposal.id_aluguel}
+                  type="empresa"
+                />
+              ))
           ) : (
             <p className="text-white ">Não foram encontradas propostas.</p>
           )}
         </div>
         <div className="flex items-end gap-4 mt-14">
           <h2 className="text-white text-2xl">Veículos</h2>
-          {vehicles.length > 2 && (
-            <span
-              className="text-white text-sm font-thin cursor-pointer"
-              onClick={() => {
-                navigate('/profile/vehicles')
-              }}
-            >
-              Ver Mais
-            </span>
-          )}
+          <span
+            className="text-white text-sm font-thin cursor-pointer"
+            onClick={() => {
+              navigate('/profile/vehicles')
+            }}
+          >
+            Ver Mais
+          </span>
+
           <Plus
             size={24}
             color="#6af42a"
@@ -486,8 +487,7 @@ export default function ProfileBusinessArea() {
           />
         </div>
         <div className="flex flex-col gap-4 mt-4">
-          {vehicles[0] && <VehicleItem vehicle={vehicles[0]} />}
-          {vehicles[1] && <VehicleItem vehicle={vehicles[1]} />}
+          <TableVehicles id_usuario={data?.id_usuario} />
         </div>
 
         <div className="flex flex-col gap-4 mt-4"></div>

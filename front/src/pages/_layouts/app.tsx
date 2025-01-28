@@ -31,7 +31,7 @@ export function AppLayout() {
   })
 
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <header className="flex justify-between items-center px-5 py-6 h-[96px] w-full bg-primary-foreground">
         <div className="max-w-[1240px] w-full flex justify-between items-center mx-auto px-5">
           <a className="text-white" href="/">
@@ -98,7 +98,7 @@ export function AppLayout() {
           </div>
         </div>
       </header>
-      <main className="max-w-[1240px] w-full mx-auto">
+      <main className="flex-grow max-w-[1240px] w-full mx-auto">
         <Outlet />
       </main>
       <footer className="flex justify-between items-center px-5 py-6 h-[288px] w-full bg-primary-foreground mt-20"></footer>

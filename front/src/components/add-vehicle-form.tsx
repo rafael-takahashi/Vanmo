@@ -9,26 +9,27 @@ import { z } from 'zod'
 
 import { editVehicle } from '@/api/vehicles/editVehicle'
 import { registerVehicle } from '@/api/vehicles/registerVehicle'
-import { Input } from './ui/input'
+
 import { Button } from './ui/button'
+import { Input } from './ui/input'
 
 interface Vehicle {
-  ano_fabricacao: number;
-  calendario_disponibilidade: null;
-  caminho_foto: null;
-  capacidade: number;
-  cor: string;
-  custo_base: number;
-  custo_por_km: number;
-  id_empresa: number;
-  id_veiculo: number;
-  nome_veiculo: string;
-  placa_veiculo: string;
+  ano_fabricacao: number
+  calendario_disponibilidade: null
+  caminho_foto: null
+  capacidade: number
+  cor: string
+  custo_base: number
+  custo_por_km: number
+  id_empresa: number
+  id_veiculo: number
+  nome_veiculo: string
+  placa_veiculo: string
 }
 
 interface VehicleItemProps {
-  vehicle: Vehicle;
-  editMode: boolean;
+  vehicle: Vehicle
+  editMode: boolean
 }
 
 const VehicleSchema = z.object({
@@ -66,32 +67,34 @@ const VehicleSchema = z.object({
 
 type vehicleForm = z.infer<typeof VehicleSchema>
 
-export default function AddVehicleForm({ vehicle, editMode }: VehicleItemProps) {
-
+export default function AddVehicleForm({
+  vehicle,
+  editMode,
+}: VehicleItemProps) {
   const navigate = useNavigate()
-  
+
   const token = Cookies.get('auth_token')
-  
-  const { 
-      register, 
-      handleSubmit, 
-      formState: { errors },
-      setValue
-  } = useForm<vehicleForm> ({
-  resolver: zodResolver(VehicleSchema),
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+  } = useForm<vehicleForm>({
+    resolver: zodResolver(VehicleSchema),
   })
 
   useEffect(() => {
     if (vehicle) {
-      setValue("name", vehicle.nome_veiculo)
-      setValue("licensePlate", vehicle.placa_veiculo)
-      setValue("costPerKm", vehicle.custo_por_km.toString())
-      setValue("baseCost", vehicle.custo_base.toString())
-      setValue("color", vehicle.cor)
-      setValue("year", vehicle.ano_fabricacao.toString())
-      setValue("capacity", vehicle.capacidade.toString())
+      setValue('name', vehicle.nome_veiculo)
+      setValue('licensePlate', vehicle.placa_veiculo)
+      setValue('costPerKm', vehicle.custo_por_km.toString())
+      setValue('baseCost', vehicle.custo_base.toString())
+      setValue('color', vehicle.cor)
+      setValue('year', vehicle.ano_fabricacao.toString())
+      setValue('capacity', vehicle.capacidade.toString())
     }
-  }, [vehicle, setValue]);
+  }, [vehicle, setValue])
 
   useEffect(() => {
     if (Object.keys(errors).length > 0) {
@@ -102,34 +105,35 @@ export default function AddVehicleForm({ vehicle, editMode }: VehicleItemProps) 
 
   const { mutateAsync } = useMutation({
     mutationFn: async (data: any) => {
-        if (editMode) {
-          // If in edit mode, pass the id and formData to the edit function
-          return editVehicle({
-            token,id: data.id,
-            name: data.name,
-            licensePlate: data.licensePlate,
-            costPerKm: parseFloat(data.costPerKm),
-            baseCost: parseFloat(data.baseCost),
-            color: data.color,
-            year: parseInt(data.year),
-            capacity: parseInt(data.capacity),
-            photo: null, // Assuming photo is optional or handled separately
-          });
-        } else {
-          // If in register mode, pass only the formData
-          return registerVehicle({
-            token,
-            name: data.name,
-            licensePlate: data.licensePlate,
-            costPerKm: parseFloat(data.costPerKm),
-            baseCost: parseFloat(data.baseCost),
-            color: data.color,
-            year: parseInt(data.year),
-            capacity: parseInt(data.capacity),
-            photo: null, // Assuming photo is optional or handled separately
-          });
-        }
-      },
+      if (editMode) {
+        // If in edit mode, pass the id and formData to the edit function
+        return editVehicle({
+          token,
+          id: data.id,
+          name: data.name,
+          licensePlate: data.licensePlate,
+          costPerKm: parseFloat(data.costPerKm),
+          baseCost: parseFloat(data.baseCost),
+          color: data.color,
+          year: parseInt(data.year),
+          capacity: parseInt(data.capacity),
+          photo: null, // Assuming photo is optional or handled separately
+        })
+      } else {
+        // If in register mode, pass only the formData
+        return registerVehicle({
+          token,
+          name: data.name,
+          licensePlate: data.licensePlate,
+          costPerKm: parseFloat(data.costPerKm),
+          baseCost: parseFloat(data.baseCost),
+          color: data.color,
+          year: parseInt(data.year),
+          capacity: parseInt(data.capacity),
+          photo: null, // Assuming photo is optional or handled separately
+        })
+      }
+    },
   })
 
   async function handleRegisterVehicle(data: vehicleForm) {
@@ -144,7 +148,7 @@ export default function AddVehicleForm({ vehicle, editMode }: VehicleItemProps) 
       year: data.year,
       capacity: data.capacity,
       photo: null, // If there's no photo to upload or if it's optional
-    };
+    }
     try {
       await mutateAsync(vehicleData)
       toast.success('Veículo cadastrado com sucesso!')
@@ -163,7 +167,9 @@ export default function AddVehicleForm({ vehicle, editMode }: VehicleItemProps) 
   return (
     <>
       <div className="col-span-2 bg-primary-foreground rounded-md">
-        <h2 className="text-white text-2xl">{editMode ? "Editar Veículo" : "Cadastrar Veículo"}</h2>
+        <h2 className="text-white text-2xl">
+          {editMode ? 'Editar Veículo' : 'Cadastrar Veículo'}
+        </h2>
         <form
           className="grid grid-cols-2 gap-4 mt-6"
           onSubmit={handleSubmit(handleRegisterVehicle)}
@@ -240,7 +246,7 @@ export default function AddVehicleForm({ vehicle, editMode }: VehicleItemProps) 
             />
           </div>
           <div className="col-span-2 flex justify-center mt-4">
-            <Button type="submit">{editMode ? "Editar" : "Cadastrar"}</Button>
+            <Button type="submit">{editMode ? 'Editar' : 'Cadastrar'}</Button>
           </div>
         </form>
       </div>

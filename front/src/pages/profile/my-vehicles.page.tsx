@@ -1,13 +1,11 @@
 import { Plus } from '@phosphor-icons/react'
 import { useQuery } from '@tanstack/react-query'
 import Cookies from 'js-cookie'
-import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { getUserBusiness } from '@/api/getUserBusiness'
-import { getBusinessVehicles } from '@/api/vehicles/getBusinessVehicles'
 import SideMenuProfile from '@/components/side-menu-profile'
-import VehicleItem from '@/components/vehicle-item'
+import TableVehicles from '@/components/table-vehicles'
 
 export default function MyVehiclesPage() {
   const navigate = useNavigate()
@@ -19,24 +17,25 @@ export default function MyVehiclesPage() {
     queryFn: () => getUserBusiness({ token }),
   })
 
-  const [vehicles, setVehicles] = useState<any[]>([])
+  // const [vehicles, setVehicles] = useState<any[]>([])
 
-  const fetchAndSetVehicles = async (businessId: number | undefined) => {
-    setVehicles(await getBusinessVehicles(businessId, 1))
-  }
+  // const fetchAndSetVehicles = async (businessId: number | undefined) => {
+  //   setVehicles(await getBusinessVehicles(businessId, 1))
+  // }
 
-  useEffect(() => {
-    if (data?.id_usuario) fetchAndSetVehicles(data?.id_usuario)
-  }, [data?.id_usuario])
+  // useEffect(() => {
+  //   if (data?.id_usuario) fetchAndSetVehicles(data?.id_usuario)
+  // }, [data?.id_usuario])
 
   return (
-    <main className="grid grid-cols-3 gap-4 mt-20">
+    <main className="flex gap-4 mt-20">
       <SideMenuProfile
         typeAccount={'empresa'}
         fullName={data?.nome_fantasia}
         idUsuario={data?.id_usuario}
       />
-      <div className="col-span-2 bg-primary-foreground p-10 rounded-md">
+
+      <div className="flex-1 bg-primary-foreground p-10 rounded-md">
         <div className="flex items-center mb-4">
           <h1 className="text-xl text-white">Meus Veículos</h1>
           <Plus
@@ -46,12 +45,8 @@ export default function MyVehiclesPage() {
             onClick={() => navigate('/profile/add-vehicle')}
           />
         </div>
-        {vehicles &&
-          vehicles.map((vehicle) => (
-            <div className="mb-6">
-              <VehicleItem vehicle={vehicle} key={vehicle.id_veiculo} />
-            </div>
-          ))}
+
+        <TableVehicles id_usuario={data?.id_usuario} />
       </div>
     </main>
   )
