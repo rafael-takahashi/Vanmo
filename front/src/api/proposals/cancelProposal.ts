@@ -9,13 +9,9 @@ export async function cancelProposal({
     id_proposta,
     token
 }: cancelProposalBody) {
-    const jsonBody = JSON.stringify({
-        id_proposta: id_proposta
-    })
     try {
-        const response = await api.put(
-        `/propostas/cancelar_proposta/`,
-        jsonBody,
+        const response = await api.delete(
+        `/propostas/cancelar_proposta/${id_proposta}`,
         {
             headers: {
                 "Content-Type": "application/json",
