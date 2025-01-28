@@ -119,7 +119,7 @@ def atualizar_status_alugueis(conexao: sqlite3.Connection):
         data_inicio, data_fim, distancia_trajeto, distancia_extra, id_local_partida, id_local_chegada = aluguel
 
         cliente = cursor.execute(QueriesDB.query_buscar_cliente, (id_cliente,)).fetchone()
-        _, nome_cliente, cpf_cliente, _, _ = cliente
+        _, nome_cliente, cpf_cliente, _ = cliente
 
         empresa = cursor.execute(QueriesDB.query_buscar_empresa, (id_empresa,)).fetchone()
         _, cnpj_empresa, nome_fantasia_empresa, _, _, _, _ = empresa
