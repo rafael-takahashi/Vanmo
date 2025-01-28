@@ -7,8 +7,8 @@ from classes.classe_usuario import Usuario
 from classes.classe_local import Local
 from database import *
 from cruds.crud_local import buscar_local_por_id
+from cruds.crud_usuario import buscar_usuario_por_id, buscar_dados_cliente, buscar_dados_empresa
 import sqlite3
-import crud_usuario
 
 def criar_aluguel(db: sqlite3.Connection, aluguel: Aluguel): #, local_partida: Local, local_chegada: Local):
     cursor: sqlite3.Cursor = db.cursor()
@@ -111,13 +111,13 @@ def buscar_aluguel(db: sqlite3.Connection, id_aluguel: int) -> Aluguel | None:
     aluguel.adicionar_distancia_extra(resultado[9])
     aluguel.estado_aluguel = resultado[5]
 
-    cliente = crud_usuario.buscar_usuario_por_id(db, aluguel.id_cliente)
-    cliente = crud_usuario.buscar_dados_cliente(db, cliente)
+    cliente = buscar_usuario_por_id(db, aluguel.id_cliente)
+    cliente = buscar_dados_cliente(db, cliente)
     cliente.email = ""
     cliente.senha_hashed = ""
 
-    empresa = crud_usuario.buscar_usuario_por_id(db, aluguel.id_empresa)
-    empresa = crud_usuario.buscar_dados_empresa(db, empresa)
+    empresa = buscar_usuario_por_id(db, aluguel.id_empresa)
+    empresa = buscar_dados_empresa(db, empresa)
     empresa.email = ""
     empresa.senha_hashed = ""
 
