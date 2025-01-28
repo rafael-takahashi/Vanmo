@@ -16,6 +16,7 @@ export async function getUserProposals({ status_aluguel, token }: getUserProposa
         Authorization: `Bearer ${token}`,
       },
     })
+    console.log(response.data)
     return response.data
   } catch (error: any) {
     console.error('Error:', error.response?.data || error.message)

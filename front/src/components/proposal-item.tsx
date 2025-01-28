@@ -1,8 +1,22 @@
 import Cookies from 'js-cookie'
 import { useQuery } from '@tanstack/react-query'
-import { getDataBusiness } from '@/api/getDataBusiness'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { getVehicleData } from '@/api/vehicles/getVehicleData'
+
+interface Cliente {
+  cpf: string
+  data_nascimento: string
+  email: string
+  nome_completo: string
+  telefone: string
+}
+
+interface Empresa {
+  cnpj: string
+  email: string
+  telefone: string
+  nome_fantasia: string
+}
 
 interface Local {	
   id_local: number
@@ -18,8 +32,8 @@ interface Proposal {
   distancia_trajeto: number
   estado_aluguel: string
   id_aluguel: number
-  id_cliente: number
-  id_empresa: number
+  id_cliente: Cliente
+  id_empresa: Empresa
   id_veiculo: number
   local_chegada: Local
   local_partida: Local
@@ -34,11 +48,6 @@ interface ProprosalItemProps {
 export default function ProposalItem({ proposal, type }: ProprosalItemProps) {
 
   const token = Cookies.get('auth_token')
-
-  const { data: dataBusiness, isSuccess: isSucessBusiness } = useQuery({
-    queryKey: ['idBusiness', proposal.id_empresa],
-    queryFn: () => getDataBusiness({ idEmpresa: proposal.id_empresa.toString() }),
-  })
 
   const { data: dataVehicle, isSuccess: isSucessVehicle } = useQuery({
     queryKey: ['idVehicle', proposal.id_veiculo],
@@ -72,9 +81,9 @@ export default function ProposalItem({ proposal, type }: ProprosalItemProps) {
               Informações da Empresa
             </h3>
 
-            {isSucessBusiness &&
+            {proposal.id_empresa &&
             <p>
-              Empresa: <span>{dataBusiness?.nome_fantasia}</span>
+              Empresa: <span>{proposal.id_empresa.nome_fantasia}</span>
             </p>
             }
             {isSucessVehicle &&
@@ -98,18 +107,18 @@ export default function ProposalItem({ proposal, type }: ProprosalItemProps) {
             <h3 className="text-center font-semibold">
               Informações do Cliente
             </h3>
-            {/*Alterar para dados reais do cliente*/}
+
             <p>
-              Nome Completo: <span>John Doe</span>
+              Nome Completo: <span>{proposal.id_cliente.nome_completo}</span>
             </p>
             <p>
-              Email: <span>johndoe@example.com</span>
+              Email: <span>{proposal.id_cliente.email}</span>
             </p>
             <p>
-              Data de Nascimento: <span>01/01/2000</span>
+              Data de Nascimento: <span>{new Date(proposal.id_cliente.data_nascimento).toLocaleDateString('pt-BR')}</span>
             </p>
             <p>
-              CPF: <span>12312312312</span>
+              CPF: <span>{proposal.id_cliente.cpf}</span>
             </p>
           </div>
         )}
