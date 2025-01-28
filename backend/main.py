@@ -32,6 +32,8 @@ def loop_diario():
 
         database.atualizar_status_alugueis(db)
 
+        db.close()
+
         time.sleep(24 * 3600)
    
 
@@ -268,12 +270,16 @@ async def buscar_dados_cadastrais_cliente(token: str = Depends(oauth2_esquema)):
     cliente: classe_usuario.Cliente = crud_usuario.buscar_dados_cliente(db, usuario)
     cliente.senha_hashed = ""
 
+    db.close()
     return cliente
 
 @app.get("/usuario/buscar_dados_cadastrais/empresa")
 async def buscar_dados_cadastrais_empresa(token: str = Depends(oauth2_esquema)):
     db = database.conectar_bd()
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+
+    if usuario.tipo_conta != 'empresa':
+        raise HTTPException(status_code=400, detail="Usuário não é uma empresa")
 
     empresa: classe_usuario.Empresa = crud_usuario.buscar_dados_empresa(db, usuario)
     empresa.senha_hashed = ""
@@ -443,9 +449,10 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
 
     aluguel.estado_aluguel = "proposto"
 
-    crud_aluguel.criar_aluguel(db, aluguel)
+    crud_aluguel.criar_aluguel(db, aluguel) # , local_partida, local_chegada)
 
-    db.commit()
+    # db.commit()
+    db.close()
 
     return {"detail": "Proposta criada com sucesso"}
 
