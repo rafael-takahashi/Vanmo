@@ -11,7 +11,7 @@ class Aluguel():
         self.id_empresa = id_empresa
         self.id_veiculo = id_veiculo
         self.distancia_trajeto: float = 0.0
-        self.estado_aluguel = "proposto"
+        self.estado_aluguel = "pendente"
         self.valor_total: float = 0.0
     
     def adicionar_locais(self, local_partida: Local, local_chegada: Local):
