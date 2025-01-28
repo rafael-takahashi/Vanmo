@@ -396,9 +396,9 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
     if not valida_cidade(dados.cidade_chegada, lista_cidades):
         raise HTTPException(status_code=400, detail="Cidade de chegada inválida")
     
-    latitude_partida, longitude_partida = busca_latitude_longitude_de_cidade(dados.cidade_saida, lista_cidades)
+    latitude_partida, longitude_partida = busca_latitude_longitude_de_cidade(dados.cidade_saida, lista_cidades, dados.uf_saida)
 
-    latitude_chegada, longitude_chegada = busca_latitude_longitude_de_cidade(dados.cidade_chegada, lista_cidades)
+    latitude_chegada, longitude_chegada = busca_latitude_longitude_de_cidade(dados.cidade_chegada, lista_cidades, dados.uf_chegada)
 
     data_saida = dados.data_saida
     data_chegada = dados.data_chegada
