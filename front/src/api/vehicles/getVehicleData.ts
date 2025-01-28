@@ -1,7 +1,7 @@
 import { api } from '@/lib/axios'
 
 interface getVehicleDataBody {
-  idVehicle: number
+  idVehicle: string
   token: string | undefined
 }
 

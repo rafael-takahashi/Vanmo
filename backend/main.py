@@ -665,7 +665,7 @@ async def buscar_todos_veiculos_empresa(id_empresa: int, pagina: int):
 
     return resultados[inicio_pag:fim_pag+1]
 
-@app.get("/veiculos/buscar_dados_veiculo/{id_veiculo}", response_model=RespostaVeiculo)
+@app.get("/veiculos/buscar_dados_veiculo/{id_veiculo}")
 async def buscar_dados_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):
     """
     Busca os dados de um veículo
@@ -679,13 +679,17 @@ async def buscar_dados_veiculo(id_veiculo: int, token: str = Depends(oauth2_esqu
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
     veiculo = crud_veiculo.buscar_veiculo(db, id_veiculo)
-
+    
+    """
+    Alterei para testes no frontend, pois estava dando erro, provavelmente devido ao calendario e a foto,
+    que ainda não foram implementados no frontend 
     response_data = RespostaVeiculo(id_veiculo=veiculo.id_veiculo, nome_veiculo=veiculo.nome_veiculo, placa_veiculo=veiculo.placa_veiculo,
                                     datas_indisponiveis=veiculo.calendario_disponibilidade.datas_indisponiveis, custo_por_km=veiculo.custo_por_km,
                                     custo_base=veiculo.custo_base, foto=veiculo.caminho_foto, cor=veiculo.cor,
                                     ano_fabricacao=veiculo.ano_fabricacao, capacidade=veiculo.capacidade)
+    """
 
-    return RespostaVeiculo
+    return veiculo
 
 @app.delete("/veiculos/apagar_veiculo/{id_veiculo}")
 async def apagar_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):

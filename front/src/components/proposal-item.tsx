@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie'
 import { useQuery } from '@tanstack/react-query'
 import { getDataBusiness } from '@/api/getDataBusiness'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
@@ -25,6 +26,8 @@ interface ProprosalItemProps {
 
 export default function ProposalItem({ proposal, type }: ProprosalItemProps) {
 
+  const token = Cookies.get('auth_token')
+
   const { data: dataBusiness, isSuccess: isSucessBusiness } = useQuery({
     queryKey: ['idBusiness', proposal.id_empresa],
     queryFn: () => getDataBusiness({ idEmpresa: proposal.id_empresa.toString() }),
@@ -32,10 +35,9 @@ export default function ProposalItem({ proposal, type }: ProprosalItemProps) {
   
   const { data: dataVehicle, isSuccess: isSucessVehicle } = useQuery({
     queryKey: ['idVehicle', proposal.id_veiculo],
-    queryFn: () => getVehicleData({ idVehicle: proposal.id_veiculo, token: 'token' }),
+    queryFn: () => getVehicleData({ idVehicle: proposal.id_veiculo.toString(), token }),
   })
-  
-    
+
   return (
     <Card className="bg-white rounded-md">
       <CardHeader>
@@ -71,10 +73,10 @@ export default function ProposalItem({ proposal, type }: ProprosalItemProps) {
             {isSucessVehicle &&
             <>
               <p>
-                Veículo: <span>{dataVehicle.nome}</span>
+                Veículo: <span>{dataVehicle.nome_veiculo}</span>
               </p>
               <p>
-                Ano: <span>{dataVehicle.ano}</span>
+                Ano: <span>{dataVehicle.ano_fabricacao}</span>
               </p>
               <p>
                 Passageiros: <span>{dataVehicle.capacidade}</span>
