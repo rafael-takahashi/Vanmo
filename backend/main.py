@@ -442,8 +442,8 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
 
     return {"detail": "Proposta criada com sucesso"}
 
-@app.put("/propostas/cancelar_proposta/")
-async def cancelar_proposta(dados: IdProposta, token: str = Depends(oauth2_esquema)):
+@app.delete("/propostas/cancelar_proposta/{id_proposta}")
+async def cancelar_proposta(id_proposta: int, token: str = Depends(oauth2_esquema)):
     """
     Cancela uma proposta de um cliente
 
@@ -451,16 +451,16 @@ async def cancelar_proposta(dados: IdProposta, token: str = Depends(oauth2_esque
     @param token: O token de acesso do usuário
     """
 
-    id_proposta = dados.id_proposta
+    id_proposta = id_proposta
 
     db = database.conectar_bd()
 
-    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(token)
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
     if usuario.tipo_conta != "cliente":
         raise HTTPException(status_code=400, detail="Apenas clientes podem cancelar propostas")
 
-    aluguel = crud_aluguel.buscar_aluguel(db, dados.id_proposta)
+    aluguel = crud_aluguel.buscar_aluguel(db, id_proposta)
 
     if aluguel is None:
         raise HTTPException(status_code=404, detail="Proposta não encontrada")
@@ -471,7 +471,7 @@ async def cancelar_proposta(dados: IdProposta, token: str = Depends(oauth2_esque
     if aluguel.estado_aluguel != "proposto":
         raise HTTPException(status_code=400, detail="Status do aluguel não é 'proposto'")
 
-    crud_aluguel.remover_aluguel(db, dados.id_proposta)
+    crud_aluguel.remover_aluguel(db, id_proposta)
 
     return {"detail": "Proposta cancelada com sucesso!"}    
 
