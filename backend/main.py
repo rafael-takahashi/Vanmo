@@ -309,7 +309,7 @@ async def aceitar_ou_rejeitar_proposta(dados: DadosAcaoProposta, token: str = De
     if aluguel is None:
         raise HTTPException(status_code=404, detail="Proposta não encontrada")
     
-    if aluguel.id_empresa != usuario.id_usuario:
+    if aluguel.id_empresa.id_usuario != usuario.id_usuario:
         raise HTTPException(status_code=400, detail="Proposta não pertence ao usuário")
     
     if aluguel.estado_aluguel != "proposto":
