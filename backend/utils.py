@@ -89,9 +89,9 @@ def busca_latitude_longitude_de_cidade(nome_cidade: str, lista_cidades: list[Cid
         if remove_acentos(cidade.nome.lower()) == nome_cidade_normalizado:
             if uf:
                 if remove_acentos(cidade.uf.lower()) == uf_normalizado:
-                    return cidade.latitude, cidade.longitude
+                    return float(cidade.latitude), float(cidade.longitude)
             else:
-                return cidade.latitude, cidade.longitude
+                return float(cidade.latitude), float(cidade.longitude)
     raise ValueError("Cidade não encontrada na lista")
 
 def valida_cpf(cpf: str) -> bool:

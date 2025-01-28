@@ -752,8 +752,11 @@ async def buscar_veiculos_criterio(id_empresa: int, data_de_partida: datetime.da
             aluguel.adicionar_datas(data_de_partida, data_de_chegada)
             aluguel.adicionar_distancia_extra(0)
 
-            cidade_saida, uf_saida = local_saida.split(",")
-            cidade_chegada, uf_chegada = local_chegada.split(",")
+            try:
+                cidade_saida, uf_saida = local_saida.split(",")
+                cidade_chegada, uf_chegada = local_chegada.split(",")
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Locais devem estar no padrão 'Cidade, UF'")
 
             lat_saida, lon_saida = busca_latitude_longitude_de_cidade(cidade_saida, lista_cidades, uf_saida)
             lat_chegada, lon_chegada = busca_latitude_longitude_de_cidade(cidade_chegada, lista_cidades, uf_chegada)
