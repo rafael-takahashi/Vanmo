@@ -63,6 +63,36 @@ def buscar_alugueis_usuario_id(db: sqlite3.Connection, id_usuario: int, tipo_con
             resultado_busca.append(item)
         return resultado_busca
 
+def buscar_alugueis_usuario_id_por_status(db: sqlite3.Connection, id_usuario: int, tipo_conta: str, status: str) -> list[Aluguel]:
+    cursor: sqlite3.Cursor = db.cursor()
+
+    if tipo_conta == "cliente":
+        query = QueriesDB.query_buscar_alugueis_cliente
+    else:
+        query = QueriesDB.query_buscar_alugueis_empresa
+    
+    alugueis = cursor.execute(query, (id_usuario,)).fetchall()
+
+    if not alugueis:
+        return alugueis
+    
+    else:
+        resultado_busca: list[Aluguel] = []
+        for aluguel in alugueis:
+            item = Aluguel(aluguel[0], aluguel[2], aluguel[1], aluguel[3])
+
+            if item.estado_aluguel != status:
+                continue
+            
+            item.adicionar_datas(aluguel[6], aluguel[7])
+            local_partida: Local = buscar_local_por_id(db, aluguel[10])
+            local_chegada: Local = buscar_local_por_id(db, aluguel[11])
+            item.adicionar_locais(local_partida, local_chegada)
+            item.adicionar_distancia_extra(aluguel[9])
+            item.estado_aluguel = aluguel[5]
+            resultado_busca.append(item)
+        return resultado_busca
+
 def buscar_aluguel(db: sqlite3.Connection, id_aluguel: int) -> Aluguel | None:
     cursor: sqlite3.Cursor = db.cursor()
     query = QueriesDB.query_buscar_aluguel
@@ -81,6 +111,8 @@ def buscar_aluguel(db: sqlite3.Connection, id_aluguel: int) -> Aluguel | None:
     aluguel.estado_aluguel = resultado[5]
 
     return aluguel
+
+
 
 def inserir_data_indisponivel(db: sqlite3.Connection, id_veiculo: int, data: datetime.date):
     cursor: sqlite3.Cursor = db.cursor()

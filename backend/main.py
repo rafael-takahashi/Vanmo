@@ -350,8 +350,29 @@ async def buscar_todas_propostas_usuario(token: str = Depends(oauth2_esquema)):
     if alugueis:
         return alugueis
     else:
-        return {"detail" : "Nenhuma proposta encontrada para o cliente.",
+        return {"detail" : "Nenhum aluguel encontrado",
                 "data" : []}
+
+@app.get("/propostas/buscar_propostas/{status_aluguel}")
+async def buscar_todas_propostas_usuario(status_aluguel: str, token: str = Depends(oauth2_esquema)):
+    """
+    Busca todas as propostas de um usuário
+
+    @param token: O token de acesso do usuário
+    """
+
+    # Obter o usuário a partir do token
+    db = database.conectar_bd()
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+
+    # Buscar as propostas desse usuário e retornar
+    alugueis = crud_aluguel.buscar_alugueis_usuario_id_por_status(db, usuario.id_usuario, usuario.tipo_conta, status_aluguel)
+
+    if alugueis:
+        return alugueis
+    else:
+        return {"detail" : f"Nenhum aluguel encontrado neste estado: {status_aluguel}"}
+
 
 @app.get("/propostas/buscar_dados_proposta/{id_proposta}")
 async def buscar_dados_proposta(id_proposta: str, token: str = Depends(oauth2_esquema)):
