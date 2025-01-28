@@ -391,6 +391,7 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
     """
 
     db = database.conectar_bd()
+
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
     cidade_saida, uf_saida = tuple(dados.local_saida.split(","))
@@ -432,6 +433,7 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
 
     local_partida: classe_local.Local = classe_local.Local(latitude_partida, longitude_partida)
     local_partida.id_local = crud_local.criar_local(db, local_partida)
+
     local_chegada: classe_local.Local = classe_local.Local(latitude_chegada, longitude_chegada)
     local_chegada.id_local = crud_local.criar_local(db, local_chegada)
 
@@ -442,6 +444,8 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
     aluguel.estado_aluguel = "proposto"
 
     crud_aluguel.criar_aluguel(db, aluguel)
+
+    db.commit()
 
     return {"detail": "Proposta criada com sucesso"}
 

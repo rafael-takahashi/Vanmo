@@ -15,10 +15,10 @@ def criar_local(db: sqlite3.Connection, local: Local):
     cursor.execute(QueriesDB.query_inserir_local_novo, dados)
     id_local: int = cursor.lastrowid
     
-    if db.in_transaction:
-        db.rollback()
+    # if db.in_transaction:
+    #     db.rollback()
 
-    db.commit()
+    # db.commit()
     return id_local
 
 def buscar_local_por_id (db: sqlite3.Connection, id_local: int) -> Local:

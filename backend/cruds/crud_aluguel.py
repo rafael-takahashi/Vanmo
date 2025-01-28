@@ -16,7 +16,7 @@ def criar_aluguel(db: sqlite3.Connection, aluguel: Aluguel):
              aluguel.data_inicio.strftime('%Y-%m-%d'), aluguel.data_fim.strftime('%Y-%m-%d'), aluguel.distancia_trajeto, aluguel.distancia_extra, aluguel.local_partida.id_local, aluguel.local_chegada.id_local)
     
     cursor.execute(QueriesDB.query_inserir_aluguel_novo, dados)
-    db.commit()
+    # db.commit()
 
 def buscar_alugueis_usuario_id(db: sqlite3.Connection, id_usuario: int, tipo_conta: str) -> list[Aluguel]:
     cursor: sqlite3.Cursor = db.cursor()
