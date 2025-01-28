@@ -350,8 +350,28 @@ async def buscar_todas_propostas_usuario(token: str = Depends(oauth2_esquema)):
     if alugueis:
         return alugueis
     else:
-        return {"detail" : "Nenhuma proposta encontrada para o cliente.",
+        return {"detail" : "Nenhum aluguel encontrado",
                 "data" : []}
+
+@app.get("/propostas/buscar_propostas/{status_aluguel}")
+async def buscar_todas_propostas_usuario(status_aluguel: str, token: str = Depends(oauth2_esquema)):
+    """
+    Busca todas as propostas de um usuário
+
+    @param token: O token de acesso do usuário
+    """
+
+    # Obter o usuário a partir do token
+    db = database.conectar_bd()
+    usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+
+    # Buscar as propostas desse usuário e retornar
+    alugueis = crud_aluguel.buscar_alugueis_usuario_id_por_status(db, usuario.id_usuario, usuario.tipo_conta, status_aluguel)
+
+    if alugueis:
+        return alugueis
+    else:
+        return {"detail" : f"Nenhum aluguel encontrado neste estado: {status_aluguel}"}
 
 @app.get("/propostas/buscar_dados_proposta/{id_proposta}")
 async def buscar_dados_proposta(id_proposta: str, token: str = Depends(oauth2_esquema)):
@@ -437,10 +457,10 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
     aluguel: classe_aluguel.Aluguel = classe_aluguel.Aluguel(None, usuario.id_usuario, dados.id_empresa, dados.id_veiculo)
     aluguel.adicionar_datas(dados.data_saida, dados.data_chegada)
 
-    local_partida: classe_local.Local = classe_local.Local(latitude_partida, longitude_partida)
+    local_partida: classe_local.Local = classe_local.Local(latitude_partida, longitude_partida, nome=dados.local_saida)
     local_partida.id_local = crud_local.criar_local(db, local_partida)
 
-    local_chegada: classe_local.Local = classe_local.Local(latitude_chegada, longitude_chegada)
+    local_chegada: classe_local.Local = classe_local.Local(latitude_chegada, longitude_chegada, nome=dados.local_chegada)
     local_chegada.id_local = crud_local.criar_local(db, local_chegada)
 
     aluguel.adicionar_locais(local_partida, local_chegada)

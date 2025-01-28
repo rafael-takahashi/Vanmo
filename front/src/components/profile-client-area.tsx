@@ -353,7 +353,7 @@ export default function ProfileClientArea() {
               .map((proposal: any) => (
                 <ProposalItem
                   proposal={proposal}
-                  key={proposal.id}
+                  key={proposal.id_aluguel}
                   type="cliente"
                 />
               ))

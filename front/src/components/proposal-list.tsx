@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import Cookies from 'js-cookie'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router'
 
 import { getTypeAccount } from '@/api/getTypeAccount'
@@ -27,20 +27,25 @@ export default function ProposalList() {
   })
 
   const [proposals, setProposals] = useState<any[]>([])
+  
+  const [searchParams] = useSearchParams()
+  const status = searchParams.get('status')
 
   const fetchAndSetProposals = async () => {
-    setProposals(await getUserProposals({ token }))
+    if (status === 'all') 
+      setProposals(await getUserProposals({ token }))
+    else
+      setProposals(await getUserProposals({ status_aluguel: status, token }))
   }
 
-  useState(() => {
+  useEffect(() => {
     fetchAndSetProposals()
+<<<<<<< HEAD
   })
+=======
+  }, [status])
+>>>>>>> f61aa2e7437930443bc4b1f65714d932e87f1f7e
 
-  console.log(proposals)
-
-  const [searchParams] = useSearchParams()
-
-  const status = searchParams.get('status')
 
   return (
     <div>
@@ -48,28 +53,28 @@ export default function ProposalList() {
         <h1 className="text-xl text-white">Minhas Propostas</h1>
       )}
 
-      {status === 'active' && (
+      {status === 'ativo' && (
         <h1 className="text-xl text-white">Minhas Propostas Ativas</h1>
       )}
 
-      {status === 'rejected' && (
+      {status === 'rejeitado' && (
         <h1 className="text-xl text-white">Minhas Propostas Rejeitadas</h1>
       )}
 
-      {status === 'done' && (
+      {status === 'concluido' && (
         <h1 className="text-xl text-white">Minhas Propostas Concluídas</h1>
       )}
 
       <div className="flex flex-col gap-2 mt-4">
         {proposals && proposals.length > 0 ? (
           <>
-            {proposals.map((proposal: any) => (
-              <ProposalItem
-                proposal={proposal}
-                key={proposal.id}
-                type={user?.tipo_usuario}
-              />
-            ))}
+          {proposals.map((proposal: any) => (
+            <ProposalItem 
+              proposal={proposal} 
+              key={proposal.id_aluguel} 
+              type={user?.tipo_usuario} 
+            />
+          ))}
             <Pagination className="col-span-2 mt-4 text-white">
               <PaginationContent>
                 <PaginationItem>

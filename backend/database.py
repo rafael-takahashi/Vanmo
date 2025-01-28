@@ -115,20 +115,23 @@ def atualizar_status_alugueis(conexao: sqlite3.Connection):
     alugueis_vencidos = cursor.execute(QueriesDB.query_buscar_alugueis_vencidos, (hoje,)).fetchall()
 
     for aluguel in alugueis_vencidos:
-        id_aluguel, id_empresa, id_cliente, id_veiculo, valor_total, estado_aluguel, \
-        data_inicio, data_fim, distancia_trajeto, distancia_extra, id_local_partida, id_local_chegada = aluguel
+        id_aluguel = aluguel[0]
 
-        cliente = cursor.execute(QueriesDB.query_buscar_cliente, (id_cliente,)).fetchone()
-        _, nome_cliente, cpf_cliente, _ = cliente
+        dados = ("concluido", id_aluguel)
 
-        empresa = cursor.execute(QueriesDB.query_buscar_empresa, (id_empresa,)).fetchone()
-        _, cnpj_empresa, nome_fantasia_empresa, _, _, _, _ = empresa
-
-        veiculo = cursor.execute(QueriesDB.query_buscar_veiculo, (id_veiculo,)).fetchone()
-        _, _, nome_veiculo, placa_veiculo, _, _, _, _, _, _ = veiculo
-
-        dados_registro = (nome_cliente, cpf_cliente, nome_fantasia_empresa, cnpj_empresa, nome_veiculo, placa_veiculo, valor_total, data_inicio, data_fim)
+        cursor.execute(QueriesDB.query_alterar_status_aluguel, dados)
         
-        cursor.execute(QueriesDB.query_inserir_registro_historico, dados_registro)
+        # cliente = cursor.execute(QueriesDB.query_buscar_cliente, (id_cliente,)).fetchone()
+        # _, nome_cliente, cpf_cliente, _ = cliente
 
-        cursor.execute(QueriesDB.query_remover_aluguel, (id_aluguel,))
+        # empresa = cursor.execute(QueriesDB.query_buscar_empresa, (id_empresa,)).fetchone()
+        # _, cnpj_empresa, nome_fantasia_empresa, _, _, _, _ = empresa
+
+        # veiculo = cursor.execute(QueriesDB.query_buscar_veiculo, (id_veiculo,)).fetchone()
+        # _, _, nome_veiculo, placa_veiculo, _, _, _, _, _, _ = veiculo
+
+        # dados_registro = (nome_cliente, cpf_cliente, nome_fantasia_empresa, cnpj_empresa, nome_veiculo, placa_veiculo, valor_total, data_inicio, data_fim)
+        
+        # cursor.execute(QueriesDB.query_inserir_registro_historico, dados_registro)
+
+        # cursor.execute(QueriesDB.query_remover_aluguel, (id_aluguel,))

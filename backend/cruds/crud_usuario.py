@@ -181,6 +181,14 @@ def cadastrar_empresa(db: sqlite3.Connection, empresa: Empresa):
 
     db.commit()
 
+def buscar_usuario_por_id(db: sqlite3.Connection, id_usuario: int) -> Usuario:
+    cursor: sqlite3.Cursor = db.cursor()
+
+    dados = (id_usuario,)
+    resultados = cursor.execute(QueriesDB.query_buscar_usuario_por_id, dados).fetchone()
+
+    return Usuario(resultados[1], resultados[2], resultados[3], resultados[4], resultados[5], resultados[0])
+    
 def buscar_dados_cliente(db: sqlite3.Connection, usuario: Usuario) -> Cliente:
     cursor: sqlite3.Cursor = db.cursor()
 
