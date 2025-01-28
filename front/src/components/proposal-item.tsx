@@ -4,6 +4,13 @@ import { getDataBusiness } from '@/api/getDataBusiness'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { getVehicleData } from '@/api/vehicles/getVehicleData'
 
+interface Local {	
+  id_local: number
+  latitude: number
+  longitude: number
+  nome: string
+}
+
 interface Proposal {
   data_fim: string
   data_inicio: string
@@ -14,8 +21,8 @@ interface Proposal {
   id_cliente: number
   id_empresa: number
   id_veiculo: number
-  local_chegada: string
-  local_partida: string
+  local_chegada: Local
+  local_partida: Local
   valor_total: number
 }
 
@@ -110,10 +117,10 @@ export default function ProposalItem({ proposal, type }: ProprosalItemProps) {
         <div>
           <h3 className="text-center font-semibold">Informações da Viagem</h3>
           <p>
-            Partida: <span>{proposal.local_partida}</span>
+            Partida: <span>{proposal.local_partida.nome}</span>
           </p>
           <p>
-            Destino: <span>{proposal.local_chegada}</span>
+            Destino: <span>{proposal.local_chegada.nome}</span>
           </p>
           <p>
             Data de ida: <span>{proposal.data_inicio}</span>
