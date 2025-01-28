@@ -348,7 +348,7 @@ export default function ProfileClientArea() {
         </div>
         <div className="flex flex-col gap-4 mt-4">
           {proposalsList && proposalsList.length > 0 ? (
-            proposalsList.map((proposal: any) => (
+            proposalsList.slice(0, 2).map((proposal: any) => (
               <ProposalItem proposal={proposal} key={proposal.id} type="cliente" />
             ))
           ) : (
