@@ -8,8 +8,8 @@ import { useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 
 import { editProfileUserBusiness } from '@/api/editUserBusiness'
-import { getBusinessVehicles } from '@/api/vehicles/getBusinessVehicles'
 import { getUserBusiness } from '@/api/getUserBusiness'
+import { getBusinessVehicles } from '@/api/vehicles/getBusinessVehicles'
 
 import ProposalItem from './proposal-item'
 import { Button } from './ui/button'
@@ -152,7 +152,7 @@ export default function ProfileBusinessArea() {
 
   return (
     <>
-      <div className="col-span-2 bg-primary-foreground p-10 rounded-md">
+      <div className="flex-1 bg-primary-foreground p-10 rounded-md">
         <div className="flex justify-between">
           <h2 className="text-white text-2xl">Informações da Empresa</h2>
           <Dialog>

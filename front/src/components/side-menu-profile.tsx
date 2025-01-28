@@ -1,7 +1,15 @@
+import {
+  Book,
+  CarProfile,
+  Signature,
+  SignOut,
+  VectorTwo,
+} from '@phosphor-icons/react'
 import Cookies from 'js-cookie'
 import { useNavigate, useSearchParams } from 'react-router'
 
 import garcia from '../assets/garcia.jpg'
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
 
 interface SideMenuProfileProps {
@@ -20,27 +28,37 @@ export default function SideMenuProfile({
 
   const status = searchParams.get('status')
 
+  const url = window.location.pathname
+
+  const isProfileActive = url === '/profile'
+  const isProposalActive = url === '/profile/proposals'
+  const isVehiclesActive = url === '/profile/vehicles'
+
   return (
     <>
       {typeAccount === 'cliente' && (
-        <div className="h-fit flex flex-col items-center col-span-1 bg-primary-foreground py-8 px-4 rounded-md text-white ">
-          <div className="flex rounded-full w-[256px] h-[256px] bg-white overflow-hidden">
-            <img src={garcia} className="object-cover" alt="" />
+        <div className="relative h-fit w-fit flex flex-col col-span-1 bg-primary-foreground pt-8 pb-16 px-6 rounded-md text-white shadow-lg">
+          <div className="flex gap-4 items-center">
+            <Avatar>
+              <AvatarImage src={garcia} />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+            <span className="text-xl mt-2">{fullName}</span>
           </div>
-          <span className="text-xl mt-2">{fullName}</span>
 
-          <nav className="w-[256px] flex flex-col items-center mt-10 text-xl ">
+          <nav className="w-[300px] flex flex-col items-start mt-10 text-lg ">
             <span
-              className="w-full py-2 text-center cursor-pointer rounded-md hover:bg-slate-600"
+              className="w-full flex justify-between items-center py-2 px-2 cursor-pointer rounded-md transition-all duration-300 hover:bg-slate-700"
               onClick={() => navigate('/profile')}
             >
               Informações Pessoais
+              <Book
+                size={16}
+                color={isProfileActive ? 'hsl(20 99% 65%)' : 'currentColor'}
+              />
             </span>
-            <div className="w-full h-[1px] bg-gray-400"></div>
             <span
-              className={`w-full py-2 text-center cursor-pointer rounded-md  ${
-                status ? 'disabled' : 'hover:bg-slate-600'
-              }`}
+              className={`w-full flex justify-between items-center py-2 px-2 cursor-pointer rounded-md transition-all duration-300 hover:bg-slate-700`}
               onClick={() => {
                 navigate('/profile/proposals')
                 setSearchParams((state) => {
@@ -51,12 +69,16 @@ export default function SideMenuProfile({
               }}
             >
               Minhas Propostas
+              <Signature
+                size={16}
+                color={isProposalActive ? 'hsl(20 99% 65%)' : 'currentColor'}
+              />
             </span>
 
             {status && (
               <div className="w-full flex flex-col items-center justify-center text-base">
                 <span
-                  className={`w-full py-2 text-center cursor-pointer rounded-md  ${
+                  className={`w-full flex gap-2 py-2 px-2 cursor-pointer rounded-md transition-all duration-300  ${
                     status === 'active'
                       ? 'bg-primary text-primary-foreground disabled font-bold'
                       : 'hover:bg-slate-600'
@@ -69,10 +91,11 @@ export default function SideMenuProfile({
                     })
                   }
                 >
+                  <VectorTwo size={16} />
                   Propostas Ativas
                 </span>
                 <span
-                  className={`w-full py-2 text-center cursor-pointer rounded-md  ${
+                  className={`w-full flex gap-2 py-2 px-2 cursor-pointer rounded-md transition-all duration-300  ${
                     status === 'rejected'
                       ? 'bg-primary text-primary-foreground disabled font-bold'
                       : 'hover:bg-slate-600'
@@ -85,10 +108,11 @@ export default function SideMenuProfile({
                     })
                   }
                 >
+                  <VectorTwo size={16} />
                   Propostas Rejeitadas
                 </span>
                 <span
-                  className={`w-full py-2 text-center cursor-pointer rounded-md  ${
+                  className={`w-full flex gap-2 py-2 px-2 cursor-pointer rounded-md transition-all duration-300  ${
                     status === 'done'
                       ? 'bg-primary text-primary-foreground disabled font-bold'
                       : 'hover:bg-slate-600'
@@ -101,45 +125,49 @@ export default function SideMenuProfile({
                     })
                   }
                 >
+                  <VectorTwo size={16} />
                   Propostas Concluidas
                 </span>
               </div>
             )}
           </nav>
 
-          <Button
-            className="mt-10"
-            type="button"
-            size={'sm'}
+          <SignOut
+            size={36}
+            className="absolute bottom-4 right-4 cursor-pointer p-2 rounded-xl transition-all duration-300 hover:bg-slate-700"
+            color="red"
             onClick={() => {
               Cookies.remove('auth_token')
               navigate('/login')
             }}
-          >
-            DESCONECTAR
-          </Button>
+          />
         </div>
       )}
 
       {typeAccount === 'empresa' && (
-        <div className="h-fit flex flex-col items-center col-span-1 bg-primary-foreground py-8 px-4 rounded-md text-white ">
-          <div className="flex rounded-full w-[256px] h-[256px] bg-white overflow-hidden">
-            <img src={garcia} className="object-cover" alt="" />
+        <div className="relative h-fit w-fit flex flex-col col-span-1 bg-primary-foreground pt-8 pb-16 px-6 rounded-md text-white shadow-lg">
+          <div className="flex gap-4 items-center">
+            <Avatar>
+              <AvatarImage src={garcia} />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+            <span className="text-xl mt-2">{fullName}</span>
           </div>
-          <span className="text-xl mt-2">{fullName}</span>
 
-          <nav className="w-[256px] flex flex-col items-center mt-10 text-xl ">
+          <nav className="w-[300px] flex flex-col items-start mt-10 text-lg ">
             <span
-              className="w-full py-2 text-center cursor-pointer rounded-md hover:bg-slate-600"
+              className="w-full flex justify-between items-center py-2 px-2 cursor-pointer rounded-md transition-all duration-300 hover:bg-slate-700"
               onClick={() => navigate('/profile')}
             >
-              Informações da Empresa
+              Informações Pessoais
+              <Book
+                size={16}
+                color={isProfileActive ? 'hsl(20 99% 65%)' : 'currentColor'}
+                className="transition-all duration-300"
+              />
             </span>
-            <div className="w-full h-[1px] bg-gray-400"></div>
             <span
-              className={`w-full py-2 text-center cursor-pointer rounded-md  ${
-                status ? 'disabled' : 'hover:bg-slate-600'
-              }`}
+              className={`w-full flex justify-between items-center py-2 px-2 cursor-pointer rounded-md transition-all duration-300 hover:bg-slate-700`}
               onClick={() => {
                 navigate('/profile/proposals')
                 setSearchParams((state) => {
@@ -149,13 +177,17 @@ export default function SideMenuProfile({
                 })
               }}
             >
-              Propostas
+              Minhas Propostas
+              <Signature
+                size={16}
+                color={isProposalActive ? 'hsl(20 99% 65%)' : 'currentColor'}
+              />
             </span>
 
             {status && (
               <div className="w-full flex flex-col items-center justify-center text-base">
                 <span
-                  className={`w-full py-2 text-center cursor-pointer rounded-md  ${
+                  className={`w-full flex gap-2 py-2 px-2 cursor-pointer rounded-md transition-all duration-300  ${
                     status === 'active'
                       ? 'bg-primary text-primary-foreground disabled font-bold'
                       : 'hover:bg-slate-600'
@@ -168,10 +200,11 @@ export default function SideMenuProfile({
                     })
                   }
                 >
+                  <VectorTwo size={16} />
                   Propostas Ativas
                 </span>
                 <span
-                  className={`w-full py-2 text-center cursor-pointer rounded-md  ${
+                  className={`w-full flex gap-2 py-2 px-2 cursor-pointer rounded-md transition-all duration-300  ${
                     status === 'rejected'
                       ? 'bg-primary text-primary-foreground disabled font-bold'
                       : 'hover:bg-slate-600'
@@ -184,10 +217,11 @@ export default function SideMenuProfile({
                     })
                   }
                 >
+                  <VectorTwo size={16} />
                   Propostas Rejeitadas
                 </span>
                 <span
-                  className={`w-full py-2 text-center cursor-pointer rounded-md  ${
+                  className={`w-full flex gap-2 py-2 px-2 cursor-pointer rounded-md transition-all duration-300  ${
                     status === 'done'
                       ? 'bg-primary text-primary-foreground disabled font-bold'
                       : 'hover:bg-slate-600'
@@ -200,32 +234,32 @@ export default function SideMenuProfile({
                     })
                   }
                 >
+                  <VectorTwo size={16} />
                   Propostas Concluidas
                 </span>
               </div>
             )}
-
-            <div className="w-full h-[1px] bg-gray-400"></div>
-
             <span
-              className="w-full py-2 text-center cursor-pointer rounded-md hover:bg-slate-600"
+              className="w-full flex justify-between items-center py-2 px-2 cursor-pointer rounded-md transition-all duration-300 hover:bg-slate-700"
               onClick={() => navigate('/profile/vehicles')}
             >
-              Veículos
+              Meus Veículos
+              <CarProfile
+                size={16}
+                color={isVehiclesActive ? 'hsl(20 99% 65%)' : 'currentColor'}
+              />
             </span>
           </nav>
 
-          <Button
-            className="mt-10"
-            type="button"
-            size={'sm'}
+          <SignOut
+            size={36}
+            className="absolute bottom-4 right-4 cursor-pointer p-2 rounded-xl transition-all duration-300 hover:bg-slate-700"
+            color="red"
             onClick={() => {
               Cookies.remove('auth_token')
               navigate('/login')
             }}
-          >
-            DESCONECTAR
-          </Button>
+          />
         </div>
       )}
     </>

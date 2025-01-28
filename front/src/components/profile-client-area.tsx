@@ -145,7 +145,7 @@ export default function ProfileClientArea() {
 
   return (
     <>
-      <div className="col-span-2 bg-primary-foreground p-10 rounded-md">
+      <div className="flex-1 bg-primary-foreground p-10 rounded-md">
         <div className="flex justify-between">
           <h2 className="text-white text-2xl">Informações Pessoais</h2>
           <Dialog>

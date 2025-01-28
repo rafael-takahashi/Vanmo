@@ -1,8 +1,8 @@
 import 'swiper/css'
-import Cookies from 'js-cookie'
 
 import { MapPin } from '@phosphor-icons/react'
-import { useNavigate } from 'react-router'
+import Cookies from 'js-cookie'
+import { useNavigate, useSearchParams } from 'react-router'
 import { Swiper, SwiperSlide } from 'swiper/react'
 
 import FeatureBox from '@/components/feature-box'
@@ -14,6 +14,10 @@ import garcia from '../assets/garcia.jpg'
 export function HomePage() {
   const navigate = useNavigate()
 
+  function handleNavigate(name: string) {
+    navigate(`/empresa/${name}`)
+  }
+
   return (
     <main className="max-w-[1240px] w-full flex justify-between items-center mx-auto px-5">
       <div className="w-full flex flex-col">
@@ -24,7 +28,7 @@ export function HomePage() {
           <Swiper spaceBetween={10} slidesPerView={4} loop={true}>
             <SwiperSlide>
               <Card
-                onClick={() => navigate('/empresa/viacao+garcia')}
+                onClick={() => handleNavigate('1')}
                 className="cursor-pointer"
               >
                 <CardHeader className="text-center">
@@ -40,7 +44,7 @@ export function HomePage() {
             </SwiperSlide>
             <SwiperSlide>
               <Card
-                onClick={() => navigate('/empresa/viacao+garcia')}
+                onClick={() => handleNavigate('1')}
                 className="cursor-pointer"
               >
                 <CardHeader className="text-center">
@@ -56,7 +60,7 @@ export function HomePage() {
             </SwiperSlide>
             <SwiperSlide>
               <Card
-                onClick={() => navigate('/empresa/viacao+garcia')}
+                onClick={() => handleNavigate('1')}
                 className="cursor-pointer"
               >
                 <CardHeader className="text-center">
@@ -72,7 +76,7 @@ export function HomePage() {
             </SwiperSlide>
             <SwiperSlide>
               <Card
-                onClick={() => navigate('/empresa/viacao+garcia')}
+                onClick={() => handleNavigate('1')}
                 className="cursor-pointer"
               >
                 <CardHeader className="text-center">
@@ -88,7 +92,7 @@ export function HomePage() {
             </SwiperSlide>
             <SwiperSlide>
               <Card
-                onClick={() => navigate('/empresa/viacao+garcia')}
+                onClick={() => handleNavigate('1')}
                 className="cursor-pointer"
               >
                 <CardHeader className="text-center">

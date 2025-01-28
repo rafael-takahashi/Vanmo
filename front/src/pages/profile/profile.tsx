@@ -32,7 +32,7 @@ export default function Profile() {
   })
 
   return (
-    <main className="grid grid-cols-3 gap-4 mt-20">
+    <main className="flex gap-4 mt-20">
       <SideMenuProfile
         typeAccount={data?.tipo_usuario}
         fullName={

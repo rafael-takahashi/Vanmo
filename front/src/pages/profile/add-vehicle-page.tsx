@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import Cookies from 'js-cookie'
+import { useLocation } from 'react-router'
 
 import { getUserBusiness } from '@/api/getUserBusiness'
 import { getUserClient } from '@/api/getUserClient'
 import AddVehicleForm from '@/components/add-vehicle-form'
 import SideMenuProfile from '@/components/side-menu-profile'
-import { useLocation } from 'react-router'
 
 export default function AddVehiclePage() {
   const location = useLocation()
@@ -33,7 +33,7 @@ export default function AddVehiclePage() {
   const tipoConta = dataClient?.tipo_conta === 'cliente' ? 'cliente' : 'empresa'
 
   return (
-    <main className="grid grid-cols-3 gap-4 mt-20">
+    <main className="flex gap-4 mt-20">
       <SideMenuProfile
         typeAccount={tipoConta}
         fullName={
@@ -43,8 +43,8 @@ export default function AddVehiclePage() {
         }
       />
 
-      <div className="col-span-2 bg-primary-foreground p-10 rounded-md">
-        <AddVehicleForm vehicle={vehicle} editMode={editMode}/>
+      <div className="flex-1 bg-primary-foreground p-10 rounded-md">
+        <AddVehicleForm vehicle={vehicle} editMode={editMode} />
       </div>
     </main>
   )

@@ -28,17 +28,17 @@ export default function MyProposalsPage() {
   const tipoConta = dataClient?.tipo_conta === 'cliente' ? 'cliente' : 'empresa'
 
   return (
-    <main className="grid grid-cols-3 gap-4 mt-20">
-      <SideMenuProfile 
+    <main className="flex gap-4 mt-20">
+      <SideMenuProfile
         typeAccount={tipoConta}
         fullName={
           tipoConta === 'empresa'
             ? dataBusiness?.nome_fantasia
             : dataClient?.nome_completo
-        } 
+        }
       />
 
-      <div className="col-span-2 bg-primary-foreground p-10 rounded-md">
+      <div className="flex-1 bg-primary-foreground p-10 rounded-md">
         <ProposalList />
       </div>
     </main>

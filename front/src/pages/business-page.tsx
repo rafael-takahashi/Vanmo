@@ -1,6 +1,8 @@
 import { MapPin } from '@phosphor-icons/react'
+import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router'
 
+import { getDataBusiness } from '@/api/getDataBusiness'
 import SearchArea from '@/components/search-area'
 import { VehicleList } from '@/components/vehicle-list'
 
@@ -11,6 +13,13 @@ export default function BusinessPage() {
   const dateFrom = searchParams.get('dateFrom')
   const dateTo = searchParams.get('dateTo')
   const numberPassengers = searchParams.get('numberPassengers')
+
+  const idBusiness = window.location.pathname.split('/').filter(Boolean).pop()
+
+  const { data } = useQuery({
+    queryKey: ['idBusiness', idBusiness],
+    queryFn: () => getDataBusiness({ idEmpresa: idBusiness }),
+  })
 
   return (
     <main className=" flex flex-col mt-14">
