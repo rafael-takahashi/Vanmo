@@ -349,7 +349,7 @@ export default function ProfileClientArea() {
         <div className="flex flex-col gap-4 mt-4">
           {proposalsList && proposalsList.length > 0 ? (
             proposalsList.map((proposal: any) => (
-              <ProposalItem key={proposal.id} type="cliente" />
+              <ProposalItem proposal={proposal} key={proposal.id} type="cliente" />
             ))
           ) : (
             <p className="text-white ">Não foram encontradas propostas.</p>

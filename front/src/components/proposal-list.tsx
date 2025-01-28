@@ -1,4 +1,7 @@
+import Cookies from 'js-cookie'
+import { useState } from 'react'
 import { useSearchParams } from 'react-router'
+import { useQuery } from '@tanstack/react-query'
 
 import ProposalItem from './proposal-item'
 import {
@@ -10,8 +13,31 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from './ui/pagination'
+import { getUserProposals } from '@/api/proposals/getUserProposals'
+import { getTypeAccount } from '@/api/getTypeAccount'
 
 export default function ProposalList() {
+  
+  const token = Cookies.get('auth_token')
+
+  const { data: user } = useQuery({
+    queryKey: ['user', token],
+    queryFn: async () => await getTypeAccount({ token }),
+    enabled: !!token,
+  })
+
+  const [proposals, setProposals] = useState<any[]>([])
+
+  const fetchAndSetProposals = async () => {
+    setProposals(await getUserProposals({ token }))
+  }
+
+  useState(() => {
+    fetchAndSetProposals()
+  },)
+
+  console.log(proposals)
+
   const [searchParams] = useSearchParams()
 
   const status = searchParams.get('status')
@@ -35,27 +61,32 @@ export default function ProposalList() {
       )}
 
       <div className="flex flex-col gap-2 mt-4">
-        <ProposalItem />
-        <ProposalItem />
-        <ProposalItem />
-
-        <Pagination className="col-span-2 mt-4 text-white">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious href="#" />
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink href="#">1</PaginationLink>
-              <PaginationLink href="#">2</PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationNext href="#" />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+        {proposals && proposals.length > 0 ? (
+          <>
+          {proposals.map((proposal: any) => (
+            <ProposalItem proposal={proposal} key={proposal.id} type="cliente" />
+          ))}
+            <Pagination className="col-span-2 mt-4 text-white">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious href="#" />
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationLink href="#">1</PaginationLink>
+                <PaginationLink href="#">2</PaginationLink>
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationEllipsis />
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationNext href="#" />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+          </>
+        ) : (
+          <p className="text-white ">Não foram encontradas propostas.</p>
+        )}
       </div>
     </div>
   )

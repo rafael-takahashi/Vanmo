@@ -1,17 +1,59 @@
+import { useQuery } from '@tanstack/react-query'
+import { getDataBusiness } from '@/api/getDataBusiness'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import { getVehicleData } from '@/api/vehicles/getVehicleData'
 
-interface ProprosalItemProps {
-  type: 'cliente' | 'empresa'
+interface Proposal {
+  data_fim: string
+  data_inicio: string
+  distancia_extra: number
+  distancia_trajeto: number
+  estado_aluguel: string
+  id_aluguel: number
+  id_cliente: number
+  id_empresa: number
+  id_veiculo: number
+  local_chegada: string
+  local_partida: string
+  valor_total: number
 }
 
-export default function ProposalItem({ type }: ProprosalItemProps) {
+interface ProprosalItemProps {
+  proposal: Proposal
+  type: string | undefined
+}
+
+export default function ProposalItem({ proposal, type }: ProprosalItemProps) {
+
+  const { data: dataBusiness, isSuccess: isSucessBusiness } = useQuery({
+    queryKey: ['idBusiness', proposal.id_empresa],
+    queryFn: () => getDataBusiness({ idEmpresa: proposal.id_empresa.toString() }),
+  })
+  
+  const { data: dataVehicle, isSuccess: isSucessVehicle } = useQuery({
+    queryKey: ['idVehicle', proposal.id_veiculo],
+    queryFn: () => getVehicleData({ idVehicle: proposal.id_veiculo, token: 'token' }),
+  })
+  
+    
   return (
     <Card className="bg-white rounded-md">
       <CardHeader>
         <CardTitle className="flex justify-between text-xl">
-          <span>#12345</span>
+          <span>{proposal.id_aluguel}</span>
 
+          {
+          proposal.estado_aluguel == "ativo" &&
+          <span className="text-green-500">ATIVO</span>
+          }
+          {
+          proposal.estado_aluguel == "proposto" &&
+          <span className="text-yellow-500">PROPOSTO</span>
+          }
+          {
+          proposal.estado_aluguel == "rejeitado" &&
           <span className="text-red-500">REJEITADO</span>
+          }
         </CardTitle>
       </CardHeader>
       <CardContent className="grid grid-cols-2">
@@ -21,18 +63,24 @@ export default function ProposalItem({ type }: ProprosalItemProps) {
               Informações da Empresa
             </h3>
 
+            {isSucessBusiness &&
             <p>
-              Empresa: <span>Viacao Garcia</span>
+              Empresa: <span>{dataBusiness?.nome_fantasia}</span>
             </p>
-            <p>
-              Veículo: <span>Onibux X</span>
-            </p>
-            <p>
-              Ano: <span>2020</span>
-            </p>
-            <p>
-              Passageiros: <span>24</span>
-            </p>
+            }
+            {isSucessVehicle &&
+            <>
+              <p>
+                Veículo: <span>{dataVehicle.nome}</span>
+              </p>
+              <p>
+                Ano: <span>{dataVehicle.ano}</span>
+              </p>
+              <p>
+                Passageiros: <span>{dataVehicle.capacidade}</span>
+              </p>
+            </>
+            }
           </div>
         )}
 
@@ -60,16 +108,16 @@ export default function ProposalItem({ type }: ProprosalItemProps) {
         <div>
           <h3 className="text-center font-semibold">Informações da Viagem</h3>
           <p>
-            Partida: <span>Maringá-PR</span>
+            Partida: <span>{proposal.local_partida}</span>
           </p>
           <p>
-            Destino: <span>Rio de Janeiro-RJ</span>
+            Destino: <span>{proposal.local_chegada}</span>
           </p>
           <p>
-            Data de ida: <span>04/01/2024</span>
+            Data de ida: <span>{proposal.data_inicio}</span>
           </p>
           <p>
-            Data de retorno: <span>14/01/2024</span>
+            Data de retorno: <span>{proposal.data_fim}</span>
           </p>
         </div>
       </CardContent>

@@ -24,6 +24,7 @@ import {
 import { Input } from './ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 import VehicleItem from './vehicle-item'
+import { getUserProposals } from '@/api/proposals/getUserProposals'
 
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/jpg']
 
@@ -82,6 +83,11 @@ export default function ProfileBusinessArea() {
   const { data } = useQuery({
     queryKey: ['userBusiness', token],
     queryFn: () => getUserBusiness({ token }),
+  })
+
+  const { data: proposalsList } = useQuery({
+    queryKey: ['proposals-user', token],
+    queryFn: () => getUserProposals({ token }),
   })
 
   const { mutateAsync } = useMutation({
@@ -447,8 +453,13 @@ export default function ProfileBusinessArea() {
           </span>
         </div>
         <div className="flex flex-col gap-4 mt-4">
-          <ProposalItem type="empresa" />
-          <ProposalItem type="empresa" />
+          {proposalsList && proposalsList.length > 0 ? (
+            proposalsList.map((proposal: any) => (
+              <ProposalItem proposal={proposal} key={proposal.id} type="cliente" />
+            ))
+          ) : (
+            <p className="text-white ">Não foram encontradas propostas.</p>
+          )}
         </div>
         <div className="flex items-end gap-4 mt-14">
           <h2 className="text-white text-2xl">Veículos</h2>
