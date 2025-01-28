@@ -711,8 +711,10 @@ async def apagar_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):
 
     return {"detail": "Veículo removido com sucesso"}
 
-@app.get("/veiculos/buscar_veiculos_empresa/criterio/{id_empresa}/{data_de_partida}/{qtd_passageiros}/{pagina}")
-async def buscar_veiculos_criterio(id_empresa: int, data_de_partida: datetime.date | None = None, qtd_passageiros: int | None = None, pagina: int = 1):
+
+@app.get("/veiculos/buscar_veiculos_empresa/criterio/{id_empresa}/{data_de_partida}/{data_de_chegada}/{qtd_passageiros}/{local_saida}/{local_chegada}/{pagina}")
+async def buscar_veiculos_criterio(id_empresa: int, data_de_partida: datetime.date, data_de_chegada: datetime.date, qtd_passageiros: int, 
+                                   local_saida: str, local_chegada: str, pagina: int = 1):
     global lista_cidades
     """
     Busca todos os veículos de uma empresa que atendem a alguns critérios
@@ -720,7 +722,6 @@ async def buscar_veiculos_criterio(id_empresa: int, data_de_partida: datetime.da
     @param id_empresa: O id da empresa a ser buscar
     @param criterios: (Opcionais) Data de partida, quantidade de passageiros, página
     """
-
     db = database.conectar_bd()
 
     if pagina < 1:
@@ -728,7 +729,7 @@ async def buscar_veiculos_criterio(id_empresa: int, data_de_partida: datetime.da
 
     todos_veiculos: list[classe_veiculo.Veiculo] = crud_veiculo.listar_veiculos(db, id_empresa)
 
-    veiculos_filtrados = []
+    veiculos_filtrados: list[tuple[classe_veiculo.Veiculo, float]] = []
 
     for veiculo in todos_veiculos:
         flag_adicionar_veiculo = True
@@ -741,7 +742,25 @@ async def buscar_veiculos_criterio(id_empresa: int, data_de_partida: datetime.da
             flag_adicionar_veiculo = False
 
         if flag_adicionar_veiculo:
-            veiculos_filtrados.append(veiculo)
+            
+            aluguel = classe_aluguel.Aluguel(0, 0, id_empresa, veiculo.id_veiculo)
+            aluguel.adicionar_datas(data_de_partida, data_de_chegada)
+            aluguel.adicionar_distancia_extra(0)
+
+            cidade_saida, uf_saida = local_saida.split(",")
+            cidade_chegada, uf_chegada = local_chegada.split(",")
+
+            lat_saida, lon_saida = busca_latitude_longitude_de_cidade(cidade_saida, lista_cidades, uf_saida)
+            lat_chegada, lon_chegada = busca_latitude_longitude_de_cidade(cidade_chegada, lista_cidades, uf_chegada)
+
+            lc_saida = classe_local.Local(lat_saida, lon_saida)
+            lc_chegada = classe_local.Local(lat_chegada, lon_chegada)
+
+            aluguel.adicionar_locais(lc_saida, lc_chegada)
+
+            aluguel.calcular_valor_total(veiculo.custo_por_km, veiculo.custo_base)
+
+            veiculos_filtrados.append((veiculo, aluguel.valor_total))
 
     inicio_pag = 10 * (pagina - 1)
     fim_pag = inicio_pag + 9
