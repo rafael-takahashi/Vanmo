@@ -1,9 +1,37 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router';
+import { useQuery } from '@tanstack/react-query'
+import Cookies from 'js-cookie'
 
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
+import { getDataBusiness } from '@/api/getDataBusiness';
+import { getUserClient } from '@/api/getUserClient';
+
+type Proposal = {
+  from: string;
+  to: string;
+  dateFrom: string;
+  dateTo: string;
+  numberPassengers: string;
+};
 
 export function ProposalPage() {
+  const location = useLocation()
+  const { id_empresa, id_veiculo, proposal } = location.state as { id_empresa: string, id_veiculo: number, proposal: Proposal }
+
+  const { data: dataBusiness, isSuccess: isSucessBusiness } = useQuery({
+    queryKey: ['idBusiness', id_empresa],
+    queryFn: () => getDataBusiness({ idEmpresa: id_empresa }),
+  })
+
+  const token = Cookies.get('auth_token')
+
+  const { data: dataClient } = useQuery({
+    queryKey: ['userClient', token],
+    queryFn: () => getUserClient({ token }),
+  })
+
   const [step, setStep] = useState(33)
 
   return (
@@ -27,29 +55,31 @@ export function ProposalPage() {
               Verifique as informações da proposta
             </span>
 
+            {isSucessBusiness && 
             <div>
               <span>Informações da empresa</span>
               <br />
               <br />
               <span>
                 Nome da empresa:{' '}
-                <span className="text-primary font-bold">Viação Garcia</span>
+                <span className="text-primary font-bold">{dataBusiness.nome_fantasia}</span>
                 <br />
                 Cidade:{' '}
-                <span className="text-primary font-bold">Maringá-PR</span>
+                <span className="text-primary font-bold">{dataBusiness.endereco.cidade}</span>
                 <br />
                 Endereço:{' '}
-                <span className="text-primary font-bold">Rua XYZ</span>
+                <span className="text-primary font-bold">{dataBusiness.endereco.rua}</span>
                 <br />
                 CNPJ:{' '}
-                <span className="text-primary font-bold">123123132123101</span>
+                <span className="text-primary font-bold">{dataBusiness.cnpj}</span>
                 <br />
                 Telefone:{' '}
-                <span className="text-primary font-bold">(44) 123451234</span>
+                <span className="text-primary font-bold">{dataBusiness.telefone}</span>
                 <br />
-                Avaliação: <span className="text-primary font-bold">4.7</span>
+                Avaliação: <span className="text-primary font-bold">{dataBusiness.avaliacao}</span>
               </span>
             </div>
+            }
 
             <div className="flex justify-center mt-8">
               <Button
@@ -69,23 +99,25 @@ export function ProposalPage() {
               Verifique as informações da proposta
             </span>
 
+            {dataClient &&
             <div>
               <span>Informações do usuário</span>
               <br />
               <br />
               <span>
-                Nome: <span className="text-primary font-bold">John Doe</span>
+                Nome: <span className="text-primary font-bold">{dataClient.nome_completo}</span>
                 <br />
                 Email:{' '}
-                <span className="text-primary font-bold">johndoe@emai.com</span>
+                <span className="text-primary font-bold">{dataClient.email}</span>
                 <br />
                 CPF:{' '}
-                <span className="text-primary font-bold">123123132123101</span>
+                <span className="text-primary font-bold">{dataClient.cpf}</span>
                 <br />
                 Telefone:{' '}
-                <span className="text-primary font-bold">(44) 123451234</span>
+                <span className="text-primary font-bold">{dataClient.telefone}</span>
               </span>
             </div>
+            }
 
             <div className="flex justify-center mt-8 space-x-24">
               <Button
@@ -111,30 +143,31 @@ export function ProposalPage() {
             <span className="font-bold text-lg mb-4">
               Verifique as informações da proposta
             </span>
-
+            {proposal &&
             <div>
               <span>Informações do fretamento</span>
               <br />
               <br />
               <span>
                 Local de Partida:{' '}
-                <span className="text-primary font-bold">Maringá-PR</span>
+                <span className="text-primary font-bold">{proposal.from}</span>
                 <br />
                 Local de Destino:{' '}
                 <span className="text-primary font-bold">
-                  Rio de Janeiro-RJ
+                {proposal.to}
                 </span>
                 <br />
                 Data de Ida:{' '}
-                <span className="text-primary font-bold">12/01/2025</span>
+                <span className="text-primary font-bold">{proposal.dateFrom}</span>
                 <br />
                 Data de Retorno:{' '}
-                <span className="text-primary font-bold">24/01/2025</span>
+                <span className="text-primary font-bold">{proposal.dateTo}</span>
                 <br />
                 Quantidade de Passageiros:{' '}
-                <span className="text-primary font-bold">24</span>
+                <span className="text-primary font-bold">{proposal.numberPassengers}</span>
               </span>
             </div>
+            }
 
             <div className="flex justify-center mt-8 space-x-24">
               <Button

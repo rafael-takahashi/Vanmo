@@ -57,6 +57,7 @@ export function VehicleList() {
               id_veiculo={car.id_veiculo}
               nome_veiculo={car.nome_veiculo}
               placa_veiculo={car.placa_veiculo}
+              proposal={{from, to, dateFrom, dateTo, numberPassengers}}
             />
           ))}
         </div>

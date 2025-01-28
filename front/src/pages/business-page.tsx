@@ -5,7 +5,6 @@ import { useSearchParams } from 'react-router'
 import { getDataBusiness } from '@/api/getDataBusiness'
 import SearchArea from '@/components/search-area'
 import { VehicleList } from '@/components/vehicle-list'
-import { fetchVehiclesByFilters } from '@/api/fetchVehiclesByFilters'
 import { Separator } from '@/components/ui/separator'
 
 export default function BusinessPage() {
@@ -22,8 +21,6 @@ export default function BusinessPage() {
     queryKey: ['idBusiness', idBusiness],
     queryFn: () => getDataBusiness({ idEmpresa: idBusiness }),
   })
-
-
 
   return (
     <>

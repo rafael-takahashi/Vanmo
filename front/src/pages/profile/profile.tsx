@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 import Cookies from 'js-cookie'
-import { useEffect, useState } from 'react'
 
 import { getTypeAccount } from '@/api/getTypeAccount'
 import { getUserBusiness } from '@/api/getUserBusiness'
@@ -11,7 +10,6 @@ import SideMenuProfile from '@/components/side-menu-profile'
 
 export default function Profile() {
   const token = Cookies.get('auth_token')
-  const [accountType, setAccountType] = useState(null)
 
   const { data } = useQuery({
     queryKey: ['user', token],

@@ -14,6 +14,7 @@ interface VehicleBoxProps {
   nome_veiculo: string
   placa_veiculo: string
   custo_da_viagem: number
+  proposal: object
 }
 
 export function VehicleBox({
@@ -27,6 +28,7 @@ export function VehicleBox({
   id_veiculo,
   nome_veiculo,
   placa_veiculo,
+  proposal,
 }: VehicleBoxProps) {
   const navigate = useNavigate()
 
@@ -36,9 +38,9 @@ export function VehicleBox({
   }).format(custo_da_viagem)
 
   const handleProposalButtonClick = () => {
-    //
-
-    navigate('/proposta')
+    navigate('/proposta', {
+      state: { id_empresa, id_veiculo, proposal },
+    })
   }
 
   return (
