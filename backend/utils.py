@@ -204,10 +204,23 @@ def valida_foto(arquivo: UploadFile, tamanho_maximo: int = 25 * 1024 * 1024) -> 
     return True
 
 def retorna_todas_cidades(lista_cidades: list[Cidade]) -> str:
-    
+    """
+    Retorna uma lista formatada com os nomes e estados de todas as cidades fornecidas.
+
+    @param lista_cidades: Lista de objetos da classe "Cidade".
+    @return: Lista de strings formatadas no estilo "Nome da Cidade, UF".
+    """
     return [f'"{cidade.nome}, {cidade.uf}"' for cidade in lista_cidades]
 
 def carrega_foto_base64(path_foto, veiculo=False) -> str:
+    """
+    Carrega uma imagem de um arquivo e a converte para base64. 
+    Caso o arquivo não seja encontrado, retorna uma imagem padrão.
+
+    @param path_foto: Caminho do arquivo da imagem a ser carregada.
+    @param veiculo: Indica se a imagem padrão é de um veículo (True) ou perfil (False).
+    @return: String representando a imagem codificada em base64.
+    """
     try:
         with open(path_foto, "rb") as file:
             photo_bytes = file.read()
@@ -224,7 +237,13 @@ def carrega_foto_base64(path_foto, veiculo=False) -> str:
             return photo_base64
 
 def salva_foto(path_foto, arquivo: UploadFile):
+    """
+    Salva um arquivo de imagem no caminho especificado, substituindo o arquivo existente, se houver.
 
+    @param path_foto: Caminho onde a imagem será salva.
+    @param arquivo: Arquivo de imagem enviado pelo usuário.
+    @return: Apenas levanta uma exceção em caso de falha.
+    """
     try:
         if path_foto is None or path_foto == "":
             return
