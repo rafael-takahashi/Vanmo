@@ -1,7 +1,6 @@
 import 'swiper/css'
 
 import { MapPin } from '@phosphor-icons/react'
-import Cookies from 'js-cookie'
 import { useNavigate, useSearchParams } from 'react-router'
 import { Swiper, SwiperSlide } from 'swiper/react'
 

@@ -12,7 +12,7 @@ import { api } from '@/lib/axios'
   
 */
 
-interface createProposalBody {
+interface calculateProposalCostBody {
   id_empresa: number
   id_veiculo: number
   cidade_saida: string
@@ -23,7 +23,7 @@ interface createProposalBody {
   token: string | undefined
 }
 
-export async function createProposal({
+export async function calculateProposalCost({
   id_empresa,
   id_veiculo,
   cidade_saida,
@@ -32,7 +32,7 @@ export async function createProposal({
   data_saida,
   data_chegada,
   token,
-}: createProposalBody) {
+}: calculateProposalCostBody) {
   const jsonBody = JSON.stringify({
     id_empresa,
     id_veiculo,
@@ -43,7 +43,7 @@ export async function createProposal({
     data_chegada,
   })
   try {
-    const response = await api.post(`/propostas/criar_proposta/`, jsonBody, {
+    const response = await api.post(`/propostas/calcular_custo/`, jsonBody, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
