@@ -55,7 +55,14 @@ def buscar_veiculo(db: sqlite3.Connection, id_veiculo: int) -> classe_veiculo.Ve
     veiculo.adicionar_custos(resultado[5], resultado[6])
     veiculo.adicionar_dados(resultado[7], resultado[8], resultado[9], resultado[4])
 
-    # veiculo.caminho_foto = utils.carrega_foto_base64(veiculo.caminho_foto, True)
+    veiculo.calendario_disponibilidade = classe_calendario.Calendario([])
+
+    datas_indisponiveis = cursor.execute(QueriesDB.query_buscar_calendario_veiculo, (id_veiculo,)).fetchall()
+
+    for data in datas_indisponiveis:
+        veiculo.calendario_disponibilidade.datas_indisponiveis.append(data)
+
+    veiculo.caminho_foto = utils.carrega_foto_base64(veiculo.caminho_foto, True)
 
     return veiculo
 

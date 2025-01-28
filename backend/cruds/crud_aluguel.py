@@ -59,6 +59,15 @@ def buscar_aluguel(db: sqlite3.Connection, id_aluguel: int) -> Aluguel | None:
 
     return aluguel
 
+def inserir_data_indisponivel(db: sqlite3.Connection, id_veiculo: int, data: datetime.date):
+    cursor: sqlite3.Cursor = db.cursor()
+
+    query = QueriesDB.query_inserir_calendario
+
+    cursor.execute(query, (id_veiculo, data))
+
+    db.commit()
+
 def alterar_status_aluguel(db: sqlite3.Connection, id_aluguel: int, novo_status: str):
     cursor: sqlite3.Cursor = db.cursor()
     query = QueriesDB.query_alterar_status_aluguel

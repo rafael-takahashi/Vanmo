@@ -291,9 +291,6 @@ async def aceitar_ou_rejeitar_proposta(dados: DadosAcaoProposta, token: str = De
     @param opcao: True caso ela seja aceita, False caso ela seja rejeitada
     @param token: O token de acesso do usuário
     """
-    id_proposta = dados.id_proposta
-    opcao = dados.opcao
-
     db = database.conectar_bd()
 
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
@@ -316,7 +313,16 @@ async def aceitar_ou_rejeitar_proposta(dados: DadosAcaoProposta, token: str = De
     if dados.opcao:
         novo_status = "ativo"
 
-    crud_aluguel.alterar_status_aluguel(db, dados.id_proposta, novo_status)
+        veiculo: classe_veiculo.Veiculo = crud_veiculo.buscar_veiculo(db, aluguel.id_veiculo)
+
+        calendario: classe_calendario.Calendario = veiculo.calendario_disponibilidade
+
+        calendario.adicionar_datas_indisponiveis(aluguel.data_inicio, aluguel.data_fim)
+
+        for data in calendario.datas_indisponiveis:
+            crud_aluguel.inserir_data_indisponivel(db, aluguel.id_veiculo, data)
+
+    crud_aluguel.alterar_status_aluguel(db, dados.id_proposta, novo_status, aluguel.id_veiculo)
 
     return {"detail": f"Status alterado para '{novo_status}' com sucesso!"}
 
@@ -710,7 +716,6 @@ async def apagar_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):
     crud_veiculo.remover_veiculo(db, id_veiculo)
 
     return {"detail": "Veículo removido com sucesso"}
-
 
 @app.get("/veiculos/buscar_veiculos_empresa/criterio/{id_empresa}/{data_de_partida}/{data_de_chegada}/{qtd_passageiros}/{local_saida}/{local_chegada}/{pagina}")
 async def buscar_veiculos_criterio(id_empresa: int, data_de_partida: datetime.date, data_de_chegada: datetime.date, qtd_passageiros: int, 

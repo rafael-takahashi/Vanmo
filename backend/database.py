@@ -91,6 +91,7 @@ class QueriesDB:
     query_buscar_alugueis_vencidos = "SELECT * FROM Aluguel WHERE data_fim < ?"
 
     query_inserir_calendario = "INSERT INTO Calendario (id_veiculo, data_indisponivel) VALUES (?, ?)"
+    query_buscar_calendario_veiculo = "SELECT * FROM Calendario WHERE id_veiculo = ?"
     query_remover_calendario = "DELETE FROM Calendario WHERE id_veiculo = ?"
 
     query_buscar_avaliacao = "SELECT * FROM Avaliacao WHERE id_cliente = ? AND id_empresa = ?"
