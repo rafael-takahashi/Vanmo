@@ -387,8 +387,8 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
     db = database.conectar_bd()
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
-    id_empresa = dados.id_empresa
-    id_veiculo = dados.id_veiculo
+    cidade_saida, uf_saida = tuple(dados.local_saida.split(","))
+    cidade_chegada, uf_chegada = tuple(dados.local_chegada.split(","))
 
     if not valida_cidade(dados.cidade_saida, lista_cidades):
         raise HTTPException(status_code=400, detail="Cidade de partida inválida")
@@ -396,12 +396,9 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
     if not valida_cidade(dados.cidade_chegada, lista_cidades):
         raise HTTPException(status_code=400, detail="Cidade de chegada inválida")
     
-    latitude_partida, longitude_partida = busca_latitude_longitude_de_cidade(dados.cidade_saida, lista_cidades, dados.uf_saida)
+    latitude_partida, longitude_partida = busca_latitude_longitude_de_cidade(cidade_saida, lista_cidades, uf_saida)
 
-    latitude_chegada, longitude_chegada = busca_latitude_longitude_de_cidade(dados.cidade_chegada, lista_cidades, dados.uf_chegada)
-
-    data_saida = dados.data_saida
-    data_chegada = dados.data_chegada
+    latitude_chegada, longitude_chegada = busca_latitude_longitude_de_cidade(cidade_chegada, lista_cidades, uf_chegada)
 
     if usuario.tipo_conta != "cliente":
         raise HTTPException(status_code=400, detail="Tipo de usuário não é cliente")

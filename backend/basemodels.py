@@ -127,10 +127,8 @@ class BuscaEmpresaNome(BaseModel):
 class CriarProposta(BaseModel):
     id_empresa: int
     id_veiculo: int
-    cidade_saida: str
-    uf_saida: str
-    cidade_chegada: str
-    uf_chegada: str
+    local_saida: str
+    local_chegada: str
     distancia_extra_km: float
     data_saida: datetime.date
     data_chegada: datetime.date
