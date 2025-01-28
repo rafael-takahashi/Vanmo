@@ -711,6 +711,42 @@ async def apagar_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):
 
     return {"detail": "Veículo removido com sucesso"}
 
+@app.get("/veiculos/buscar_veiculos_empresa/criterio/{id_empresa}/{data_de_partida}/{qtd_passageiros}/{pagina}")
+async def buscar_veiculos_criterio(id_empresa: int, data_de_partida: datetime.date | None = None, qtd_passageiros: int | None = None, pagina: int = 1):
+    global lista_cidades
+    """
+    Busca todos os veículos de uma empresa que atendem a alguns critérios
+
+    @param id_empresa: O id da empresa a ser buscar
+    @param criterios: (Opcionais) Data de partida, quantidade de passageiros, página
+    """
+
+    db = database.conectar_bd()
+
+    if pagina < 1:
+        return {"error": "A página deve ser maior ou igual a 1."}
+
+    todos_veiculos: list[classe_veiculo.Veiculo] = crud_veiculo.listar_veiculos(db, id_empresa)
+
+    veiculos_filtrados = []
+
+    for veiculo in todos_veiculos:
+        flag_adicionar_veiculo = True
+
+        for data in veiculo.calendario_disponibilidade.datas_indisponiveis:
+            if data == data_de_partida:
+                flag_adicionar_veiculo = False
+
+        if veiculo.capacidade < qtd_passageiros:
+            flag_adicionar_veiculo = False
+
+        if flag_adicionar_veiculo:
+            veiculos_filtrados.append(veiculo)
+
+    inicio_pag = 10 * (pagina - 1)
+    fim_pag = inicio_pag + 9
+    return veiculos_filtrados[inicio_pag:fim_pag+1]
+
 # Métodos extras cliente/empresa ----------------------------------------
 
 # @app.get("/empresa/buscar_dados_empresa/{id_empresa}", response_model=RespostaEmpresa)
