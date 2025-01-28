@@ -716,7 +716,8 @@ async def apagar_veiculo(id_veiculo: int, token: str = Depends(oauth2_esquema)):
 
 # Métodos extras cliente/empresa ----------------------------------------
 
-@app.get("/empresa/buscar_dados_empresa/{id_empresa}", response_model=RespostaEmpresa)
+# @app.get("/empresa/buscar_dados_empresa/{id_empresa}", response_model=RespostaEmpresa)
+@app.get("/empresa/buscar_dados_empresa/{id_empresa}")
 async def buscar_dados_empresa(id_empresa: int):
     """
     Busca os dados de uma empresa específica
@@ -734,11 +735,11 @@ async def buscar_dados_empresa(id_empresa: int):
     if empresa.num_avaliacoes != 0:
         avaliacao = empresa.soma_avaliacoes / empresa.num_avaliacoes
 
-    response_data = RespostaEmpresa(foto=empresa.foto, nome_fantasia=empresa.nome_fantasia, cnpj=empresa.cnpj,
-                                    endereco=str(empresa.endereco), avaliacao=avaliacao,
-                                    telefone=empresa.telefone)
-
-    return response_data
+    # response_data = RespostaEmpresa(foto=empresa.foto, nome_fantasia=empresa.nome_fantasia, cnpj=empresa.cnpj,
+    #                                 endereco=str(empresa.endereco), avaliacao=avaliacao,
+    #                                 telefone=empresa.telefone)
+    
+    return {"foto": empresa.foto, "nome_fantasia": empresa.nome_fantasia, "cnpj": empresa.cnpj, "endereco": empresa.endereco, "avaliacao": avaliacao, "telefone": empresa.telefone}
 
 @app.put("/empresa/avaliar_empresa")
 async def avaliar_empresa(dados: AvaliacaoEmpresa, token: str = Depends(oauth2_esquema)):
