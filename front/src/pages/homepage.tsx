@@ -17,7 +17,7 @@ import garcia from '../assets/garcia.jpg'
 export function HomePage() {
   const navigate = useNavigate()
 
-  function handleNavigate(name: string) {
+  function handleNavigate(name: number) {
     navigate(`/empresa/${name}`)
   }
   const date1980 = format(new Date('1980-05-15'), 'yyyy-MM-dd')
@@ -52,7 +52,7 @@ export function HomePage() {
             <Swiper spaceBetween={10} slidesPerView={4} loop={true}>
               {data.map((empresa) => (
                 <SwiperSlide key={empresa.id_usuario}>
-                  <Card
+                  {/* <Card
                     onClick={() => handleNavigate('1')}
                     className="cursor-pointer"
                   >
@@ -68,7 +68,27 @@ export function HomePage() {
                         {empresa.endereco.cidade}-{empresa.endereco.uf}
                       </span>
                     </CardContent>
-                  </Card>
+                  </Card> */}
+
+                  <div
+                    onClick={() => handleNavigate(empresa.id_usuario)}
+                    className="cursor-pointer text-primary-foreground"
+                  >
+                    <img src={garcia} alt="" className="rounded-t-md " />
+                    <div className="flex items-center justify-between mt-1">
+                      <h3 className="font-bold text-2xl">
+                        {empresa.nome_fantasia}
+                      </h3>
+                      <span className="flex gap-1 text-sm">
+                        <MapPin
+                          size={18}
+                          weight="fill"
+                          color={'hsl(20 99% 65%)'}
+                        />{' '}
+                        {empresa.endereco.cidade}-{empresa.endereco.uf}
+                      </span>
+                    </div>
+                  </div>
                 </SwiperSlide>
               ))}
             </Swiper>
