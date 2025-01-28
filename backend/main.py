@@ -347,8 +347,13 @@ async def buscar_todas_propostas_usuario(token: str = Depends(oauth2_esquema)):
     # Buscar as propostas desse usuário e retornar
     alugueis = crud_aluguel.buscar_alugueis_usuario_id(db, usuario.id_usuario, usuario.tipo_conta)
 
-    if alugueis:
-        return alugueis
+    resposta = []
+    for aluguel in alugueis:
+        veiculo: classe_veiculo.Veiculo = crud_veiculo.buscar_veiculo(db, aluguel.id_veiculo)
+        resposta.append((aluguel, veiculo))
+
+    if resposta:
+        return resposta
     else:
         return {"detail" : "Nenhum aluguel encontrado",
                 "data" : []}
