@@ -864,8 +864,8 @@ async def buscar_empresas_nome(nome_busca: str):
     return crud_usuario.buscador_empresas_nome(db, nome_busca)
 
 @app.get("/busca/buscar_empresas/criterio/{data_de_partida}/{qtd_passageiros}/{local_partida}/{pagina}")
-async def buscar_empresas_criterio(data_de_partida: datetime.date | None = None, qtd_passageiros: int | None = None, 
-                                   local_partida: str | None = None, pagina: int = 1):
+async def buscar_empresas_criterio(data_de_partida: datetime.date, qtd_passageiros: int, 
+                                   local_partida: str, pagina: int = 1):
     global lista_cidades
     """
     Busca as empresas a partir de outros critérios
@@ -878,6 +878,9 @@ async def buscar_empresas_criterio(data_de_partida: datetime.date | None = None,
     cidade, uf = tuple(local_partida.split(","))
 
     latitude_partida, longitude_partida = busca_latitude_longitude_de_cidade(cidade, lista_cidades, uf)
+
+    if str(data_de_partida) == "":
+        data_de_partida = None
 
     if pagina < 1:
         return {"error": "A página deve ser maior ou igual a 1."}
