@@ -15,14 +15,18 @@ interface getUserClientResponse {
 }
 
 export async function getUserClient({ token }: getUserClientBody) {
-  const response = await api.get<getUserClientResponse>(
+  try {
+    const response = await api.get<getUserClientResponse>(
     '/usuario/buscar_dados_cadastrais/cliente',
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       },
-    },
-  )
-
-  return response.data
+    )
+    return response.data
+  } catch (error: any) {
+    console.error('Error:', error.response?.data || error.message)
+    throw error
+  }
 }

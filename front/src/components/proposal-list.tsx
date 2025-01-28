@@ -36,8 +36,6 @@ export default function ProposalList() {
     fetchAndSetProposals()
   },)
 
-  console.log(proposals)
-
   const [searchParams] = useSearchParams()
 
   const status = searchParams.get('status')
@@ -64,7 +62,11 @@ export default function ProposalList() {
         {proposals && proposals.length > 0 ? (
           <>
           {proposals.map((proposal: any) => (
-            <ProposalItem proposal={proposal} key={proposal.id} type={user?.tipo_usuario} />
+            <ProposalItem 
+              proposal={proposal} 
+              key={proposal.id_aluguel} 
+              type={user?.tipo_usuario} 
+            />
           ))}
             <Pagination className="col-span-2 mt-4 text-white">
             <PaginationContent>

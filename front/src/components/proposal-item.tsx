@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getDataBusiness } from '@/api/getDataBusiness'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { getVehicleData } from '@/api/vehicles/getVehicleData'
+import { getUserClient } from '@/api/getUserClient'
 
 interface Local {	
   id_local: number
@@ -39,7 +40,7 @@ export default function ProposalItem({ proposal, type }: ProprosalItemProps) {
     queryKey: ['idBusiness', proposal.id_empresa],
     queryFn: () => getDataBusiness({ idEmpresa: proposal.id_empresa.toString() }),
   })
-  
+
   const { data: dataVehicle, isSuccess: isSucessVehicle } = useQuery({
     queryKey: ['idVehicle', proposal.id_veiculo],
     queryFn: () => getVehicleData({ idVehicle: proposal.id_veiculo.toString(), token }),
@@ -98,7 +99,7 @@ export default function ProposalItem({ proposal, type }: ProprosalItemProps) {
             <h3 className="text-center font-semibold">
               Informações do Cliente
             </h3>
-
+            {/*Alterar para dados reais do cliente*/}
             <p>
               Nome Completo: <span>John Doe</span>
             </p>

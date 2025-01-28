@@ -454,8 +454,13 @@ export default function ProfileBusinessArea() {
         </div>
         <div className="flex flex-col gap-4 mt-4">
           {proposalsList && proposalsList.length > 0 ? (
-            proposalsList.slice(0, 2).map((proposal: any) => (
-              <ProposalItem proposal={proposal} key={proposal.id_aluguel} type="empresa" />
+            proposalsList
+            .slice(0, 2)
+            .map((proposal: any) => (
+              <ProposalItem 
+                proposal={proposal} 
+                key={proposal.id_aluguel} 
+                type="empresa" />
             ))
           ) : (
             <p className="text-white ">Não foram encontradas propostas.</p>
