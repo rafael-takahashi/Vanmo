@@ -396,10 +396,10 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
     cidade_saida, uf_saida = tuple(dados.local_saida.split(","))
     cidade_chegada, uf_chegada = tuple(dados.local_chegada.split(","))
 
-    if not valida_cidade(dados.cidade_saida, lista_cidades):
+    if not valida_cidade(cidade_saida, lista_cidades):
         raise HTTPException(status_code=400, detail="Cidade de partida inválida")
 
-    if not valida_cidade(dados.cidade_chegada, lista_cidades):
+    if not valida_cidade(cidade_chegada, lista_cidades):
         raise HTTPException(status_code=400, detail="Cidade de chegada inválida")
     
     latitude_partida, longitude_partida = busca_latitude_longitude_de_cidade(cidade_saida, lista_cidades, uf_saida)
@@ -420,7 +420,7 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
     # if (not valida_coordendas(dados.latitude_partida, dados.longitude_partida)) or (not valida_coordendas(dados.latitude_chegada, dados.longitude_chegada)):
     #     raise HTTPException(status_code=400, detail="Coordenadas inválidas")
     
-    if (dados.data_chegada > dados.data_saida):
+    if (dados.data_saida > dados.data_chegada):
         raise HTTPException(status_code=400, detail="Datas inválidas: data de chegada anterior a data de saída")
 
     veiculo: classe_veiculo.Veiculo = crud_veiculo.buscar_veiculo(db, dados.id_veiculo)

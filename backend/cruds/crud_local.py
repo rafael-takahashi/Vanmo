@@ -15,6 +15,9 @@ def criar_local(db: sqlite3.Connection, local: Local):
     cursor.execute(QueriesDB.query_inserir_local_novo, dados)
     id_local: int = cursor.lastrowid
     
+    if db.in_transaction:
+        db.rollback()
+
     db.commit()
     return id_local
 

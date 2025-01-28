@@ -15,8 +15,8 @@ import { api } from '@/lib/axios'
 interface createProposalBody {
   id_empresa: number
   id_veiculo: number
-  cidade_saida: string
-  cidade_chegada: string
+  local_saida: string
+  local_chegada: string
   distancia_extra_km: number
   data_saida: string // Make sure Date is converted to ISO8601 before sending to FastAPI
   data_chegada: string // .toISOString()
@@ -26,8 +26,8 @@ interface createProposalBody {
 export async function createProposal({
   id_empresa,
   id_veiculo,
-  cidade_saida,
-  cidade_chegada,
+  local_saida,
+  local_chegada,
   distancia_extra_km,
   data_saida,
   data_chegada,
@@ -36,8 +36,8 @@ export async function createProposal({
   const jsonBody = JSON.stringify({
     id_empresa,
     id_veiculo,
-    cidade_saida,
-    cidade_chegada,
+    local_saida,
+    local_chegada,
     distancia_extra_km,
     data_saida,
     data_chegada,

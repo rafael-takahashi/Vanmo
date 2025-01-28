@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query'
 import Cookies from 'js-cookie'
 
@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { getDataBusiness } from '@/api/getDataBusiness';
 import { getUserClient } from '@/api/getUserClient';
+import { createProposal } from '@/api/proposals/createProposal';
+import { toast } from 'sonner';
 
 type Proposal = {
   from: string;
@@ -17,6 +19,7 @@ type Proposal = {
 };
 
 export function ProposalPage() {
+  const navigate = useNavigate()
   const location = useLocation()
   const { id_empresa, id_veiculo, proposal } = location.state as { id_empresa: string, id_veiculo: number, proposal: Proposal }
 
@@ -31,6 +34,32 @@ export function ProposalPage() {
     queryKey: ['userClient', token],
     queryFn: () => getUserClient({ token }),
   })
+
+  const handleCreateProposal = async (id_empresa: number, id_veiculo: number, proposal: Proposal) => {
+    const token = Cookies.get('auth_token')
+
+    if (!token) {
+      console.error('No authorization token found.')
+      return
+    }
+
+    try {
+      await createProposal({ 
+        id_empresa,
+        id_veiculo,
+        local_saida: proposal.from,
+        local_chegada: proposal.to,
+        distancia_extra_km: 0,
+        data_saida: proposal.dateFrom,
+        data_chegada: proposal.dateTo,
+        token,
+      })
+      toast.success('Proposta realizada com sucesso')
+      navigate('/profile/proposals?status=all')
+    } catch {
+      toast.error('Falha na realização da proposta')
+    }
+  }
 
   const [step, setStep] = useState(33)
 
@@ -180,7 +209,9 @@ export function ProposalPage() {
               <Button
                 className="h-12 px-12 flex justify-center items-center text-xl font-semibold self-end"
                 size={'lg'}
-                // onClick={}
+                onClick={() => {
+                  handleCreateProposal(parseInt(id_empresa), id_veiculo, proposal)
+                }}
               >
                 Realizar Proposta
               </Button>
