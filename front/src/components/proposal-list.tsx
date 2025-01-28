@@ -27,25 +27,18 @@ export default function ProposalList() {
   })
 
   const [proposals, setProposals] = useState<any[]>([])
-  
+
   const [searchParams] = useSearchParams()
   const status = searchParams.get('status')
 
   const fetchAndSetProposals = async () => {
-    if (status === 'all') 
-      setProposals(await getUserProposals({ token }))
-    else
-      setProposals(await getUserProposals({ status_aluguel: status, token }))
+    if (status === 'all') setProposals(await getUserProposals({ token }))
+    else setProposals(await getUserProposals({ status_aluguel: status, token }))
   }
 
   useEffect(() => {
     fetchAndSetProposals()
-<<<<<<< HEAD
-  })
-=======
   }, [status])
->>>>>>> f61aa2e7437930443bc4b1f65714d932e87f1f7e
-
 
   return (
     <div>
@@ -68,13 +61,13 @@ export default function ProposalList() {
       <div className="flex flex-col gap-2 mt-4">
         {proposals && proposals.length > 0 ? (
           <>
-          {proposals.map((proposal: any) => (
-            <ProposalItem 
-              proposal={proposal} 
-              key={proposal.id_aluguel} 
-              type={user?.tipo_usuario} 
-            />
-          ))}
+            {proposals.map((proposal: any) => (
+              <ProposalItem
+                proposal={proposal}
+                key={proposal.id_aluguel}
+                type={user?.tipo_usuario}
+              />
+            ))}
             <Pagination className="col-span-2 mt-4 text-white">
               <PaginationContent>
                 <PaginationItem>
