@@ -103,7 +103,7 @@ export default function SideMenuProfile({
                   }`}
                   onClick={() =>
                     setSearchParams((state) => {
-                      state.set('status', 'rejected')
+                      state.set('status', 'rejeitado')
 
                       return state
                     })
@@ -120,7 +120,7 @@ export default function SideMenuProfile({
                   }`}
                   onClick={() =>
                     setSearchParams((state) => {
-                      state.set('status', 'done')
+                      state.set('status', 'concluido')
 
                       return state
                     })
@@ -195,7 +195,7 @@ export default function SideMenuProfile({
                   }`}
                   onClick={() =>
                     setSearchParams((state) => {
-                      state.set('status', 'active')
+                      state.set('status', 'ativo')
 
                       return state
                     })
@@ -212,7 +212,7 @@ export default function SideMenuProfile({
                   }`}
                   onClick={() =>
                     setSearchParams((state) => {
-                      state.set('status', 'rejected')
+                      state.set('status', 'rejeitado')
 
                       return state
                     })
@@ -229,7 +229,7 @@ export default function SideMenuProfile({
                   }`}
                   onClick={() =>
                     setSearchParams((state) => {
-                      state.set('status', 'done')
+                      state.set('status', 'concluido')
 
                       return state
                     })

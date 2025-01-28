@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 
@@ -17,7 +17,6 @@ import { getUserProposals } from '@/api/proposals/getUserProposals'
 import { getTypeAccount } from '@/api/getTypeAccount'
 
 export default function ProposalList() {
-  
   const token = Cookies.get('auth_token')
 
   const { data: user } = useQuery({
@@ -27,18 +26,21 @@ export default function ProposalList() {
   })
 
   const [proposals, setProposals] = useState<any[]>([])
+  
+  const [searchParams] = useSearchParams()
+  const status = searchParams.get('status')
 
   const fetchAndSetProposals = async () => {
-    setProposals(await getUserProposals({ token }))
+    if (status === 'all') 
+      setProposals(await getUserProposals({ token }))
+    else
+      setProposals(await getUserProposals({ status_aluguel: status, token }))
   }
 
-  useState(() => {
+  useEffect(() => {
     fetchAndSetProposals()
-  },)
+  }, [status])
 
-  const [searchParams] = useSearchParams()
-
-  const status = searchParams.get('status')
 
   return (
     <div>
@@ -46,15 +48,15 @@ export default function ProposalList() {
         <h1 className="text-xl text-white">Minhas Propostas</h1>
       )}
 
-      {status === 'active' && (
+      {status === 'ativo' && (
         <h1 className="text-xl text-white">Minhas Propostas Ativas</h1>
       )}
 
-      {status === 'rejected' && (
+      {status === 'rejeitado' && (
         <h1 className="text-xl text-white">Minhas Propostas Rejeitadas</h1>
       )}
 
-      {status === 'done' && (
+      {status === 'concluido' && (
         <h1 className="text-xl text-white">Minhas Propostas Concluídas</h1>
       )}
 
