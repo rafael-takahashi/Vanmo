@@ -339,7 +339,7 @@ async def buscar_todas_propostas_usuario(token: str = Depends(oauth2_esquema)):
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
     # Buscar as propostas desse usuário e retornar
-    alugueis = crud_aluguel.buscar_alugueis_usuario_id(db, usuario.id_usuario)
+    alugueis = crud_aluguel.buscar_alugueis_usuario_id(db, usuario.id_usuario, usuario.tipo_conta)
 
     if alugueis:
         return alugueis

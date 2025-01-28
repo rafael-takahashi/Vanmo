@@ -18,9 +18,12 @@ def criar_aluguel(db: sqlite3.Connection, aluguel: Aluguel):
     cursor.execute(QueriesDB.query_inserir_aluguel_novo, dados)
     db.commit()
 
-def buscar_alugueis_usuario_id(db: sqlite3.Connection, id_usuario: int) -> list[Aluguel]:
+def buscar_alugueis_usuario_id(db: sqlite3.Connection, id_usuario: int, tipo_conta: str) -> list[Aluguel]:
     cursor: sqlite3.Cursor = db.cursor()
-    query = QueriesDB.query_buscar_alugueis_cliente
+    if tipo_conta == "cliente":
+        query = QueriesDB.query_buscar_alugueis_cliente
+    else:
+        query = QueriesDB.query_buscar_alugueis_empresa
     
     alugueis = cursor.execute(query, (id_usuario,)).fetchall()
 
