@@ -1,12 +1,17 @@
 import { api } from '@/lib/axios'
 
 interface getUserProposalsBody {
+  status_aluguel?: string | null
   token: string | undefined
 }
 
-export async function getUserProposals({ token }: getUserProposalsBody) {
+export async function getUserProposals({ status_aluguel, token }: getUserProposalsBody) {
   try {
-    const response = await api.get('/propostas/buscar_propostas', {
+    const url = status_aluguel
+      ? `/propostas/buscar_propostas/${status_aluguel}`
+      : '/propostas/buscar_propostas'
+
+    const response = await api.get(url, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

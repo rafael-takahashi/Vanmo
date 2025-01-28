@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query'
 import { getDataBusiness } from '@/api/getDataBusiness'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { getVehicleData } from '@/api/vehicles/getVehicleData'
-import { getUserClient } from '@/api/getUserClient'
 
 interface Local {	
   id_local: number
