@@ -98,7 +98,7 @@ export function AppLayout() {
           </div>
         </div>
       </header>
-      <main className="flex-grow max-w-[1240px] w-full mx-auto">
+      <main className="flex-grow max-w-[1440px] w-full mx-auto">
         <Outlet />
       </main>
       <footer className="flex justify-between items-center px-5 py-6 h-[288px] w-full bg-primary-foreground mt-20"></footer>

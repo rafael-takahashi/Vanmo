@@ -33,7 +33,7 @@ export function HomePage() {
   })
 
   return (
-    <main className="max-w-[1240px] w-full flex justify-between items-center mx-auto px-5">
+    <main className="max-w-[1240px] w-full flex justify-between items-center mx-auto">
       <div className="w-full flex flex-col">
         <div className="mt-16">
           <SearchArea />

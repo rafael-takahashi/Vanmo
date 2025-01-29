@@ -24,9 +24,9 @@ export default function BusinessPage() {
   })
 
   return (
-    <>
+    <main className="max-w-[1240px] w-full flex justify-between items-center mx-auto px-5">
       {isSucessBusiness ? (
-        <main className="flex flex-col mt-14">
+        <div className=" w-full flex flex-col mt-14">
           <h1 className="text-3xl font-bold">{dataBusiness.nome_fantasia}</h1>
           <div className="flex mt-2 gap-1">
             <MapPin size={20} weight="bold" />
@@ -75,12 +75,12 @@ export default function BusinessPage() {
           <Separator className="my-4" />
 
           <VehicleList />
-        </main>
+        </div>
       ) : (
         <h2 className="text-2xl text-primary font-bold flex items-center justify-center">
           Erro ao carregar a página
         </h2>
       )}
-    </>
+    </main>
   )
 }
