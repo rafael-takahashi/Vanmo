@@ -150,6 +150,8 @@ export default function ProfileBusinessArea() {
           token,
           photo,
         })
+
+        toast.success('Perfil editado com sucesso.')
       } else {
         console.log('Nenhuma alteração detectada')
       }
