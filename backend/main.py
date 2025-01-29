@@ -328,7 +328,7 @@ async def aceitar_ou_rejeitar_proposta(dados: DadosAcaoProposta, token: str = De
         for data in calendario.datas_indisponiveis:
             crud_aluguel.inserir_data_indisponivel(db, aluguel.id_veiculo, data)
 
-    crud_aluguel.alterar_status_aluguel(db, dados.id_proposta, novo_status, aluguel.id_veiculo)
+    crud_aluguel.alterar_status_aluguel(db, dados.id_proposta, novo_status)
 
     return {"detail": f"Status alterado para '{novo_status}' com sucesso!"}
 
