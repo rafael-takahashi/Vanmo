@@ -207,10 +207,10 @@ export function ProposalPage() {
                 </span>
                 <br />
                 Data de Ida:{' '}
-                <span className="text-primary font-bold">{proposal.dateFrom}</span>
+                <span className="text-primary font-bold">{new Date(proposal.dateFrom).toLocaleDateString('pt-BR')}</span>
                 <br />
                 Data de Retorno:{' '}
-                <span className="text-primary font-bold">{proposal.dateTo}</span>
+                <span className="text-primary font-bold">{new Date(proposal.dateTo).toLocaleDateString('pt-BR')}</span>
                 <br />
                 Quantidade de Passageiros:{' '}
                 <span className="text-primary font-bold">{proposal.numberPassengers}</span>
