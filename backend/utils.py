@@ -284,28 +284,22 @@ def salva_foto(base64_string: str, caminho_arquivo: str):
     @param caminho_arquivo: O caminho onde a imagem será salva
     """
     try:
-        # Remover prefixo 'data:image/png;base64,' caso exista
         if base64_string.startswith('data:image'):
             base64_string = base64_string.split(",")[1]
 
         # Corrigindo o padding
         base64_string = base64_string.strip()
 
-        # Garantir que o comprimento da string Base64 seja múltiplo de 4
-        # Adicionando o padding necessário
         padding = len(base64_string) % 4
         if padding != 0:
             base64_string += '=' * (4 - padding)
 
-        # Tentando decodificar a Base64
         imagem_bytes = base64.b64decode(base64_string)
 
-        # Verificando se o diretório existe, caso contrário, cria
         diretorio = os.path.dirname(caminho_arquivo)
         if not os.path.exists(diretorio):
             os.makedirs(diretorio)
         
-        # Salvando a imagem no arquivo
         with open(caminho_arquivo, "wb") as arquivo:
             arquivo.write(imagem_bytes)
 
