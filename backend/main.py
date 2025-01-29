@@ -351,7 +351,10 @@ async def buscar_todas_propostas_usuario(token: str = Depends(oauth2_esquema)):
     for aluguel in alugueis:
         veiculo: classe_veiculo.Veiculo = crud_veiculo.buscar_veiculo(db, aluguel.id_veiculo)
         aluguel.calcular_valor_total(veiculo.custo_por_km, veiculo.custo_base)
-        resposta.append((aluguel, veiculo))
+        resposta.append({
+            "proposta": aluguel,
+            "veiculo": veiculo
+        })
 
     if resposta:
         return resposta
