@@ -955,8 +955,11 @@ async def buscar_empresas_criterio(data_de_partida: datetime.date, qtd_passageir
         todas_empresas = []
         for id_empresa in inter:
             empresa: classe_usuario.Empresa = crud_usuario.buscar_empresa_por_id(db, id_empresa)
-            if remove_acentos(empresa.endereco.cidade.lower()) == remove_acentos(cidade.lower()):
-                if remove_acentos(empresa.endereco.uf.lower()) == remove_acentos(uf.lower()): 
+            print(f"{remove_acentos(empresa.endereco.cidade.lower())} == {remove_acentos(cidade.lower())}")
+            if remove_acentos(empresa.endereco.cidade.lower().replace(" ", "")) == remove_acentos(cidade.lower().replace(" ", "")):
+                print(f"{remove_acentos(empresa.endereco.uf.lower())} == {remove_acentos(uf.lower())}")
+                if remove_acentos(empresa.endereco.uf.lower().replace(" ", "")) == remove_acentos(uf.lower().replace(" ", "")): 
+                    print(f"Adicionando empresa... {str(empresa)}")
                     todas_empresas.append(empresa)
 
     inicio_pag = 10 * (pagina - 1)
