@@ -906,7 +906,7 @@ async def buscar_empresas_criterio(data_de_partida: datetime.date, qtd_passageir
 
     cidade, uf = tuple(local_partida.split(","))
 
-    latitude_partida, longitude_partida = busca_latitude_longitude_de_cidade(cidade, lista_cidades, uf)
+    # latitude_partida, longitude_partida = busca_latitude_longitude_de_cidade(cidade, lista_cidades, uf)
 
     if str(data_de_partida) == "":
         data_de_partida = None
@@ -932,13 +932,13 @@ async def buscar_empresas_criterio(data_de_partida: datetime.date, qtd_passageir
             for resultado in resultados:
                 empresas_passageiros.add(resultado[0]) 
 
-        if latitude_partida and longitude_partida:
-            if (not valida_coordendas(latitude_partida, longitude_partida)):
-                raise HTTPException(status_code=400, detail="Coordenadas inválidas!")
-
-            resultados = crud_usuario.buscar_empresas_por_local(db, latitude_partida, longitude_partida)
-            for resultado in resultados:
-                empresas_local.add(resultado[0]) 
+        # if latitude_partida and longitude_partida:
+        #     if (not valida_coordendas(latitude_partida, longitude_partida)):
+        #         raise HTTPException(status_code=400, detail="Coordenadas inválidas!")
+        
+            # resultados = crud_usuario.buscar_empresas_por_local(db, latitude_partida, longitude_partida)
+            # for resultado in resultados:
+            #     empresas_local.add(resultado[0]) 
 
         conjuntos = [empresas_data, empresas_passageiros, empresas_local]
         
@@ -955,7 +955,9 @@ async def buscar_empresas_criterio(data_de_partida: datetime.date, qtd_passageir
         todas_empresas = []
         for id_empresa in inter:
             empresa: classe_usuario.Empresa = crud_usuario.buscar_empresa_por_id(db, id_empresa)
-            todas_empresas.append(empresa)
+            if remove_acentos(empresa.endereco.cidade.lower()) == remove_acentos(cidade.lower()):
+                if remove_acentos(empresa.endereco.uf.lower()) == remove_acentos(uf.lower): 
+                    todas_empresas.append(empresa)
 
     inicio_pag = 10 * (pagina - 1)
     fim_pag = inicio_pag + 9
