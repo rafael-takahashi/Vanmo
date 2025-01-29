@@ -377,8 +377,18 @@ async def buscar_todas_propostas_usuario(status_aluguel: str, token: str = Depen
     # Buscar as propostas desse usuário e retornar
     alugueis = crud_aluguel.buscar_alugueis_usuario_id_por_status(db, usuario.id_usuario, usuario.tipo_conta, status_aluguel)
 
-    if alugueis:
-        return alugueis
+    resposta = []
+
+    for aluguel in alugueis:
+        veiculo: classe_veiculo.Veiculo = crud_veiculo.buscar_veiculo(db, aluguel.id_veiculo)
+        aluguel.calcular_valor_total(veiculo.custo_por_km, veiculo.custo_base)
+        resposta.append({
+            "proposta": aluguel,
+            "veiculo": veiculo
+        })
+    
+    if resposta:
+        return resposta
     else:
         return {"detail" : f"Nenhum aluguel encontrado neste estado: {status_aluguel}"}
 

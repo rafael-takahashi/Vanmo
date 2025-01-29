@@ -6,6 +6,7 @@ from classes.classe_aluguel import Aluguel
 from classes.classe_usuario import Usuario
 from classes.classe_local import Local
 from database import *
+from cruds.crud_veiculo import buscar_veiculo
 from cruds.crud_local import buscar_local_por_id
 from cruds.crud_usuario import buscar_usuario_por_id, buscar_dados_cliente, buscar_dados_empresa
 import sqlite3
@@ -112,6 +113,9 @@ def buscar_alugueis_usuario_id_por_status(db: sqlite3.Connection, id_usuario: in
             empresa = buscar_usuario_por_id(db, item.id_empresa)
             empresa = buscar_dados_empresa(db, empresa)
             empresa.senha_hashed = ""
+
+            # veiculo = buscar_veiculo(db, item.id_veiculo)
+            # item.id_veiculo = veiculo
 
             item.id_cliente = cliente
             item.id_empresa = empresa
