@@ -34,7 +34,6 @@ export async function editProfileUserClient({
   //     Authorization: `Bearer ${token}`,
   //   },
   // })
-  console.log(photo)
   await api.put(
     '/usuario/alterar_dados/cliente',
     {

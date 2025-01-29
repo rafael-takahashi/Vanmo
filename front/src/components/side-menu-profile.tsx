@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 
 interface SideMenuProfileProps {
   fullName: string | undefined
-  photo: string
+  // photo: string
   typeAccount: 'cliente' | 'empresa'
   idUsuario: number
 }
@@ -23,7 +23,7 @@ export default function SideMenuProfile({
   typeAccount,
   fullName,
   idUsuario,
-  photo,
+  // photo,
 }: SideMenuProfileProps) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -41,7 +41,7 @@ export default function SideMenuProfile({
         <div className="relative h-fit w-fit flex flex-col col-span-1 bg-primary-foreground pt-8 pb-16 px-6 rounded-md text-white shadow-lg">
           <div className="flex gap-4 items-center">
             <Avatar>
-              <AvatarImage src={`data:image/png;base64,${photo}`} />
+              <AvatarImage src={garcia} />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
             <span className="text-xl mt-2">{fullName}</span>
