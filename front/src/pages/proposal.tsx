@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import Cookies from 'js-cookie'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 import { getDataBusiness } from '@/api/getDataBusiness'
 import { getUserClient } from '@/api/getUserClient'
+import { calculateProposalCost } from '@/api/proposals/calculateProposalCost'
 import { createProposal } from '@/api/proposals/createProposal'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -38,6 +39,27 @@ export function ProposalPage() {
     queryKey: ['userClient', token],
     queryFn: () => getUserClient({ token }),
   })
+
+  const [proposedCost, setProposedCost] = useState<number | null>(0)
+
+  const getProposalCost = async () => {
+    setProposedCost(
+      await calculateProposalCost({
+        id_empresa: parseInt(id_empresa),
+        id_veiculo,
+        local_saida: proposal.from,
+        local_chegada: proposal.to,
+        distancia_extra_km: 0,
+        data_saida: proposal.dateFrom,
+        data_chegada: proposal.dateTo,
+        token,
+      }),
+    )
+  }
+
+  useEffect(() => {
+    getProposalCost()
+  }, [])
 
   const handleCreateProposal = async (
     id_empresa: number,
@@ -218,17 +240,25 @@ export function ProposalPage() {
                   <br />
                   Data de Ida:{' '}
                   <span className="text-primary font-bold">
-                    {proposal.dateFrom}
+                    {new Date(proposal.dateFrom).toLocaleDateString('pt-BR')}
                   </span>
                   <br />
                   Data de Retorno:{' '}
                   <span className="text-primary font-bold">
-                    {proposal.dateTo}
+                    {new Date(proposal.dateTo).toLocaleDateString('pt-BR')}
                   </span>
                   <br />
                   Quantidade de Passageiros:{' '}
                   <span className="text-primary font-bold">
                     {proposal.numberPassengers}
+                  </span>
+                  <br />
+                  Valor Proposto:{' '}
+                  <span className="text-primary font-bold">
+                    {new Intl.NumberFormat('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                    }).format(proposedCost ?? 0)}
                   </span>
                 </span>
               </div>
