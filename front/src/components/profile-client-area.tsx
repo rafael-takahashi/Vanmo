@@ -11,7 +11,7 @@ import { editProfileUserClient } from '@/api/editUserClient'
 import { getUserClient } from '@/api/getUserClient'
 import { getUserProposals } from '@/api/proposals/getUserProposals'
 
-import ProposalItem from './proposal-item'
+import TableProposalsClient from './table-proposals-client'
 import { Button } from './ui/button'
 import {
   Dialog,
@@ -347,19 +347,7 @@ export default function ProfileClientArea() {
           </span>
         </div>
         <div className="flex flex-col gap-4 mt-4">
-          {proposalsList && proposalsList.length > 0 ? (
-            proposalsList
-              .slice(0, 2)
-              .map((proposal: any) => (
-                <ProposalItem
-                  proposal={proposal}
-                  key={proposal.id_aluguel}
-                  type="cliente"
-                />
-              ))
-          ) : (
-            <p className="text-white ">Não foram encontradas propostas.</p>
-          )}
+          <TableProposalsClient id_usuario={data?.id} />
         </div>
       </div>
     </>

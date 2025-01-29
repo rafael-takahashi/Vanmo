@@ -1,17 +1,19 @@
+import Cookies from 'js-cookie'
+
 import { api } from '@/lib/axios'
 
 interface handleProposalBody {
   idProposal: number
   state: boolean
-  token: string | undefined
 }
 
 export async function handleProposal({
   idProposal,
   state,
-  token,
 }: handleProposalBody) {
   try {
+    const token = Cookies.get('auth_token')
+
     const response = await api.post(
       '/propostas/aceitar_ou_rejetar_proposta',
       {

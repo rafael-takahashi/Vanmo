@@ -4,7 +4,7 @@ interface FetchBusinessByNameParams {
   nome: string
 }
 
-interface Endereco {
+export interface Endereco {
   bairro: string
   cep: string
   cidade: string

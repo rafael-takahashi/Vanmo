@@ -37,6 +37,10 @@ export async function fetchBusinessByFilters({
   qtd_passageiros,
 }: FetchBusinessByFiltersParams): Promise<Business[]> {
   try {
+    console.log(data_de_partida)
+    console.log(local_partida)
+    console.log(qtd_passageiros)
+
     const response = await api.get(
       `/busca/buscar_empresas/criterio/${data_de_partida}/${qtd_passageiros}/${local_partida}/${pagina}`,
     )

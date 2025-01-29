@@ -57,14 +57,19 @@ export function VehicleList() {
               id_veiculo={car.id_veiculo}
               nome_veiculo={car.nome_veiculo}
               placa_veiculo={car.placa_veiculo}
-              proposal={{from, to, dateFrom, dateTo, numberPassengers}}
+              proposal={{ from, to, dateFrom, dateTo, numberPassengers }}
             />
           ))}
         </div>
       ) : (
-        <p className="w-full text-center text-primary-foreground mt-4 text-xl">
-          Nenhum veículo encontrado.
-        </p>
+        <>
+          <p className="w-full text-center text-primary-foreground mt-4 text-xl">
+            Nenhum veículo encontrado.
+          </p>
+          <p className="w-full text-center text-primary-foreground mt-4 text-xl">
+            Tente novamente inserir os filtros.
+          </p>
+        </>
       )}
 
       {Array.isArray(data) && data.length > 6 && (

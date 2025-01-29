@@ -9,7 +9,6 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 import { fetchBusinessByFilters } from '@/api/fetchBusinessByFilters'
 import { FaqArea } from '@/components/faq-area'
 import SearchArea from '@/components/search-area'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 
 import garcia from '../assets/garcia.jpg'
@@ -75,17 +74,17 @@ export function HomePage() {
                     className="cursor-pointer text-primary-foreground"
                   >
                     <img src={garcia} alt="" className="rounded-t-md " />
-                    <div className="flex items-center justify-between mt-1">
-                      <h3 className="font-bold text-2xl">
+                    <div className="grid grid-cols-3 items-center justify-between mt-1">
+                      <h3 className="col-span-2 font-bold text-2xl">
                         {empresa.nome_fantasia}
                       </h3>
-                      <span className="flex gap-1 text-sm">
+                      <span className="col-span-1 flex justify-center items-center gap-1 text-sm">
                         <MapPin
                           size={18}
                           weight="fill"
                           color={'hsl(20 99% 65%)'}
                         />{' '}
-                        {empresa.endereco.cidade}-{empresa.endereco.uf}
+                        {empresa.endereco.cidade}, {empresa.endereco.uf}
                       </span>
                     </div>
                   </div>

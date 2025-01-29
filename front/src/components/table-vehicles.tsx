@@ -86,45 +86,52 @@ export default function TableVehicles({ id_usuario }: TableVehiclesProps) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data?.slice(0, 5).map((veiculo) => (
-          <TableRow key={veiculo.id_veiculo}>
-            <TableCell>{veiculo.id_veiculo}</TableCell>
-            <TableCell>{veiculo.nome_veiculo}</TableCell>
-            <TableCell>{veiculo.placa_veiculo}</TableCell>
-            <TableCell>{veiculo.cor}</TableCell>
-            <TableCell>{veiculo.ano_fabricacao}</TableCell>
-            <TableCell>{veiculo.capacidade}</TableCell>
-            <TableCell>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-8 w-8 p-0">
-                    <MoreHorizontal />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                  <DropdownMenuItem className="cursor-pointer">
-                    Ver mais detalhes
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="cursor-pointer"
-                    onClick={() => handleEditVehicle(veiculo)}
-                  >
-                    Editar veículo
-                    {/* TEM QUE IMPLEMENTAR O REDIRECIONAMENTO DA EDIÇÃO DO VEÍCULO */}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="cursor-pointer text-red-500"
-                    onClick={() => handleDeleteVehicle(veiculo.id_veiculo)}
-                  >
-                    Deletar veículo
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+        {data && data.length > 0 ? (
+          data.slice(0, 5).map((veiculo) => (
+            <TableRow key={veiculo.id_veiculo}>
+              <TableCell>{veiculo.id_veiculo}</TableCell>
+              <TableCell>{veiculo.nome_veiculo}</TableCell>
+              <TableCell>{veiculo.placa_veiculo}</TableCell>
+              <TableCell>{veiculo.cor}</TableCell>
+              <TableCell>{veiculo.ano_fabricacao}</TableCell>
+              <TableCell>{veiculo.capacidade}</TableCell>
+              <TableCell>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <MoreHorizontal />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                    <DropdownMenuItem className="cursor-pointer">
+                      Ver mais detalhes
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => handleEditVehicle(veiculo)}
+                    >
+                      Editar veículo
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer text-red-500"
+                      onClick={() => handleDeleteVehicle(veiculo.id_veiculo)}
+                    >
+                      Deletar veículo
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
+            </TableRow>
+          ))
+        ) : (
+          <TableRow>
+            <TableCell colSpan={7} className="text-center text-gray-500">
+              Nenhum veículo encontrado.
             </TableCell>
           </TableRow>
-        ))}
+        )}
       </TableBody>
     </Table>
   )

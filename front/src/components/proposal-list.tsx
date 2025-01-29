@@ -7,6 +7,7 @@ import { getTypeAccount } from '@/api/getTypeAccount'
 import { getUserProposals } from '@/api/proposals/getUserProposals'
 
 import ProposalItem from './proposal-item'
+import TableProposalsBusiness from './table-proposals-business'
 import {
   Pagination,
   PaginationContent,
@@ -19,6 +20,8 @@ import {
 
 export default function ProposalList() {
   const token = Cookies.get('auth_token')
+  const [searchParams] = useSearchParams()
+  const status = searchParams.get('status')
 
   const { data: user } = useQuery({
     queryKey: ['user', token],
@@ -26,69 +29,30 @@ export default function ProposalList() {
     enabled: !!token,
   })
 
-  const [proposals, setProposals] = useState<any[]>([])
-
-  const [searchParams] = useSearchParams()
-  const status = searchParams.get('status')
-
-  const fetchAndSetProposals = async () => {
-    if (status === 'all') setProposals(await getUserProposals({ token }))
-    else setProposals(await getUserProposals({ status_aluguel: status, token }))
-  }
-
-  useEffect(() => {
-    fetchAndSetProposals()
-  }, [status])
-
   return (
     <div>
       {status === 'all' && (
-        <h1 className="text-xl text-white">Minhas Propostas</h1>
+        <h1 className="text-xl text-white">Todas Propostas</h1>
       )}
 
-      {status === 'ativo' && (
-        <h1 className="text-xl text-white">Minhas Propostas Ativas</h1>
+      {status === 'pending' && (
+        <h1 className="text-xl text-white">Propostas Pendentes</h1>
       )}
 
-      {status === 'rejeitado' && (
-        <h1 className="text-xl text-white">Minhas Propostas Rejeitadas</h1>
+      {status === 'active' && (
+        <h1 className="text-xl text-white">Propostas Ativos</h1>
       )}
 
-      {status === 'concluido' && (
-        <h1 className="text-xl text-white">Minhas Propostas Concluídas</h1>
+      {status === 'rejected' && (
+        <h1 className="text-xl text-white">Propostas Rejeitados</h1>
+      )}
+
+      {status === 'done' && (
+        <h1 className="text-xl text-white">Propostas Concluídas</h1>
       )}
 
       <div className="flex flex-col gap-2 mt-4">
-        {proposals && proposals.length > 0 ? (
-          <>
-            {proposals.map((proposal: any) => (
-              <ProposalItem
-                proposal={proposal}
-                key={proposal.id_aluguel}
-                type={user?.tipo_usuario}
-              />
-            ))}
-            <Pagination className="col-span-2 mt-4 text-white">
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious href="#" />
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#">1</PaginationLink>
-                  <PaginationLink href="#">2</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationEllipsis />
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationNext href="#" />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </>
-        ) : (
-          <p className="text-white ">Não foram encontradas propostas.</p>
-        )}
+        <TableProposalsBusiness id_usuario={user?.id_usuario} status={status} />
       </div>
     </div>
   )
