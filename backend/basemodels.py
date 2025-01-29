@@ -2,7 +2,7 @@
 
 # OBS: Apesar de utilizarem a estrutura de classes, essas não representam as classes do sistema
 
-from fastapi import str
+# from fastapi import str
 from pydantic import BaseModel
 import datetime
 
