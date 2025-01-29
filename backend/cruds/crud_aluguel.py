@@ -151,9 +151,10 @@ def buscar_aluguel(db: sqlite3.Connection, id_aluguel: int) -> Aluguel | None:
 def inserir_data_indisponivel(db: sqlite3.Connection, id_veiculo: int, data: datetime.date):
     cursor: sqlite3.Cursor = db.cursor()
 
+    dados = ((id_veiculo, data.strftime('%Y-%m-%d')))
     query = QueriesDB.query_inserir_calendario
 
-    cursor.execute(query, (id_veiculo, data))
+    cursor.execute(query, )
 
     db.commit()
 
