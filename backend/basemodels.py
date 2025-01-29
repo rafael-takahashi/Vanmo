@@ -2,7 +2,7 @@
 
 # OBS: Apesar de utilizarem a estrutura de classes, essas não representam as classes do sistema
 
-from fastapi import UploadFile
+from fastapi import str
 from pydantic import BaseModel
 import datetime
 
@@ -40,7 +40,7 @@ class CadastroEmpresa(BaseModel):
 class AlterarDadosCliente(BaseModel):
     email: str | None = None
     senha: str | None = None
-    foto: UploadFile | None = None
+    foto: str | None = None
     nome_completo: str | None = None
     cpf: str | None = None
     data_nascimento: str | None = None
@@ -49,7 +49,7 @@ class AlterarDadosCliente(BaseModel):
 class AlterarDadosEmpresa(BaseModel):
     email: str | None = None
     senha: str | None = None
-    foto: UploadFile | None = None
+    foto: str | None = None
     nome_fantasia: str | None = None
     cnpj: str | None = None
     uf: str | None = None
@@ -94,7 +94,7 @@ class EditarVeiculo(BaseModel):
     placa_veiculo: str | None = None,
     custo_por_km: float | None = None,
     custo_base: float | None = None,
-    foto: UploadFile | None = None,
+    foto: str | None = None,
     cor: str | None = None,
     ano_fabricacao: int | None = None
 
@@ -106,7 +106,7 @@ class CadastrarVeiculo(BaseModel):
     cor: str
     ano_fabricacao: int
     capacidade: int
-    foto: UploadFile | None = None
+    foto: str | None = None
 
 class RespostaEmpresa(BaseModel):
     foto: str

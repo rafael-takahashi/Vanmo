@@ -1,7 +1,9 @@
 import re
 import csv
 import base64
+import imghdr
 import os
+import unicodedata
 from fastapi import UploadFile, HTTPException
 
 class Cidade:
@@ -57,8 +59,6 @@ def carrega_cidades() -> list[Cidade]:
             lista_cidades.append(cidade)
     
     return lista_cidades
-
-import unicodedata
 
 def remove_acentos(texto: str) -> str:
     """
@@ -180,26 +180,62 @@ def valida_uf(uf: str) -> bool:
         "RS", "RO", "RR", "SC", "SP", "SE", "TO"
     }
     return uf.upper() in estados_validos
-
-def valida_foto(arquivo: UploadFile, tamanho_maximo: int = 25 * 1024 * 1024) -> bool:
-    """
-    Valida se um arquivo é uma imagem válida no formato PNG e dentro do tamanho permitido.
+  
+# def valida_foto(arquivo: UploadFile, tamanho_maximo: int = 25 * 1024 * 1024) -> bool:
+#     """
+#     Valida se um arquivo é uma imagem válida no formato PNG e dentro do tamanho permitido.
     
-    @param arquivo: Arquivo a ser validado
+#     @param arquivo: Arquivo a ser validado
+#     @param tamanho_maximo: Tamanho máximo permitido (em bytes). Padrão: 25 MB
+#     @return: True se válido, levanta uma exceção caso contrário
+#     """
+#     extensao_permitida = "image/png"
+#     if arquivo.content_type != extensao_permitida:
+#         # OBS: Aqui a gente levanta uma exceção pra indicar melhor a mensagem de erro com o que tá errado
+#         raise HTTPException(status_code=400, detail="Arquivo inválido. Apenas imagens PNG são permitidas.")
+
+#     arquivo.file.seek(0, os.SEEK_END)
+#     tamanho_arquivo = arquivo.file.tell()
+#     arquivo.file.seek(0)
+
+#     if tamanho_arquivo > tamanho_maximo:
+#         raise HTTPException(status_code=400, detail=f"Arquivo muito grande. O tamanho máximo permitido é {tamanho_maximo // (1024 * 1024)} MB.")
+
+#     return True
+
+def valida_bytes(imagem_bytes: bytes, tamanho_maximo: int):
+    """
+    Valida se os bytes correspondem a uma imagem PNG válida e não excedem o tamanho máximo
+    """
+
+    if len(imagem_bytes) > tamanho_maximo:
+        raise HTTPException(status_code=400, detail=f"Arquivo muito grande. O tamanho máximo permitido é {tamanho_maximo // (1024 * 1024)} MB.")
+
+    formato = imghdr.what(None, imagem_bytes)
+
+    if formato != "png":
+        raise HTTPException(status_code=400, detail="Arquivo inválido. Apenas imagens PNG são permitidas.")
+
+def valida_foto(arquivo: str, tamanho_maximo: int = 25 * 1024 * 1024) -> bool:
+    """
+    Valida se um arquivo ou uma string Base64 representa uma imagem PNG válida dentro do tamanho permitido.
+
+    @param arquivo: UploadFile ou string Base64 a ser validado
     @param tamanho_maximo: Tamanho máximo permitido (em bytes). Padrão: 25 MB
     @return: True se válido, levanta uma exceção caso contrário
     """
-    extensao_permitida = "image/png"
-    if arquivo.content_type != extensao_permitida:
-        # OBS: Aqui a gente levanta uma exceção pra indicar melhor a mensagem de erro com o que tá errado
-        raise HTTPException(status_code=400, detail="Arquivo inválido. Apenas imagens PNG são permitidas.")
+    if not isinstance(arquivo, str):
+        raise HTTPException(status_code=400, detail="Tipo de arquivo inválido. Deve ser uma string Base64")
+    
+    try:
+        if "," in arquivo:
+            arquivo = arquivo.split(",")[1]  # Remove o prefixo 'data:image/png;base64,'
 
-    arquivo.file.seek(0, os.SEEK_END)
-    tamanho_arquivo = arquivo.file.tell()
-    arquivo.file.seek(0)
+        imagem_bytes = base64.b64decode(arquivo)
+        valida_bytes(imagem_bytes, tamanho_maximo)
 
-    if tamanho_arquivo > tamanho_maximo:
-        raise HTTPException(status_code=400, detail=f"Arquivo muito grande. O tamanho máximo permitido é {tamanho_maximo // (1024 * 1024)} MB.")
+    except Exception:
+        raise HTTPException(status_code=400, detail="Formato Base64 inválido ou corrompido.")
 
     return True
 
@@ -236,22 +272,24 @@ def carrega_foto_base64(path_foto, veiculo=False) -> str:
             photo_base64 = base64.b64encode(photo_bytes).decode("utf-8")
             return photo_base64
 
-def salva_foto(path_foto, arquivo: UploadFile):
+def salva_foto(base64_string: str, caminho_arquivo: str):
     """
-    Salva um arquivo de imagem no caminho especificado, substituindo o arquivo existente, se houver.
+    Converte uma string Base64 em uma imagem e salva no caminho especificado.
 
-    @param path_foto: Caminho onde a imagem será salva.
-    @param arquivo: Arquivo de imagem enviado pelo usuário.
-    @return: Apenas levanta uma exceção em caso de falha.
+    @param base64_string: A string Base64 representando a imagem
+    @param caminho_arquivo: O caminho onde a imagem será salva
     """
     try:
-        if path_foto is None or path_foto == "":
-            return
+        # Removendo o prefixo 'data:image/png;base64,'
+        if "," in base64_string:
+            base64_string = base64_string.split(",")[1]
+        
+        imagem_bytes = base64.b64decode(base64_string)
 
-        if (os.path.isfile(path_foto)):
-            os.remove(path_foto)
+        with open(caminho_arquivo, "wb") as arquivo:
+            arquivo.write(imagem_bytes)
 
-        with open(path_foto, "wb+") as arquivo:
-            arquivo.write(arquivo.file.read())
-    except Exception:
-        raise HTTPException(status_code=400, detail="Falha ao salvar a foto")
+        print(f"Imagem salva com sucesso em: {caminho_arquivo}")
+
+    except Exception as e:
+        print(f"Erro ao salvar a imagem: {e}")
