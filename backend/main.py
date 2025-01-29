@@ -312,7 +312,7 @@ async def aceitar_ou_rejeitar_proposta(dados: DadosAcaoProposta, token: str = De
     if aluguel.id_empresa.id_usuario != usuario.id_usuario:
         raise HTTPException(status_code=400, detail="Proposta não pertence ao usuário")
     
-    if aluguel.estado_aluguel != "proposto":
+    if aluguel.estado_aluguel != "pendente":
         raise HTTPException(status_code=400, detail="Status do aluguel não é 'proposta'")
     
     novo_status = "rejeitado"
@@ -424,7 +424,7 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
     @param data_chegada: A data prevista de retorno do cliente
     @param token: O token de acesso do usuário
     """
-    
+
     db = database.conectar_bd()
 
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
@@ -476,7 +476,7 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
     aluguel.adicionar_distancia_extra(dados.distancia_extra_km)
     aluguel.calcular_valor_total(veiculo.custo_por_km, veiculo.custo_base)
 
-    aluguel.estado_aluguel = "proposto"
+    aluguel.estado_aluguel = "pendente"
 
     crud_aluguel.criar_aluguel(db, aluguel, local_partida, local_chegada)
 
@@ -511,8 +511,8 @@ async def cancelar_proposta(id_proposta: int, token: str = Depends(oauth2_esquem
     if aluguel.id_cliente != usuario.id_usuario:
         raise HTTPException(status_code=400, detail="Proposta não pertence ao cliente")
     
-    if aluguel.estado_aluguel != "proposto":
-        raise HTTPException(status_code=400, detail="Status do aluguel não é 'proposto'")
+    if aluguel.estado_aluguel != "pendente":
+        raise HTTPException(status_code=400, detail="Status do aluguel não é 'pendente'")
 
     crud_aluguel.remover_aluguel(db, id_proposta)
 
