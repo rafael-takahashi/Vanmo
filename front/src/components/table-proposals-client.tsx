@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 import { fetchProposals } from '@/api/proposals/fetchProposals'
+import { getUserProposals } from '@/api/proposals/getUserProposals'
 
 import { Button } from './ui/button'
 import {
@@ -26,17 +27,24 @@ import {
 
 interface TableProposalsProps {
   id_usuario: number
+  status: string
 }
 
 export default function TableProposalsClient({
   id_usuario,
+  status,
 }: TableProposalsProps) {
   const url = window.location.pathname
-  const navigate = useNavigate()
 
   const { data, refetch } = useQuery({
-    queryKey: ['proposals', id_usuario],
-    queryFn: () => fetchProposals(),
+    queryKey: ['proposals', id_usuario, status], // Inclua status para evitar colisão de cache
+    queryFn: () => {
+      if (status === 'all' || status === undefined) {
+        return fetchProposals()
+      } else {
+        return getUserProposals({ status_aluguel: status })
+      }
+    },
   })
 
   return (

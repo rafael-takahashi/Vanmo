@@ -48,12 +48,12 @@ export function HomePage() {
           )}
 
           {data && (
-            <Swiper spaceBetween={10} slidesPerView={4} loop={true}>
+            <Swiper spaceBetween={20} slidesPerView={4} loop={true}>
               {data.map((empresa) => (
-                <SwiperSlide key={empresa.id_usuario}>
+                <SwiperSlide key={empresa.id_usuario} className="p-2">
                   <div
                     onClick={() => handleNavigate(empresa.id_usuario)}
-                    className="cursor-pointer text-primary-foreground"
+                    className="cursor-pointer text-primary-foreground transition-transform duration-200 hover:scale-105"
                   >
                     <img src={garcia} alt="" className="rounded-t-md " />
                     <div className="grid grid-cols-3 items-center justify-between mt-1">

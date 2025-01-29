@@ -78,14 +78,14 @@ export function SearchResults({
 
   return (
     <div
-      className="bg-white w-[280px] rounded-md flex flex-col cursor-pointer shadow-lg pb-6"
+      className="bg-white w-[280px] rounded-md flex flex-col cursor-pointer shadow-lg pb-6 transition-transform duration-200 hover:scale-105"
       onClick={() => handleNavigateSearchResult()}
     >
       <div className="w-full h-[180px] overflow-hidden">
         <img
           src={garcia}
           alt=""
-          className="w-full h-full object-cover object-center rounded-md shadow-lg"
+          className="w-full h-full object-cover object-center rounded-t-md shadow-lg"
         />
       </div>
       <h2 className="text-center text-2xl font-semibold mt-3">{fantasyName}</h2>

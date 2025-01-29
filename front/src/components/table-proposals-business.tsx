@@ -41,7 +41,7 @@ export default function TableProposalsBusiness({
   const { data, refetch } = useQuery({
     queryKey: ['proposals', id_usuario, status], // Inclua status para evitar colisão de cache
     queryFn: () => {
-      if (status === 'all') {
+      if (status === 'all' || status === undefined) {
         return fetchProposals()
       } else {
         return getUserProposals({ status_aluguel: status })
@@ -52,12 +52,6 @@ export default function TableProposalsBusiness({
   const { mutateAsync } = useMutation({
     mutationFn: handleProposal,
   })
-
-  useEffect(() => {
-    if (status) {
-      refetch()
-    }
-  }, [status])
 
   async function handleProposals(id_proposta: number, state: boolean) {
     try {
