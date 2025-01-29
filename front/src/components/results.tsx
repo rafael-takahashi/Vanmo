@@ -33,17 +33,23 @@ export function Results() {
 
   return (
     <div className="w-full grid grid-cols-4 gap-3 mt-8">
-      {data?.map((empresa) => (
-        <SearchResults
-          address={empresa.endereco}
-          fantasyName={empresa.nome_fantasia}
-          idBusiness={empresa.id_usuario}
-          phone={empresa.telefone}
-          rate={empresa.soma_avaliacoes}
-          key={empresa.id_usuario}
-          photo={empresa.foto}
-        />
-      ))}
+      {data && data.length > 0 ? (
+        data.map((empresa) => (
+          <SearchResults
+            address={empresa.endereco}
+            fantasyName={empresa.nome_fantasia}
+            idBusiness={empresa.id_usuario}
+            phone={empresa.telefone}
+            rate={empresa.soma_avaliacoes}
+            key={empresa.id_usuario}
+            photo={empresa.foto}
+          />
+        ))
+      ) : (
+        <p className="text-slate-500 text-center col-span-4 text-xl mt-10">
+          Nenhuma empresa encontrada que ofereçam serviços nesses critérios.
+        </p>
+      )}
 
       {Array.isArray(data) && data.length > 10 && (
         <Pagination className="col-span-2 mt-4">
