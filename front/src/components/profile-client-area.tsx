@@ -5,6 +5,7 @@ import Cookies from 'js-cookie'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate, useSearchParams } from 'react-router'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { editProfileUserClient } from '@/api/editUserClient'
@@ -135,8 +136,10 @@ export default function ProfileClientArea() {
           token,
           photo,
         })
+
+        toast.success('Perfil editado com sucesso.')
       } else {
-        console.log('Nenhuma alteração detectada')
+        toast.error('Nenhuma alteração detectada. Tente novamente.')
       }
     } catch (error) {
       console.log(error)

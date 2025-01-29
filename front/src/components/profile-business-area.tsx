@@ -150,8 +150,10 @@ export default function ProfileBusinessArea() {
           token,
           photo,
         })
+
+        toast.success('Perfil editado com sucesso.')
       } else {
-        console.log('Nenhuma alteração detectada')
+        toast.error('Nenhuma alteração detectada. Tente novamente.')
       }
     } catch (error) {
       console.error(error)
