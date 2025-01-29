@@ -15,10 +15,10 @@ export function FaqArea() {
         <AccordionItem value="item-1">
           <AccordionTrigger>O que é fretamento de ônibus?</AccordionTrigger>
           <AccordionContent>
-            Lorem Ipsum is simply dummy text of the printing and typesetting
-            industry. Lorem Ipsum has been the industry's standard dummy text
-            ever since the 1500s, when an unknown printer took a galley of type
-            and scrambled it to make a type specimen book.
+            O fretamento de ônibus é a solução ideal para quem precisa de transporte seguro,
+            confortável e eficiente para grupos. Seja para eventos, excursões, viagens
+            corporativas ou turismo, oferecemos veículos modernos e motoristas experientes
+            para garantir uma experiência tranquila.
           </AccordionContent>
         </AccordionItem>
         <AccordionItem value="item-2">
@@ -26,10 +26,10 @@ export function FaqArea() {
             O que está incluído no valor do fretamento?
           </AccordionTrigger>
           <AccordionContent>
-            Lorem Ipsum is simply dummy text of the printing and typesetting
-            industry. Lorem Ipsum has been the industry's standard dummy text
-            ever since the 1500s, when an unknown printer took a galley of type
-            and scrambled it to make a type specimen book.
+            O valor do fretamento inclui o aluguel do ônibus, o serviço de um motorista profissional,
+            combustível, pedágios e seguro de viagem. Se houver necessidade de serviços extras, 
+            como hospedagem do motorista ou alterações na rota, nossa equipe estará pronta para 
+            ajustar conforme sua necessidade.
           </AccordionContent>
         </AccordionItem>
         <AccordionItem value="item-3">
@@ -37,10 +37,8 @@ export function FaqArea() {
             O que fazer em caso de atraso ou imprevistos durante a viagem?
           </AccordionTrigger>
           <AccordionContent>
-            Lorem Ipsum is simply dummy text of the printing and typesetting
-            industry. Lorem Ipsum has been the industry's standard dummy text
-            ever since the 1500s, when an unknown printer took a galley of type
-            and scrambled it to make a type specimen book.
+            Caso ocorra qualquer imprevisto, entre em contato imediatamente com nossa central de atendimento. 
+            Nossa equipe está preparada para oferecer suporte rápido e garantir que sua viagem continue sem complicações.
           </AccordionContent>
         </AccordionItem>
         <AccordionItem value="item-4">
@@ -48,10 +46,9 @@ export function FaqArea() {
             Como posso fazer uma reclamação ou dar um feedback sobre o serviço?
           </AccordionTrigger>
           <AccordionContent>
-            Lorem Ipsum is simply dummy text of the printing and typesetting
-            industry. Lorem Ipsum has been the industry's standard dummy text
-            ever since the 1500s, when an unknown printer took a galley of type
-            and scrambled it to make a type specimen book.
+            Sua opinião é fundamental para nós! Para registrar uma reclamação ou enviar um feedback, 
+            utilize nossos canais oficiais de atendimento: telefone, e-mail ou formulário no site. 
+            Garantimos um retorno rápido e um compromisso com a melhoria contínua do nosso serviço.
           </AccordionContent>
         </AccordionItem>
       </Accordion>
