@@ -535,19 +535,19 @@ async def verificar_custo_proposta(dados: CriarProposta, token: str = Depends(oa
 
     db = database.conectar_bd()
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
+    
+    cidade_saida, uf_saida = tuple(dados.local_saida.split(","))
+    cidade_chegada, uf_chegada = tuple(dados.local_chegada.split(","))
 
-    if not valida_cidade(dados.local_saida, lista_cidades):
+    if not valida_cidade(cidade_saida, lista_cidades):
         raise HTTPException(status_code=400, detail="Cidade de partida inválida")
 
-    if not valida_cidade(dados.local_chegada, lista_cidades):
+    if not valida_cidade(cidade_chegada, lista_cidades):
         raise HTTPException(status_code=400, detail="Cidade de chegada inválida")
     
-    latitude_partida, longitude_partida = busca_latitude_longitude_de_cidade(dados.local_saida, lista_cidades)
+    latitude_partida, longitude_partida = busca_latitude_longitude_de_cidade(cidade_saida, lista_cidades)
 
-    latitude_chegada, longitude_chegada = busca_latitude_longitude_de_cidade(dados.local_chegada, lista_cidades)
-
-    data_saida = dados.data_saida
-    data_chegada = dados.data_chegada
+    latitude_chegada, longitude_chegada = busca_latitude_longitude_de_cidade(cidade_chegada, lista_cidades)
 
     if usuario.tipo_conta != "cliente":
         raise HTTPException(status_code=400, detail="Tipo de usuário não é cliente")
@@ -558,7 +558,7 @@ async def verificar_custo_proposta(dados: CriarProposta, token: str = Depends(oa
     if not crud_veiculo.verificar_disponibilidade_veiculo(db, dados.id_veiculo, dados.data_saida, dados.data_chegada):
         raise HTTPException(status_code=400, detail="Veículo não disponível para o período escolhido")
 
-    if (dados.data_chegada > dados.data_saida):
+    if (dados.data_saida > dados.data_chegada):
         raise HTTPException(status_code=400, detail="Datas inválidas: data de chegada anterior a data de saída")
 
     veiculo: classe_veiculo.Veiculo = crud_veiculo.buscar_veiculo(db, dados.id_veiculo)
