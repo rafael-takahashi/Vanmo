@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { MoreHorizontal } from 'lucide-react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
@@ -51,6 +52,12 @@ export default function TableProposalsBusiness({
   const { mutateAsync } = useMutation({
     mutationFn: handleProposal,
   })
+
+  useEffect(() => {
+    if (status) {
+      refetch()
+    }
+  }, [status])
 
   async function handleProposals(id_proposta: number, state: boolean) {
     try {

@@ -3,7 +3,7 @@ import { api } from '@/lib/axios'
 export interface editProfileUserClientBody {
   email?: string
   password?: string
-  photo?: File | null
+  photo?: string | null
   fullName?: string
   dateOfBirth?: string
   phone?: string
@@ -34,7 +34,7 @@ export async function editProfileUserClient({
   //     Authorization: `Bearer ${token}`,
   //   },
   // })
-
+  console.log(photo)
   await api.put(
     '/usuario/alterar_dados/cliente',
     {

@@ -45,7 +45,7 @@ const PersonalProfile = z.object({
 type PersonalProfileForm = z.infer<typeof PersonalProfile>
 
 export default function ProfileClientArea() {
-  const [photo, setPhoto] = useState<File | null>(null)
+  const [photo, setPhoto] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
 
@@ -67,9 +67,18 @@ export default function ProfileClientArea() {
       return
     }
 
-    setPhoto(file)
-    setError(null)
-    setPreview(URL.createObjectURL(file))
+    const reader = new FileReader()
+    reader.readAsDataURL(file) // Converte para Base64
+
+    reader.onload = () => {
+      const base64String = reader.result as string
+      setPhoto(base64String) // Atualiza com a string Base64
+      setPreview(URL.createObjectURL(file)) // Exibe a prévia normal
+    }
+
+    reader.onerror = () => {
+      setError('Error reading file.')
+    }
   }
 
   const token = Cookies.get('auth_token')
@@ -85,11 +94,6 @@ export default function ProfileClientArea() {
   const { data } = useQuery({
     queryKey: ['userClient', token],
     queryFn: () => getUserClient({ token }),
-  })
-
-  const { data: proposalsList } = useQuery({
-    queryKey: ['proposals-user', token],
-    queryFn: () => getUserProposals({ token }),
   })
 
   const { mutateAsync } = useMutation({
@@ -214,14 +218,15 @@ export default function ProfileClientArea() {
                           {...register('phone')}
                         />
                       </div>
-                      {/* <div className="grid grid-cols-4 items-center gap-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
                         <label htmlFor="phone" className="text-right">
                           Foto
                         </label>
-                        <input
+                        <Input
                           id="photo"
                           type="file"
                           accept={ALLOWED_MIME_TYPES.join(',')}
+                          className="col-span-3"
                           multiple
                           onChange={handleFileChange}
                         />
@@ -229,7 +234,7 @@ export default function ProfileClientArea() {
                           <p className="text-red-500 text-sm mt-1">{error}</p>
                         )}
                         {preview && (
-                          <div className="mt-2">
+                          <div className="col-span-4 mx-auto">
                             <img
                               src={preview}
                               alt="Preview"
@@ -237,7 +242,7 @@ export default function ProfileClientArea() {
                             />
                           </div>
                         )}
-                      </div> */}
+                      </div>
                     </div>
 
                     <Button type="submit" className="ml-auto">

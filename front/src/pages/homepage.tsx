@@ -51,24 +51,6 @@ export function HomePage() {
             <Swiper spaceBetween={10} slidesPerView={4} loop={true}>
               {data.map((empresa) => (
                 <SwiperSlide key={empresa.id_usuario}>
-                  {/* <Card
-                    onClick={() => handleNavigate('1')}
-                    className="cursor-pointer"
-                  >
-                    <CardHeader className="text-center">
-                      <CardTitle className="text-xl">
-                        {empresa.nome_fantasia}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <img src={garcia} alt="" className="rounded-md " />
-                      <span className="flex mt-2 gap-1">
-                        <MapPin size={24} weight="fill" />{' '}
-                        {empresa.endereco.cidade}-{empresa.endereco.uf}
-                      </span>
-                    </CardContent>
-                  </Card> */}
-
                   <div
                     onClick={() => handleNavigate(empresa.id_usuario)}
                     className="cursor-pointer text-primary-foreground"

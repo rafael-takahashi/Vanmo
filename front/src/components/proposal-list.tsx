@@ -1,23 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import Cookies from 'js-cookie'
-import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router'
 
 import { getTypeAccount } from '@/api/getTypeAccount'
-import { getUserProposals } from '@/api/proposals/getUserProposals'
 
-import ProposalItem from './proposal-item'
 import TableProposalsBusiness from './table-proposals-business'
 import TableProposalsClient from './table-proposals-client'
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from './ui/pagination'
 
 export default function ProposalList() {
   const token = Cookies.get('auth_token')
@@ -57,7 +45,7 @@ export default function ProposalList() {
           <TableProposalsClient id_usuario={user?.id_usuario} status={status} />
         )}
 
-        {user?.tipo_usuario === 'cliente' && (
+        {user?.tipo_usuario === 'empresa' && (
           <TableProposalsBusiness
             id_usuario={user?.id_usuario}
             status={status}
