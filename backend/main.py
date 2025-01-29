@@ -424,7 +424,7 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
     @param data_chegada: A data prevista de retorno do cliente
     @param token: O token de acesso do usuário
     """
-
+    
     db = database.conectar_bd()
 
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
@@ -481,7 +481,7 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
     crud_aluguel.criar_aluguel(db, aluguel, local_partida, local_chegada)
 
     # db.commit()
-    db.close()
+    # db.close()
 
     return {"detail": "Proposta criada com sucesso"}
 
