@@ -153,7 +153,7 @@ export default function ProfileBusinessArea() {
 
         toast.success('Perfil editado com sucesso.')
       } else {
-        console.log('Nenhuma alteração detectada')
+        toast.error('Nenhuma alteração detectada. Tente novamente.')
       }
     } catch (error) {
       console.error(error)

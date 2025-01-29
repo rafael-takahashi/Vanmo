@@ -139,7 +139,7 @@ export default function ProfileClientArea() {
 
         toast.success('Perfil editado com sucesso.')
       } else {
-        console.log('Nenhuma alteração detectada')
+        toast.error('Nenhuma alteração detectada. Tente novamente.')
       }
     } catch (error) {
       console.log(error)
