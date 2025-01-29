@@ -18,6 +18,8 @@ import {
 } from '@/components/ui/command'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 
+import logo from '../../assets/logo.jpg'
+
 export function AppLayout() {
   const [nameSearch, setNameSearch] = useState('')
   const auth = Cookies.get('auth_token')
@@ -35,7 +37,7 @@ export function AppLayout() {
       <header className="flex justify-between items-center px-5 py-6 h-[96px] w-full bg-primary-foreground">
         <div className="max-w-[1240px] w-full flex justify-between items-center mx-auto px-5">
           <a className="text-white" href="/">
-            LOGO
+            <img src={logo} alt="" className="max-w-[120px] h-auto" />
           </a>
 
           <div className="flex justify-center items-center gap-8">
