@@ -13,6 +13,7 @@ import { getUserProposals } from '@/api/proposals/getUserProposals'
 import { getBusinessVehicles } from '@/api/vehicles/getBusinessVehicles'
 
 import ProposalItem from './proposal-item'
+import TableProposalsBusiness from './table-proposals-business'
 import TableVehicles from './table-vehicles'
 import { Button } from './ui/button'
 import {
@@ -86,10 +87,10 @@ export default function ProfileBusinessArea() {
     queryFn: () => getUserBusiness({ token }),
   })
 
-  const { data: proposalsList } = useQuery({
-    queryKey: ['proposals-user', token],
-    queryFn: () => getUserProposals({ token }),
-  })
+  // const { data: proposalsList } = useQuery({
+  //   queryKey: ['proposals-user', token],
+  //   queryFn: () => getUserProposals({ token }),
+  // })
 
   const { mutateAsync } = useMutation({
     mutationFn: editProfileUserBusiness,
@@ -454,19 +455,7 @@ export default function ProfileBusinessArea() {
           </span>
         </div>
         <div className="flex flex-col gap-4 mt-4">
-          {proposalsList && proposalsList.length > 0 ? (
-            proposalsList
-              .slice(0, 2)
-              .map((proposal: any) => (
-                <ProposalItem
-                  proposal={proposal}
-                  key={proposal.id_aluguel}
-                  type="empresa"
-                />
-              ))
-          ) : (
-            <p className="text-white ">Não foram encontradas propostas.</p>
-          )}
+          <TableProposalsBusiness id_usuario={data?.id_usuario} />
         </div>
         <div className="flex items-end gap-4 mt-14">
           <h2 className="text-white text-2xl">Veículos</h2>

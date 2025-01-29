@@ -1,12 +1,17 @@
+import Cookies from 'js-cookie'
+
 import { api } from '@/lib/axios'
 
 interface getUserProposalsBody {
   status_aluguel?: string | null
-  token: string | undefined
 }
 
-export async function getUserProposals({ status_aluguel, token }: getUserProposalsBody) {
+export async function getUserProposals({
+  status_aluguel,
+}: getUserProposalsBody) {
   try {
+    const token = Cookies.get('auth_token')
+
     const url = status_aluguel
       ? `/propostas/buscar_propostas/${status_aluguel}`
       : '/propostas/buscar_propostas'

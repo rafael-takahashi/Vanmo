@@ -69,7 +69,7 @@ export default function SideMenuProfile({
                 })
               }}
             >
-              Minhas Propostas
+              Propostas
               <Signature
                 size={16}
                 color={isProposalActive ? 'hsl(20 99% 65%)' : 'currentColor'}
@@ -78,6 +78,23 @@ export default function SideMenuProfile({
 
             {status && (
               <div className="w-full flex flex-col items-center justify-center text-base">
+                <span
+                  className={`w-full flex gap-2 py-2 px-2 cursor-pointer rounded-md transition-all duration-300  ${
+                    status === 'pending'
+                      ? 'bg-primary text-primary-foreground disabled font-bold'
+                      : 'hover:bg-slate-600'
+                  }`}
+                  onClick={() =>
+                    setSearchParams((state) => {
+                      state.set('status', 'pending')
+
+                      return state
+                    })
+                  }
+                >
+                  <VectorTwo size={16} />
+                  Propostas Pendentes
+                </span>
                 <span
                   className={`w-full flex gap-2 py-2 px-2 cursor-pointer rounded-md transition-all duration-300  ${
                     status === 'active'
@@ -103,7 +120,7 @@ export default function SideMenuProfile({
                   }`}
                   onClick={() =>
                     setSearchParams((state) => {
-                      state.set('status', 'rejeitado')
+                      state.set('status', 'rejected')
 
                       return state
                     })
@@ -120,14 +137,14 @@ export default function SideMenuProfile({
                   }`}
                   onClick={() =>
                     setSearchParams((state) => {
-                      state.set('status', 'concluido')
+                      state.set('status', 'done')
 
                       return state
                     })
                   }
                 >
                   <VectorTwo size={16} />
-                  Propostas Concluidas
+                  Propostas Concluídas
                 </span>
               </div>
             )}
@@ -178,7 +195,7 @@ export default function SideMenuProfile({
                 })
               }}
             >
-              Minhas Propostas
+              Propostas
               <Signature
                 size={16}
                 color={isProposalActive ? 'hsl(20 99% 65%)' : 'currentColor'}
@@ -189,13 +206,30 @@ export default function SideMenuProfile({
               <div className="w-full flex flex-col items-center justify-center text-base">
                 <span
                   className={`w-full flex gap-2 py-2 px-2 cursor-pointer rounded-md transition-all duration-300  ${
+                    status === 'pending'
+                      ? 'bg-primary text-primary-foreground disabled font-bold'
+                      : 'hover:bg-slate-600'
+                  }`}
+                  onClick={() =>
+                    setSearchParams((state) => {
+                      state.set('status', 'pending')
+
+                      return state
+                    })
+                  }
+                >
+                  <VectorTwo size={16} />
+                  Propostas Pendentes
+                </span>
+                <span
+                  className={`w-full flex gap-2 py-2 px-2 cursor-pointer rounded-md transition-all duration-300  ${
                     status === 'active'
                       ? 'bg-primary text-primary-foreground disabled font-bold'
                       : 'hover:bg-slate-600'
                   }`}
                   onClick={() =>
                     setSearchParams((state) => {
-                      state.set('status', 'ativo')
+                      state.set('status', 'active')
 
                       return state
                     })
@@ -212,7 +246,7 @@ export default function SideMenuProfile({
                   }`}
                   onClick={() =>
                     setSearchParams((state) => {
-                      state.set('status', 'rejeitado')
+                      state.set('status', 'rejected')
 
                       return state
                     })
@@ -229,14 +263,14 @@ export default function SideMenuProfile({
                   }`}
                   onClick={() =>
                     setSearchParams((state) => {
-                      state.set('status', 'concluido')
+                      state.set('status', 'done')
 
                       return state
                     })
                   }
                 >
                   <VectorTwo size={16} />
-                  Propostas Concluidas
+                  Propostas Concluídas
                 </span>
               </div>
             )}

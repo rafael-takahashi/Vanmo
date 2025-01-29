@@ -4,18 +4,19 @@ import { useSearchParams } from 'react-router'
 
 import { getDataBusiness } from '@/api/getDataBusiness'
 import SearchArea from '@/components/search-area'
-import { VehicleList } from '@/components/vehicle-list'
 import { Separator } from '@/components/ui/separator'
+import { VehicleList } from '@/components/vehicle-list'
 
 export default function BusinessPage() {
   const [searchParams] = useSearchParams()
-  const from = searchParams.get('from') || '';
-  const to = searchParams.get('to') || '';
-  const dateFrom = searchParams.get('dateFrom') || '';
-  const dateTo = searchParams.get('dateTo') || '';
-  const numberPassengers = searchParams.get('numberPassengers') || '';
+  const from = searchParams.get('from') || ''
+  const to = searchParams.get('to') || ''
+  const dateFrom = searchParams.get('dateFrom') || ''
+  const dateTo = searchParams.get('dateTo') || ''
+  const numberPassengers = searchParams.get('numberPassengers') || ''
 
-  const idBusiness = window.location.pathname.split('/').filter(Boolean).pop() || ''
+  const idBusiness =
+    window.location.pathname.split('/').filter(Boolean).pop() || ''
 
   const { data: dataBusiness, isSuccess: isSucessBusiness } = useQuery({
     queryKey: ['idBusiness', idBusiness],
@@ -57,7 +58,6 @@ export default function BusinessPage() {
               VEÍCULOS DISPONÍVEIS
             </span>
 
-            
             {from && (
               <span className="ml-6 text-primary-foreground font-semibold">
                 Partida:{` `}
