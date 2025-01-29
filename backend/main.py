@@ -956,7 +956,7 @@ async def buscar_empresas_criterio(data_de_partida: datetime.date, qtd_passageir
         for id_empresa in inter:
             empresa: classe_usuario.Empresa = crud_usuario.buscar_empresa_por_id(db, id_empresa)
             if remove_acentos(empresa.endereco.cidade.lower()) == remove_acentos(cidade.lower()):
-                if remove_acentos(empresa.endereco.uf.lower()) == remove_acentos(uf.lower): 
+                if remove_acentos(empresa.endereco.uf.lower()) == remove_acentos(uf.lower()): 
                     todas_empresas.append(empresa)
 
     inicio_pag = 10 * (pagina - 1)
