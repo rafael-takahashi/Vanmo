@@ -9,6 +9,7 @@ from database import *
 from cruds.crud_local import buscar_local_por_id
 from cruds.crud_usuario import buscar_usuario_por_id, buscar_dados_cliente, buscar_dados_empresa
 import sqlite3
+from datetime import datetime
 
 def criar_aluguel(db: sqlite3.Connection, aluguel: Aluguel): #, local_partida: Local, local_chegada: Local):
     cursor: sqlite3.Cursor = db.cursor()
@@ -128,7 +129,7 @@ def buscar_aluguel(db: sqlite3.Connection, id_aluguel: int) -> Aluguel | None:
         return None
     
     aluguel = Aluguel(id_aluguel, resultado[2], resultado[1], resultado[3])
-    aluguel.adicionar_datas(resultado[6], resultado[7])
+    aluguel.adicionar_datas(datetime.strptime(resultado[6], "%Y-%m-%d"), datetime.strptime(resultado[7], "%Y-%m-%d"))
     local_partida: Local = buscar_local_por_id(db, resultado[10])
     local_chegada: Local = buscar_local_por_id(db, resultado[11])
     aluguel.adicionar_locais(local_partida, local_chegada)
@@ -151,10 +152,10 @@ def buscar_aluguel(db: sqlite3.Connection, id_aluguel: int) -> Aluguel | None:
 def inserir_data_indisponivel(db: sqlite3.Connection, id_veiculo: int, data: datetime.date):
     cursor: sqlite3.Cursor = db.cursor()
 
-    dados = ((id_veiculo, data.strftime('%Y-%m-%d')))
+    dados = ((id_veiculo, data.strftime("%Y-%m-%d")))
     query = QueriesDB.query_inserir_calendario
 
-    cursor.execute(query, )
+    cursor.execute(query, dados)
 
     db.commit()
 
