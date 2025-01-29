@@ -8,6 +8,7 @@ import { getUserProposals } from '@/api/proposals/getUserProposals'
 
 import ProposalItem from './proposal-item'
 import TableProposalsBusiness from './table-proposals-business'
+import TableProposalsClient from './table-proposals-client'
 import {
   Pagination,
   PaginationContent,
@@ -35,24 +36,33 @@ export default function ProposalList() {
         <h1 className="text-xl text-white">Todas Propostas</h1>
       )}
 
-      {status === 'pending' && (
+      {status === 'pendente' && (
         <h1 className="text-xl text-white">Propostas Pendentes</h1>
       )}
 
-      {status === 'active' && (
+      {status === 'ativo' && (
         <h1 className="text-xl text-white">Propostas Ativos</h1>
       )}
 
-      {status === 'rejected' && (
+      {status === 'rejeitado' && (
         <h1 className="text-xl text-white">Propostas Rejeitados</h1>
       )}
 
-      {status === 'done' && (
+      {status === 'concluido' && (
         <h1 className="text-xl text-white">Propostas Concluídas</h1>
       )}
 
       <div className="flex flex-col gap-2 mt-4">
-        <TableProposalsBusiness id_usuario={user?.id_usuario} status={status} />
+        {user?.tipo_usuario === 'cliente' && (
+          <TableProposalsClient id_usuario={user?.id_usuario} status={status} />
+        )}
+
+        {user?.tipo_usuario === 'cliente' && (
+          <TableProposalsBusiness
+            id_usuario={user?.id_usuario}
+            status={status}
+          />
+        )}
       </div>
     </div>
   )

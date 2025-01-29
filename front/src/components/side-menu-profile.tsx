@@ -80,13 +80,13 @@ export default function SideMenuProfile({
               <div className="w-full flex flex-col items-center justify-center text-base">
                 <span
                   className={`w-full flex gap-2 py-2 px-2 cursor-pointer rounded-md transition-all duration-300  ${
-                    status === 'pending'
+                    status === 'pendente'
                       ? 'bg-primary text-primary-foreground disabled font-bold'
                       : 'hover:bg-slate-600'
                   }`}
                   onClick={() =>
                     setSearchParams((state) => {
-                      state.set('status', 'pending')
+                      state.set('status', 'pendente')
 
                       return state
                     })
@@ -97,13 +97,13 @@ export default function SideMenuProfile({
                 </span>
                 <span
                   className={`w-full flex gap-2 py-2 px-2 cursor-pointer rounded-md transition-all duration-300  ${
-                    status === 'active'
+                    status === 'ativo'
                       ? 'bg-primary text-primary-foreground disabled font-bold'
                       : 'hover:bg-slate-600'
                   }`}
                   onClick={() =>
                     setSearchParams((state) => {
-                      state.set('status', 'active')
+                      state.set('status', 'ativo')
 
                       return state
                     })
@@ -114,13 +114,13 @@ export default function SideMenuProfile({
                 </span>
                 <span
                   className={`w-full flex gap-2 py-2 px-2 cursor-pointer rounded-md transition-all duration-300  ${
-                    status === 'rejected'
+                    status === 'rejeitado'
                       ? 'bg-primary text-primary-foreground disabled font-bold'
                       : 'hover:bg-slate-600'
                   }`}
                   onClick={() =>
                     setSearchParams((state) => {
-                      state.set('status', 'rejected')
+                      state.set('status', 'rejeitado')
 
                       return state
                     })
@@ -131,13 +131,13 @@ export default function SideMenuProfile({
                 </span>
                 <span
                   className={`w-full flex gap-2 py-2 px-2 cursor-pointer rounded-md transition-all duration-300  ${
-                    status === 'done'
+                    status === 'concluido'
                       ? 'bg-primary text-primary-foreground disabled font-bold'
                       : 'hover:bg-slate-600'
                   }`}
                   onClick={() =>
                     setSearchParams((state) => {
-                      state.set('status', 'done')
+                      state.set('status', 'concluido')
 
                       return state
                     })
@@ -206,13 +206,13 @@ export default function SideMenuProfile({
               <div className="w-full flex flex-col items-center justify-center text-base">
                 <span
                   className={`w-full flex gap-2 py-2 px-2 cursor-pointer rounded-md transition-all duration-300  ${
-                    status === 'pending'
+                    status === 'pendente'
                       ? 'bg-primary text-primary-foreground disabled font-bold'
                       : 'hover:bg-slate-600'
                   }`}
                   onClick={() =>
                     setSearchParams((state) => {
-                      state.set('status', 'pending')
+                      state.set('status', 'pendente')
 
                       return state
                     })
@@ -223,13 +223,13 @@ export default function SideMenuProfile({
                 </span>
                 <span
                   className={`w-full flex gap-2 py-2 px-2 cursor-pointer rounded-md transition-all duration-300  ${
-                    status === 'active'
+                    status === 'ativo'
                       ? 'bg-primary text-primary-foreground disabled font-bold'
                       : 'hover:bg-slate-600'
                   }`}
                   onClick={() =>
                     setSearchParams((state) => {
-                      state.set('status', 'active')
+                      state.set('status', 'ativo')
 
                       return state
                     })
@@ -240,13 +240,13 @@ export default function SideMenuProfile({
                 </span>
                 <span
                   className={`w-full flex gap-2 py-2 px-2 cursor-pointer rounded-md transition-all duration-300  ${
-                    status === 'rejected'
+                    status === 'rejeitado'
                       ? 'bg-primary text-primary-foreground disabled font-bold'
                       : 'hover:bg-slate-600'
                   }`}
                   onClick={() =>
                     setSearchParams((state) => {
-                      state.set('status', 'rejected')
+                      state.set('status', 'rejeitado')
 
                       return state
                     })
@@ -257,13 +257,13 @@ export default function SideMenuProfile({
                 </span>
                 <span
                   className={`w-full flex gap-2 py-2 px-2 cursor-pointer rounded-md transition-all duration-300  ${
-                    status === 'done'
+                    status === 'concluido'
                       ? 'bg-primary text-primary-foreground disabled font-bold'
                       : 'hover:bg-slate-600'
                   }`}
                   onClick={() =>
                     setSearchParams((state) => {
-                      state.set('status', 'done')
+                      state.set('status', 'concluido')
 
                       return state
                     })

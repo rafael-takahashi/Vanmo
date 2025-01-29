@@ -20,18 +20,18 @@ type loginForm = z.infer<typeof loginSchema>
 
 export function Login() {
   const navigate = useNavigate()
-  const { 
-    register, 
-    handleSubmit, 
+  const {
+    register,
+    handleSubmit,
     formState: { errors },
-  } = useForm<loginForm> ({
+  } = useForm<loginForm>({
     resolver: zodResolver(loginSchema),
   })
 
   useEffect(() => {
     if (Object.keys(errors).length > 0) {
-      const firstError = Object.values(errors)[0];
-      toast.error(firstError?.message);
+      const firstError = Object.values(errors)[0]
+      toast.error(firstError?.message)
     }
   }, [errors])
 
