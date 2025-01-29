@@ -467,10 +467,10 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
     aluguel.adicionar_datas(dados.data_saida, dados.data_chegada)
 
     local_partida: classe_local.Local = classe_local.Local(latitude_partida, longitude_partida, nome=dados.local_saida)
-    local_partida.id_local = crud_local.criar_local(db, local_partida)
+    # local_partida.id_local = crud_local.criar_local(db, local_partida)
 
     local_chegada: classe_local.Local = classe_local.Local(latitude_chegada, longitude_chegada, nome=dados.local_chegada)
-    local_chegada.id_local = crud_local.criar_local(db, local_chegada)
+    # local_chegada.id_local = crud_local.criar_local(db, local_chegada)
 
     aluguel.adicionar_locais(local_partida, local_chegada)
     aluguel.adicionar_distancia_extra(dados.distancia_extra_km)
@@ -478,7 +478,7 @@ async def criar_proposta(dados: CriarProposta, token: str = Depends(oauth2_esque
 
     aluguel.estado_aluguel = "proposto"
 
-    crud_aluguel.criar_aluguel(db, aluguel) # , local_partida, local_chegada)
+    crud_aluguel.criar_aluguel(db, aluguel, local_partida, local_chegada)
 
     # db.commit()
     db.close()

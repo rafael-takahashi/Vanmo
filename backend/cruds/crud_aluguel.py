@@ -11,26 +11,26 @@ from cruds.crud_usuario import buscar_usuario_por_id, buscar_dados_cliente, busc
 import sqlite3
 from datetime import datetime
 
-def criar_aluguel(db: sqlite3.Connection, aluguel: Aluguel): #, local_partida: Local, local_chegada: Local):
+def criar_aluguel(db: sqlite3.Connection, aluguel: Aluguel, local_partida: Local, local_chegada: Local):
     cursor: sqlite3.Cursor = db.cursor()
 
-    # if not local_partida.nome:
-    #     local_partida.nome = ""
+    if not local_partida.nome:
+        local_partida.nome = ""
     
-    # dados_partida = (local_partida.latitude, local_partida.longitude, local_partida.nome)
+    dados_partida = (local_partida.latitude, local_partida.longitude, local_partida.nome)
     
-    # cursor.execute(QueriesDB.query_inserir_local_novo, dados_partida)
+    cursor.execute(QueriesDB.query_inserir_local_novo, dados_partida)
 
-    # aluguel.local_partida.id_local = cursor.lastrowid
+    aluguel.local_partida.id_local = cursor.lastrowid
     
-    # if not local_chegada.nome:
-    #     local_chegada.nome = ""
+    if not local_chegada.nome:
+        local_chegada.nome = ""
     
-    # dados_chegada = (local_chegada.latitude, local_chegada.longitude, local_chegada.nome)
+    dados_chegada = (local_chegada.latitude, local_chegada.longitude, local_chegada.nome)
 
-    # cursor.execute(QueriesDB.query_inserir_local_novo, dados_chegada)
+    cursor.execute(QueriesDB.query_inserir_local_novo, dados_chegada)
 
-    # aluguel.local_chegada.id_local = cursor.lastrowid
+    aluguel.local_chegada.id_local = cursor.lastrowid
 
     dados = (aluguel.id_empresa, aluguel.id_cliente, aluguel.id_veiculo, aluguel.valor_total, aluguel.estado_aluguel, 
             aluguel.data_inicio.strftime('%Y-%m-%d'), aluguel.data_fim.strftime('%Y-%m-%d'), aluguel.distancia_trajeto, aluguel.distancia_extra, aluguel.local_partida.id_local, aluguel.local_chegada.id_local)
