@@ -2,8 +2,19 @@
 
 Trabalho da disciplina "Construção de Software".
 
-O sistema VANMO é uma plataforma para aluguel de vans, ônibus e microônibus. Ela permite o cadastro de clientes, empresas e veículos, busca por critérios da rota desejada e mais. Com o foco em propostas, ...
+O sistema VANMO é uma plataforma para aluguel de vans, ônibus e micro-ônibus, oferecendo uma solução completa para clientes que precisam de transporte fretado.
 
+A plataforma permite:
+
+✅ Cadastro de clientes, empresas e veículos
+
+✅ Busca personalizada por critérios como origem, destino, data e tipo de veículo
+
+✅ Gestão de propostas e orçamentos, permitindo que empresas respondam às solicitações dos clientes
+
+E muito mais
+
+O foco principal da VANMO é a facilidade na busca e negociação de fretamentos, garantindo transparência nos custos, eficiência no fretamento e praticidade tanto para clientes quanto para empresas.
 ## Como executar o projeto
 
 ### Passo 1: Instalando as dependências
