@@ -57,9 +57,12 @@ async def inserir_dados(db: sqlite3.Connection):
     
     cursor.executemany("INSERT INTO Veiculo (id_veiculo, id_empresa, nome_veiculo, placa_veiculo, capacidade, custo_por_km, custo_base, path_foto, cor, ano_de_fabricacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                        [
-                           (1, 5, 'Onibus Marcopolo DD', 'ABC1234', 52, 10, 200, "imagens/imagem_veiculo_padrao.png", "Preto", 2012),
-                           (2, 5, 'Onibus Marcopolo SD', 'ABC1235', 32, 10, 100, "imagens/imagem_veiculo_padrao.png", "Branco", 2009),
-                           (3, 5, 'Microonibus SD', 'ABC1236', 25, 6, 50, "imagens/imagem_veiculo_padrao.png", "Preto", 2012)
+                           (1, 5, 'Onibus Marcopolo DD', 'ABC1234', 52, 10, 2000, "imagens/imagem_veiculo_padrao.png", "Preto", 2012),
+                           (2, 5, 'Onibus Marcopolo SD', 'ABC1235', 32, 10, 1000, "imagens/imagem_veiculo_padrao.png", "Branco", 2009),
+                           (3, 5, 'Microonibus SD', 'ABC1236', 25, 6, 500, "imagens/imagem_veiculo_padrao.png", "Preto", 2011),
+                           (4, 6, 'Ônibus Leito DD', 'ABC1237', 64, 25, 500, "imagens/imagem_veiculo_padrao.png", "Preto", 2013),
+                           (5, 6, 'Ônibus Semileito SD', 'ABC1238', 29, 15, 350, "imagens/imagem_veiculo_padrao.png", "Preto", 2015),
+                           (6, 7, 'Microonibus minivan', 'ABC1239', 12, 8, 50, "imagens/imagem_veiculo_padrao.png", "Preto", 2017),
                        ])
     
     db.commit()
