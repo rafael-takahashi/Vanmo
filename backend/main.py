@@ -313,7 +313,7 @@ async def aceitar_ou_rejeitar_proposta(dados: DadosAcaoProposta, token: str = De
         raise HTTPException(status_code=400, detail="Proposta não pertence ao usuário")
     
     if aluguel.estado_aluguel != "pendente":
-        raise HTTPException(status_code=400, detail="Status do aluguel não é 'proposta'")
+        raise HTTPException(status_code=400, detail="Status do aluguel não é 'pendente'")
     
     novo_status = "rejeitado"
     if dados.opcao:
@@ -955,11 +955,8 @@ async def buscar_empresas_criterio(data_de_partida: datetime.date, qtd_passageir
         todas_empresas = []
         for id_empresa in inter:
             empresa: classe_usuario.Empresa = crud_usuario.buscar_empresa_por_id(db, id_empresa)
-            print(f"{remove_acentos(empresa.endereco.cidade.lower())} == {remove_acentos(cidade.lower())}")
             if remove_acentos(empresa.endereco.cidade.lower().replace(" ", "")) == remove_acentos(cidade.lower().replace(" ", "")):
-                print(f"{remove_acentos(empresa.endereco.uf.lower())} == {remove_acentos(uf.lower())}")
                 if remove_acentos(empresa.endereco.uf.lower().replace(" ", "")) == remove_acentos(uf.lower().replace(" ", "")): 
-                    print(f"Adicionando empresa... {str(empresa)}")
                     todas_empresas.append(empresa)
 
     inicio_pag = 10 * (pagina - 1)
