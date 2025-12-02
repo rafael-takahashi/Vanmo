@@ -1,7 +1,7 @@
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
-import sqlite3
+from psycopg2.extensions import connection
 from cruds.crud_usuario import obter_usuario_por_nome
 
 CHAVE_SECRETA = ""  # Alterar para uma chave secreta na hora da implementar o embiente
@@ -28,7 +28,7 @@ def gerar_hash_senha(senha):
     """
     return pwd_contexto.hash(senha)
 
-def autenticar_usuario(db: sqlite3.Connection, username: str, senha: str):
+def autenticar_usuario(db: connection, username: str, senha: str):
     """
     Autentica o usuário verificando suas credenciais.
 
@@ -55,7 +55,7 @@ def criar_token_acesso(dados: dict):
     dados_a_codificar.update({"exp": expira})
     return jwt.encode(dados_a_codificar, CHAVE_SECRETA, algorithm=ALGORITMO)
 
-def obter_usuario_atual(db, token: str):
+def obter_usuario_atual(db: connection, token: str):
     """
     Obtém o usuário atual a partir do token JWT
 

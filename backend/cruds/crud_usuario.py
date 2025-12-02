@@ -13,27 +13,29 @@ from cruds.crud_veiculo import buscar_veiculo
 from database import *
 from fastapi import HTTPException
 import base64
-import sqlite3
+from psycopg2.extensions import connection
 import utils
 import datetime
 
 
 # Usada no auth.py
-def obter_usuario_por_nome(db: sqlite3.Connection, nome: str) -> Usuario:
+def obter_usuario_por_nome(db: connection, nome: str) -> Usuario:
 
-    cursor: sqlite3.Cursor = db.cursor()
+    cur = db.cursor()
 
-    resultados = cursor.execute(QueriesDB.query_buscar_usuario_por_email, (nome,)).fetchone()
+    cur.execute(QueriesDB.query_buscar_usuario_por_email, (nome,))
+    resultados = cur.fetchone()
 
     if not resultados:
+        cur.close()
         return None
 
     (id_usuario, email_usuario, senha_usuario, tipo_conta, path_foto, telefone) = resultados
 
-    cursor.close()
+    cur.close()
     return Usuario(email_usuario, senha_usuario, tipo_conta, path_foto, id_usuario=id_usuario, telefone=telefone)
 
-def criar_usuario(db: sqlite3.Connection, usuario: Usuario) -> int:
+def criar_usuario(db: connection, usuario: Usuario) -> int:
 
     path_foto = ""
     
@@ -42,24 +44,27 @@ def criar_usuario(db: sqlite3.Connection, usuario: Usuario) -> int:
 
         utils.salva_foto(path_foto, usuario.foto)
 
-    cursor: sqlite3.Cursor = db.cursor()
+    cur = db.cursor()
 
     dados = (usuario.email, usuario.senha_hashed, usuario.tipo_conta, path_foto, usuario.telefone)
-    cursor.execute(QueriesDB.query_inserir_usuario_novo, dados)
-    id_usuario = cursor.lastrowid
+    cur.execute(QueriesDB.query_inserir_usuario_novo, dados)
+    id_usuario = cur.fetchone()[0]
+    cur.close()
     return id_usuario
 
-def __remover_empresa(db: sqlite3.Connection, usuario: Usuario):
-    cursor = db.cursor()
+def __remover_empresa(db: connection, usuario: Usuario):
+    cur = db.cursor()
 
     empresa: Empresa = buscar_dados_empresa(db, usuario)
 
     dados = (empresa.id_usuario,)
 
-    alugueis: list[tuple] = cursor.execute(QueriesDB.query_buscar_alugueis_empresa, dados).fetchall()
+    cur.execute(QueriesDB.query_buscar_alugueis_empresa, dados)
+    alugueis: list[tuple] = cur.fetchall()
 
     for aluguel in alugueis:
         if aluguel[5] == "ativo":
+            cur.close()
             raise HTTPException(status_code=400, detail="Empresa possui aluguel ativo, não pode ser excluída")
     
     for aluguel in alugueis:
@@ -67,9 +72,10 @@ def __remover_empresa(db: sqlite3.Connection, usuario: Usuario):
 
         dados = (id_aluguel,)
 
-        cursor.execute(QueriesDB.query_remover_aluguel, dados)
+        cur.execute(QueriesDB.query_remover_aluguel, dados)
 
-    lista_veiculos: list[tuple] = cursor.execute(QueriesDB.query_buscar_veiculos_empresa, dados).fetchall()
+    cur.execute(QueriesDB.query_buscar_veiculos_empresa, (empresa.id_usuario,))
+    lista_veiculos: list[tuple] = cur.fetchall()
     
     for veiculo in lista_veiculos:
         id_veiculo = veiculo[0]
@@ -81,26 +87,29 @@ def __remover_empresa(db: sqlite3.Connection, usuario: Usuario):
         if os.path.exists(obj.caminho_foto):
             os.remove(obj.caminho_foto)
 
-        cursor.execute(QueriesDB.query_remover_calendario, dados)
-        cursor.execute(QueriesDB.query_remover_veiculo, dados)
+        cur.execute(QueriesDB.query_remover_calendario, dados)
+        cur.execute(QueriesDB.query_remover_veiculo, dados)
 
-    cursor.execute(QueriesDB.query_remover_endereco, (empresa.endereco,))
-    cursor.execute(QueriesDB.query_remover_local, (empresa.local,))
-    cursor.execute(QueriesDB.query_remover_empresa, (usuario.id_usuario,))
+    cur.execute(QueriesDB.query_remover_endereco, (empresa.endereco.id_endereco,))
+    cur.execute(QueriesDB.query_remover_local, (empresa.local.id_local,))
+    cur.execute(QueriesDB.query_remover_empresa, (usuario.id_usuario,))
 
     db.commit()
+    cur.close()
 
-def __remover_cliente(db: sqlite3.Connection, usuario: Usuario):
-    cursor: sqlite3.Cursor = db.cursor()
+def __remover_cliente(db: connection, usuario: Usuario):
+    cur = db.cursor()
 
     cliente: Cliente = buscar_dados_cliente(db, usuario)
 
     dados = (cliente.id_usuario,)
 
-    alugueis: list[tuple] = cursor.execute(QueriesDB.query_buscar_alugueis_cliente, dados).fetchall()
+    cur.execute(QueriesDB.query_buscar_alugueis_cliente, dados)
+    alugueis: list[tuple] = cur.fetchall()
 
     for aluguel in alugueis:
         if aluguel[5] == "ativo":
+            cur.close()
             raise HTTPException(status_code=400, detail="Cliente possui aluguel ativo, não pode ser excluído")
     
     for aluguel in alugueis:
@@ -108,16 +117,17 @@ def __remover_cliente(db: sqlite3.Connection, usuario: Usuario):
 
         dados = (id_aluguel,)
 
-        cursor.execute(QueriesDB.query_remover_aluguel, dados)
+        cur.execute(QueriesDB.query_remover_aluguel, dados)
 
-    cursor.execute(QueriesDB.query_remover_cliente, (usuario.id_usuario,))
+    cur.execute(QueriesDB.query_remover_cliente, (usuario.id_usuario,))
 
     db.commit()
+    cur.close()
 
-def remover_usuario(db: sqlite3.Connection, usuario: Usuario):
+def remover_usuario(db: connection, usuario: Usuario):
 
     dados = (usuario.id_usuario,)
-    cursor: sqlite3.Cursor = db.cursor()
+    cur = db.cursor()
     
     if usuario.tipo_conta == "empresa":
         __remover_empresa(db, usuario)
@@ -125,83 +135,93 @@ def remover_usuario(db: sqlite3.Connection, usuario: Usuario):
     if usuario.tipo_conta == "cliente":
         __remover_cliente(db, usuario)
 
-    cursor.execute(QueriesDB.query_remover_usuario, dados)
+    cur.execute(QueriesDB.query_remover_usuario, dados)
 
     if usuario.foto != "":
         if os.path.exists(usuario.foto):
             os.remove(usuario.foto)
 
     db.commit()
+    cur.close()
 
-def verificar_se_dados_ja_cadastrados(db: sqlite3.Connection, email: str) -> bool:
-    cursor: sqlite3.Cursor = db.cursor()
+def verificar_se_dados_ja_cadastrados(db: connection, email: str) -> bool:
+    cur = db.cursor()
 
     dados = (email,)
     query = QueriesDB.query_buscar_usuario_por_email
 
-    resultado = cursor.execute(query, dados).fetchone()
+    cur.execute(query, dados)
+    resultado = cur.fetchone()
 
+    cur.close()
     if resultado is None:
         return False
     return True
 
-def cadastrar_cliente(db: sqlite3.Connection, cliente: Cliente):
+def cadastrar_cliente(db: connection, cliente: Cliente):
     
     cliente.foto = None
     id_usr = criar_usuario(db, cliente)
     
-    cursor: sqlite3.Cursor = db.cursor()
+    cur = db.cursor()
 
     dados_cliente = (id_usr, cliente.nome_completo, cliente.cpf, cliente.data_nascimento)
-    cursor.execute(QueriesDB.query_inserir_cliente_novo, dados_cliente)
+    cur.execute(QueriesDB.query_inserir_cliente_novo, dados_cliente)
     
     db.commit()
+    cur.close()
 
-def cadastrar_empresa(db: sqlite3.Connection, empresa: Empresa):
+def cadastrar_empresa(db: connection, empresa: Empresa):
     
     empresa.foto = None
     id_usr = criar_usuario(db, empresa)
     
-    cursor: sqlite3.Cursor = db.cursor()
+    cur = db.cursor()
 
     dados_local = (empresa.local.latitude, empresa.local.longitude, "sede")
 
-    id_local = cursor.execute(QueriesDB.query_inserir_local_novo, dados_local).fetchone()
-    id_local = id_local[0]
+    cur.execute(QueriesDB.query_inserir_local_novo, dados_local)
+    id_local = cur.fetchone()[0]
 
     dados_endereco = (empresa.endereco.cep, empresa.endereco.rua, empresa.endereco.numero, 
                       empresa.endereco.bairro, empresa.endereco.cidade, empresa.endereco.uf)
     
-    id_endereco = cursor.execute(QueriesDB.query_inserir_endereco_novo, dados_endereco).fetchone()
-    id_endereco = id_endereco[0]
+    cur.execute(QueriesDB.query_inserir_endereco_novo, dados_endereco)
+    id_endereco = cur.fetchone()[0]
 
     dados = (id_usr, empresa.cnpj, empresa.nome_fantasia, id_endereco, id_local, 0, 0)
 
-    cursor.execute(QueriesDB.query_inserir_empresa_nova, dados)
+    cur.execute(QueriesDB.query_inserir_empresa_nova, dados)
 
     db.commit()
+    cur.close()
 
-def buscar_usuario_por_id(db: sqlite3.Connection, id_usuario: int) -> Usuario:
-    cursor: sqlite3.Cursor = db.cursor()
+def buscar_usuario_por_id(db: connection, id_usuario: int) -> Usuario:
+    cur = db.cursor()
 
     dados = (id_usuario,)
-    resultados = cursor.execute(QueriesDB.query_buscar_usuario_por_id, dados).fetchone()
+    cur.execute(QueriesDB.query_buscar_usuario_por_id, dados)
+    resultados = cur.fetchone()
 
+    cur.close()
     return Usuario(resultados[1], resultados[2], resultados[3], resultados[4], resultados[5], resultados[0])
     
-def buscar_dados_cliente(db: sqlite3.Connection, usuario: Usuario) -> Cliente:
-    cursor: sqlite3.Cursor = db.cursor()
+def buscar_dados_cliente(db: connection, usuario: Usuario) -> Cliente:
+    cur = db.cursor()
 
     dados = (usuario.id_usuario,)
-    resultados = cursor.execute(QueriesDB.query_buscar_cliente, dados).fetchone()
+    cur.execute(QueriesDB.query_buscar_cliente, dados)
+    resultados = cur.fetchone()
 
+    cur.close()
     return Cliente(usuario.id_usuario, usuario.email, usuario.senha_hashed, usuario.tipo_conta, utils.carrega_foto_base64(usuario.foto), resultados[1], resultados[2], resultados[3], usuario.telefone)
 
-def buscar_dados_empresa(db: sqlite3.Connection, usuario: Usuario) -> Empresa:
-    cursor: sqlite3.Cursor = db.cursor()
+def buscar_dados_empresa(db: connection, usuario: Usuario) -> Empresa:
+    cur = db.cursor()
 
     dados = (usuario.id_usuario,)
-    resultados = cursor.execute(QueriesDB.query_buscar_empresa, dados).fetchone()
+    cur.execute(QueriesDB.query_buscar_empresa, dados)
+    resultados = cur.fetchone()
 
     local : Local =  buscar_local_por_id(db, resultados[4])
     endereco : Endereco = buscar_endereco_por_id(db, resultados[3])
@@ -213,40 +233,49 @@ def buscar_dados_empresa(db: sqlite3.Connection, usuario: Usuario) -> Empresa:
     empresa.num_avaliacoes = resultados[5]
     empresa.soma_avaliacoes = resultados[6]
 
+    cur.close()
     return empresa
 
-def buscar_empresa_por_data(db: sqlite3.Connection, data_partida: datetime.date) -> list[int]:
-    cursor: sqlite3.Cursor = db.cursor()
+def buscar_empresa_por_data(db: connection, data_partida: datetime.date) -> list[int]:
+    cur = db.cursor()
     dados = (data_partida.strftime('%Y-%m-%d'),)
 
-    resultados = cursor.execute(QueriesDB.query_buscar_empresa_por_data, dados).fetchall()
+    cur.execute(QueriesDB.query_buscar_empresa_por_data, dados)
+    resultados = cur.fetchall()
     
+    cur.close()
     return resultados
 
-def buscar_empresa_por_passageiros(db: sqlite3.Connection, num_passageiros: int) -> list[int]:
-    cursor: sqlite3.Cursor = db.cursor()
+def buscar_empresa_por_passageiros(db: connection, num_passageiros: int) -> list[int]:
+    cur = db.cursor()
     dados = (num_passageiros,)
 
-    resultados = cursor.execute(QueriesDB.query_buscar_empresa_por_passageiros, dados).fetchall()  
+    cur.execute(QueriesDB.query_buscar_empresa_por_passageiros, dados)
+    resultados = cur.fetchall()  
 
+    cur.close()
     return resultados
 
-def buscar_empresas_por_local (db: sqlite3.Connection, latitude: float, longitude:float) -> list[int]:
-    cursor: sqlite3.Cursor = db.cursor()
+def buscar_empresas_por_local (db: connection, latitude: float, longitude:float) -> list[int]:
+    cur = db.cursor()
     dados = (latitude, longitude)
 
-    resultados = cursor.execute(QueriesDB.query_buscar_empresa_por_local, dados).fetchall()  
+    cur.execute(QueriesDB.query_buscar_empresa_por_local, dados)
+    resultados = cur.fetchall()  
     
+    cur.close()
     return resultados
 
-def buscar_todas_empresas (db: sqlite3.Connection) -> list[Empresa]:
-    cursor: sqlite3.Cursor = db.cursor()
+def buscar_todas_empresas (db: connection) -> list[Empresa]:
+    cur = db.cursor()
 
     empresas = []
-    resultados = cursor.execute(QueriesDB.query_buscar_todas_empresas).fetchall()
+    cur.execute(QueriesDB.query_buscar_todas_empresas)
+    resultados = cur.fetchall()
 
     for resultado in resultados:
-        resultado_usuario = cursor.execute(QueriesDB.query_buscar_usuario_por_id, (resultado[0],)).fetchone()
+        cur.execute(QueriesDB.query_buscar_usuario_por_id, (resultado[0],))
+        resultado_usuario = cur.fetchone()
 
         # email = resultado_usuario[1]
         # senha = resultado_usuario[2]
@@ -276,14 +305,17 @@ def buscar_todas_empresas (db: sqlite3.Connection) -> list[Empresa]:
 
         empresas.append(empresa)
     
+    cur.close()
     return empresas
     
-def buscar_empresa_por_id (db: sqlite3.Connection, id_empresa: int) -> Empresa:
-    cursor: sqlite3.Cursor = db.cursor()
+def buscar_empresa_por_id (db: connection, id_empresa: int) -> Empresa:
+    cur = db.cursor()
 
     dados = (id_empresa,)
-    resultado_usuario = cursor.execute(QueriesDB.query_buscar_usuario_por_id, dados).fetchone()
-    resultado_empresa = cursor.execute(QueriesDB.query_buscar_empresa, dados).fetchone()
+    cur.execute(QueriesDB.query_buscar_usuario_por_id, dados)
+    resultado_usuario = cur.fetchone()
+    cur.execute(QueriesDB.query_buscar_empresa, dados)
+    resultado_empresa = cur.fetchone()
 
     # id_usuario = resultado_usuario[0]
     # email = resultado_usuario[1]
@@ -313,25 +345,28 @@ def buscar_empresa_por_id (db: sqlite3.Connection, id_empresa: int) -> Empresa:
 
     empresa.foto = utils.carrega_foto_base64(empresa.foto)
     
+    cur.close()
     return empresa
 
-def verificar_se_avaliacao_ja_feita(db: sqlite3.Connection, id_usuario: int, id_empresa: int) -> bool:
-    cursor = db.cursor()
+def verificar_se_avaliacao_ja_feita(db: connection, id_usuario: int, id_empresa: int) -> bool:
+    cur = db.cursor()
 
     dados = (id_usuario, id_empresa)
 
-    resultado = cursor.execute(QueriesDB.query_buscar_avaliacao, dados).fetchone()
+    cur.execute(QueriesDB.query_buscar_avaliacao, dados)
+    resultado = cur.fetchone()
 
+    cur.close()
     if resultado is None:
         return False
     return True
 
-def avaliar_empresa(db: sqlite3.Connection, id_usuario: int, id_empresa: int, nota: float):
-    cursor = db.cursor()
+def avaliar_empresa(db: connection, id_usuario: int, id_empresa: int, nota: float):
+    cur = db.cursor()
 
     dados = (id_usuario, id_empresa, nota)
 
-    cursor.execute(QueriesDB.query_inserir_avaliacao_nova, dados)
+    cur.execute(QueriesDB.query_inserir_avaliacao_nova, dados)
     
     empresa: Empresa = buscar_empresa_por_id(db, id_empresa)
 
@@ -340,21 +375,24 @@ def avaliar_empresa(db: sqlite3.Connection, id_usuario: int, id_empresa: int, no
 
     dados = (empresa.num_avaliacoes, empresa.soma_avaliacoes, id_empresa)
 
-    cursor.execute(QueriesDB.query_atualizar_avaliacoes_empresa, dados)
+    cur.execute(QueriesDB.query_atualizar_avaliacoes_empresa, dados)
 
     db.commit()
+    cur.close()
 
-def atualizar_avaliacao(db: sqlite3.Connection, id_usuario: int, id_empresa: int, nota_nova: float):
-    cursor = db.cursor()
+def atualizar_avaliacao(db: connection, id_usuario: int, id_empresa: int, nota_nova: float):
+    cur = db.cursor()
 
-    nota_antiga = cursor.execute(QueriesDB.query_buscar_avaliacao, (id_usuario, id_empresa)).fetchone()
+    cur.execute(QueriesDB.query_buscar_avaliacao, (id_usuario, id_empresa))
+    nota_antiga = cur.fetchone()
 
     if nota_antiga is None:
+        cur.close()
         avaliar_empresa(db, id_usuario, id_empresa, nota_nova)
         return
 
     dados = (nota_nova, id_usuario, id_empresa)
-    cursor.execute(QueriesDB.query_atualizar_avaliacao, dados)
+    cur.execute(QueriesDB.query_atualizar_avaliacao, dados)
     
     empresa: Empresa = buscar_empresa_por_id(db, id_empresa)
 
@@ -362,14 +400,16 @@ def atualizar_avaliacao(db: sqlite3.Connection, id_usuario: int, id_empresa: int
     empresa.soma_avaliacoes += nota_nova
 
     dados = (empresa.num_avaliacoes, empresa.soma_avaliacoes, id_empresa)
-    cursor.execute(QueriesDB.query_atualizar_avaliacoes_empresa, dados)
+    cur.execute(QueriesDB.query_atualizar_avaliacoes_empresa, dados)
 
     db.commit()
+    cur.close()
 
-def buscador_empresas_nome(db: sqlite3.Connection, string_busca: str):
-    cursor = db.cursor()
+def buscador_empresas_nome(db: connection, string_busca: str):
+    cur = db.cursor()
 
-    resultados = cursor.execute(QueriesDB.query_buscador_por_nome, (string_busca,)).fetchall()
+    cur.execute(QueriesDB.query_buscador_por_nome, (string_busca,))
+    resultados = cur.fetchall()
 
     empresas: list[Empresa] = []
 
@@ -379,42 +419,46 @@ def buscador_empresas_nome(db: sqlite3.Connection, string_busca: str):
         item.email = ''
         empresas.append(item)
 
+    cur.close()
     return empresas
 
-def atualizar_cliente(db: sqlite3.Connection, cliente: Cliente):
-    cursor = db.cursor()
+def atualizar_cliente(db: connection, cliente: Cliente):
+    cur = db.cursor()
 
     dados = (cliente.nome_completo, cliente.cpf, cliente.data_nascimento, cliente.id_usuario)
 
-    cursor.execute(QueriesDB.query_atualizar_cliente, dados)
+    cur.execute(QueriesDB.query_atualizar_cliente, dados)
 
     db.commit()
+    cur.close()
 
     atualizar_usuario(db, cliente)
 
-def atualizar_empresa(db: sqlite3.Connection, empresa: Empresa):
-    cursor = db.cursor()
+def atualizar_empresa(db: connection, empresa: Empresa):
+    cur = db.cursor()
     dados = (empresa.cnpj, empresa.nome_fantasia, empresa.id_usuario)
 
-    cursor.execute(QueriesDB.query_atualizar_empresa, dados)
+    cur.execute(QueriesDB.query_atualizar_empresa, dados)
 
     dados_local = (empresa.local.latitude, empresa.local.longitude, empresa.local.nome, empresa.local.id_local)
 
-    cursor.execute(QueriesDB.query_atualizar_local, dados_local)
+    cur.execute(QueriesDB.query_atualizar_local, dados_local)
 
     dados_endereco = (empresa.endereco.cep, empresa.endereco.rua, empresa.endereco.numero, empresa.endereco.bairro,
                       empresa.endereco.cidade, empresa.endereco.uf, empresa.endereco.id_endereco)
     
-    cursor.execute(QueriesDB.query_atualizar_endereco, dados_endereco)
+    cur.execute(QueriesDB.query_atualizar_endereco, dados_endereco)
 
     db.commit()
+    cur.close()
 
     atualizar_usuario(db, empresa)
 
-def atualizar_usuario(db: sqlite3.Connection, usuario: Usuario):
-    cursor = db.cursor()
+def atualizar_usuario(db: connection, usuario: Usuario):
+    cur = db.cursor()
     dados = (usuario.email, usuario.senha_hashed, usuario.foto, usuario.telefone, usuario.id_usuario)
 
-    cursor.execute(QueriesDB.query_atualizar_usuario, dados)
+    cur.execute(QueriesDB.query_atualizar_usuario, dados)
 
     db.commit()
+    cur.close()

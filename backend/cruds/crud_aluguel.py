@@ -9,46 +9,46 @@ from database import *
 from cruds.crud_veiculo import buscar_veiculo
 from cruds.crud_local import buscar_local_por_id
 from cruds.crud_usuario import buscar_usuario_por_id, buscar_dados_cliente, buscar_dados_empresa
-import sqlite3
+from psycopg2.extensions import connection
 from datetime import datetime
 
-def criar_aluguel(db: sqlite3.Connection, aluguel: Aluguel, local_partida: Local, local_chegada: Local):
-    cursor: sqlite3.Cursor = db.cursor()
+def criar_aluguel(db: connection, aluguel: Aluguel, local_partida: Local, local_chegada: Local):
+    cur = db.cursor()
 
     if not local_partida.nome:
         local_partida.nome = ""
     
     dados_partida = (local_partida.latitude, local_partida.longitude, local_partida.nome)
     
-    cursor.execute(QueriesDB.query_inserir_local_novo, dados_partida)
-
-    aluguel.local_partida.id_local = cursor.lastrowid
+    cur.execute(QueriesDB.query_inserir_local_novo, dados_partida)
+    aluguel.local_partida.id_local = cur.fetchone()[0]
     
     if not local_chegada.nome:
         local_chegada.nome = ""
     
     dados_chegada = (local_chegada.latitude, local_chegada.longitude, local_chegada.nome)
 
-    cursor.execute(QueriesDB.query_inserir_local_novo, dados_chegada)
-
-    aluguel.local_chegada.id_local = cursor.lastrowid
+    cur.execute(QueriesDB.query_inserir_local_novo, dados_chegada)
+    aluguel.local_chegada.id_local = cur.fetchone()[0]
 
     dados = (aluguel.id_empresa, aluguel.id_cliente, aluguel.id_veiculo, aluguel.valor_total, aluguel.estado_aluguel, 
             aluguel.data_inicio.strftime('%Y-%m-%d'), aluguel.data_fim.strftime('%Y-%m-%d'), aluguel.distancia_trajeto, aluguel.distancia_extra, aluguel.local_partida.id_local, aluguel.local_chegada.id_local)
     
-    cursor.execute(QueriesDB.query_inserir_aluguel_novo, dados)
+    cur.execute(QueriesDB.query_inserir_aluguel_novo, dados)
 
     db.commit()
+    cur.close()
 
-def buscar_alugueis_usuario_id(db: sqlite3.Connection, id_usuario: int, tipo_conta: str) -> list[Aluguel]:
-    cursor: sqlite3.Cursor = db.cursor()
+def buscar_alugueis_usuario_id(db: connection, id_usuario: int, tipo_conta: str) -> list[Aluguel]:
+    cur = db.cursor()
 
     if tipo_conta == "cliente":
         query = QueriesDB.query_buscar_alugueis_cliente
     else:
         query = QueriesDB.query_buscar_alugueis_empresa
     
-    alugueis = cursor.execute(query, (id_usuario,)).fetchall()
+    cur.execute(query, (id_usuario,))
+    alugueis = cur.fetchall()
 
     if not alugueis:
         return alugueis
@@ -78,11 +78,12 @@ def buscar_alugueis_usuario_id(db: sqlite3.Connection, id_usuario: int, tipo_con
             resultado_busca.append(item)
         return resultado_busca
 
-def buscar_aluguel(db: sqlite3.Connection, id_aluguel: int) -> Aluguel | None:
-    cursor: sqlite3.Cursor = db.cursor()
+def buscar_aluguel(db: connection, id_aluguel: int) -> Aluguel | None:
+    cur = db.cursor()
     query = QueriesDB.query_buscar_aluguel
     
-    resultado = cursor.execute(query, (id_aluguel,)).fetchone()
+    cur.execute(query, (id_aluguel,))
+    resultado = cur.fetchone()
 
     if resultado is None:
         return None
@@ -108,27 +109,30 @@ def buscar_aluguel(db: sqlite3.Connection, id_aluguel: int) -> Aluguel | None:
 
     return aluguel
 
-def inserir_data_indisponivel(db: sqlite3.Connection, id_veiculo: int, data: datetime.date):
-    cursor: sqlite3.Cursor = db.cursor()
+def inserir_data_indisponivel(db: connection, id_veiculo: int, data: datetime.date):
+    cur = db.cursor()
 
-    dados = ((id_veiculo, data.strftime("%Y-%m-%d")))
+    dados = (id_veiculo, data.strftime("%Y-%m-%d"))
     query = QueriesDB.query_inserir_calendario
 
-    cursor.execute(query, dados)
+    cur.execute(query, dados)
 
     db.commit()
+    cur.close()
 
-def alterar_status_aluguel(db: sqlite3.Connection, id_aluguel: int, novo_status: str):
-    cursor: sqlite3.Cursor = db.cursor()
+def alterar_status_aluguel(db: connection, id_aluguel: int, novo_status: str):
+    cur = db.cursor()
     query = QueriesDB.query_alterar_status_aluguel
 
-    cursor.execute(query, (novo_status, id_aluguel))
+    cur.execute(query, (novo_status, id_aluguel))
 
     db.commit()
+    cur.close()
 
-def remover_aluguel(db: sqlite3.Connection, id_aluguel: int):
-    cursor = db.cursor()
+def remover_aluguel(db: connection, id_aluguel: int):
+    cur = db.cursor()
 
-    cursor.execute(QueriesDB.query_remover_aluguel, (id_aluguel,))
+    cur.execute(QueriesDB.query_remover_aluguel, (id_aluguel,))
 
     db.commit()
+    cur.close()

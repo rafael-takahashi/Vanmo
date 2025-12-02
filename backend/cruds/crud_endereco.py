@@ -4,15 +4,17 @@ sys.path.append("..")
 from decimal import *
 from classes.classe_endereco import Endereco
 from database import *
-import sqlite3
+from psycopg2.extensions import connection
 
-def buscar_endereco_por_id (db: sqlite3.Connection, id_endereco: int) -> Endereco:
-    cursor = db.cursor()
+def buscar_endereco_por_id (db: connection, id_endereco: int) -> Endereco:
+    cur = db.cursor()
     dados = (id_endereco,)
 
-    resultado = cursor.execute(QueriesDB.query_buscar_endereco_por_id, dados).fetchone()
+    cur.execute(QueriesDB.query_buscar_endereco_por_id, dados)
+    resultado = cur.fetchone()
     # (id_endereco, cep, rua, numero, bairro, cidade, estado)
 
+    cur.close()
     return Endereco(resultado[6], resultado[5], resultado[4], resultado[1], resultado[2], resultado[3], resultado[0])
     
     # return Endereco(resultado[0], resultado[6], resultado[5], resultado[4], resultado[1], resultado[2], resultado[3])

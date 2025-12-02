@@ -1,0 +1,17 @@
+version: '3.9'
+
+services:
+  postgres_vanmo:
+    image: postgres:15-alpine
+    container_name: postgres_vanmo
+    environment:
+      POSTGRES_USER: vanmo_user
+      POSTGRES_PASSWORD: vanmo_password
+      POSTGRES_DB: vanmo_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
