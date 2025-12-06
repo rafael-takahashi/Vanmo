@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { editProfileUserClient } from '@/api/editUserClient'
+import { exportUserData } from '@/api/exportUserData'
 import { getUserClient } from '@/api/getUserClient'
 import { getUserProposals } from '@/api/proposals/getUserProposals'
 
@@ -96,6 +97,16 @@ export default function ProfileClientArea() {
     mutationFn: editProfileUserClient,
   })
 
+  const { mutateAsync: exportDataFn } = useMutation({
+    mutationFn: exportUserData,
+    onSuccess: () => {
+      toast.success('Dados exportados com sucesso!')
+    },
+    onError: () => {
+      toast.error('Erro ao exportar os dados. Tente novamente.')
+    },
+  })
+
   useEffect(() => {
     if (!data?.data_nascimento) {
       return
@@ -151,70 +162,71 @@ export default function ProfileClientArea() {
       <div className="flex-1 bg-primary-foreground p-10 rounded-md">
         <div className="flex justify-between">
           <h2 className="text-white text-2xl">Informações Pessoais</h2>
-          <Dialog>
-            <DialogTrigger className="text-white text-sm border p-2 rounded-md">
-              Editar Perfil
-            </DialogTrigger>
-            <DialogContent>
-              <Tabs defaultValue="account" className="w-full mt-4">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="account">
-                    Informações Pessoais
-                  </TabsTrigger>
-                  <TabsTrigger value="password">Senha</TabsTrigger>
-                </TabsList>
-                <TabsContent value="account" className="mt-4">
-                  <DialogHeader>
-                    <DialogTitle>Editar Perfil</DialogTitle>
-                  </DialogHeader>
-                  <form
-                    onSubmit={handleSubmit(handleEditProfile)}
-                    className="flex flex-col"
-                  >
-                    <div className="grid gap-4 py-4">
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <label htmlFor="name" className="text-right">
-                          Nome Completo
-                        </label>
-                        <Input
-                          id="name"
-                          className="input-bordered col-span-3"
-                          {...register('fullName')}
-                        />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <label htmlFor="email" className="text-right">
-                          E-mail
-                        </label>
-                        <Input
-                          id="email"
-                          className="input-bordered col-span-3"
-                          {...register('email')}
-                          disabled
-                        />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <label htmlFor="dateOfBirth" className="text-right">
-                          Data de Nascimento
-                        </label>
-                        <Input
-                          id="dateOfBirth"
-                          type="date"
-                          className="input-bordered col-span-3"
-                          {...register('dateOfBirth')}
-                        />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <label htmlFor="phone" className="text-right">
-                          Telefone Celular
-                        </label>
-                        <Input
-                          id="phone"
-                          className="input-bordered col-span-3"
-                          {...register('phone')}
-                        />
-                      </div>
-                      {/* <div className="grid grid-cols-4 items-center gap-4">
+          <div className="flex gap-2">
+            <Dialog>
+              <DialogTrigger className="text-white text-sm border p-2 rounded-md">
+                Editar Perfil
+              </DialogTrigger>
+              <DialogContent>
+                <Tabs defaultValue="account" className="w-full mt-4">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="account">
+                      Informações Pessoais
+                    </TabsTrigger>
+                    <TabsTrigger value="password">Senha</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="account" className="mt-4">
+                    <DialogHeader>
+                      <DialogTitle>Editar Perfil</DialogTitle>
+                    </DialogHeader>
+                    <form
+                      onSubmit={handleSubmit(handleEditProfile)}
+                      className="flex flex-col"
+                    >
+                      <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <label htmlFor="name" className="text-right">
+                            Nome Completo
+                          </label>
+                          <Input
+                            id="name"
+                            className="input-bordered col-span-3"
+                            {...register('fullName')}
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <label htmlFor="email" className="text-right">
+                            E-mail
+                          </label>
+                          <Input
+                            id="email"
+                            className="input-bordered col-span-3"
+                            {...register('email')}
+                            disabled
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <label htmlFor="dateOfBirth" className="text-right">
+                            Data de Nascimento
+                          </label>
+                          <Input
+                            id="dateOfBirth"
+                            type="date"
+                            className="input-bordered col-span-3"
+                            {...register('dateOfBirth')}
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <label htmlFor="phone" className="text-right">
+                            Telefone Celular
+                          </label>
+                          <Input
+                            id="phone"
+                            className="input-bordered col-span-3"
+                            {...register('phone')}
+                          />
+                        </div>
+                        {/* <div className="grid grid-cols-4 items-center gap-4">
                         <label htmlFor="phone" className="text-right">
                           Foto
                         </label>
@@ -238,53 +250,63 @@ export default function ProfileClientArea() {
                           </div>
                         )}
                       </div> */}
-                    </div>
+                      </div>
 
-                    <Button type="submit" className="ml-auto">
-                      Salvar Perfil
-                    </Button>
-                  </form>
-                </TabsContent>
-                <TabsContent value="password" className="mt-4">
-                  <DialogHeader>
-                    <DialogTitle>Editar Senha</DialogTitle>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="oldPassword" className="text-right">
-                        Senha atual
-                      </label>
-                      <Input
-                        id="oldPassword"
-                        className="input-bordered col-span-3"
-                      />
+                      <Button type="submit" className="ml-auto">
+                        Salvar Perfil
+                      </Button>
+                    </form>
+                  </TabsContent>
+                  <TabsContent value="password" className="mt-4">
+                    <DialogHeader>
+                      <DialogTitle>Editar Senha</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="oldPassword" className="text-right">
+                          Senha atual
+                        </label>
+                        <Input
+                          id="oldPassword"
+                          className="input-bordered col-span-3"
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="newPassword" className="text-right">
+                          Nova senha
+                        </label>
+                        <Input
+                          id="newPassword"
+                          className="input-bordered col-span-3"
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label
+                          htmlFor="confirmPassword"
+                          className="text-right"
+                        >
+                          Confirmar senha
+                        </label>
+                        <Input
+                          id="confirmPassword"
+                          className="input-bordered col-span-3"
+                        />
+                      </div>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="newPassword" className="text-right">
-                        Nova senha
-                      </label>
-                      <Input
-                        id="newPassword"
-                        className="input-bordered col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="confirmPassword" className="text-right">
-                        Confirmar senha
-                      </label>
-                      <Input
-                        id="confirmPassword"
-                        className="input-bordered col-span-3"
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button type="submit">Trocar Senha</Button>
-                  </DialogFooter>
-                </TabsContent>
-              </Tabs>
-            </DialogContent>
-          </Dialog>
+                    <DialogFooter>
+                      <Button type="submit">Trocar Senha</Button>
+                    </DialogFooter>
+                  </TabsContent>
+                </Tabs>
+              </DialogContent>
+            </Dialog>
+            <Button
+              className="text-white text-sm border p-2 rounded-md"
+              onClick={() => exportDataFn()}
+            >
+              Exportar Dados
+            </Button>
+          </div>
         </div>
         <form className="grid grid-cols-2 gap-4 mt-6">
           <div>

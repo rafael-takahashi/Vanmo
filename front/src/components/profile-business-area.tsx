@@ -1,19 +1,16 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus } from '@phosphor-icons/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import Cookies from 'js-cookie'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { editProfileUserBusiness } from '@/api/editUserBusiness'
+import { exportUserData } from '@/api/exportUserData'
 import { getUserBusiness } from '@/api/getUserBusiness'
-import { getUserProposals } from '@/api/proposals/getUserProposals'
-import { getBusinessVehicles } from '@/api/vehicles/getBusinessVehicles'
 
-import ProposalItem from './proposal-item'
 import TableProposalsBusiness from './table-proposals-business'
 import TableVehicles from './table-vehicles'
 import { Button } from './ui/button'
@@ -27,7 +24,6 @@ import {
 } from './ui/dialog'
 import { Input } from './ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
-import VehicleItem from './vehicle-item'
 
 // const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/jpg']
 
@@ -63,6 +59,26 @@ export default function ProfileBusinessArea() {
   const navigate = useNavigate()
   const { register, handleSubmit, reset } = useForm<BusinessProfileForm>({
     resolver: zodResolver(BusinessProfile),
+    defaultValues: async () => {
+      const data = await getUserBusiness()
+
+      if (data) {
+        const initialData = {
+          email: data.email || '',
+          fantasyName: data.nome_fantasia || '',
+          cnpj: data.cnpj || '',
+          cepAddress: data.endereco.cep || '',
+          phone: data.telefone || '',
+          cityAddress: data.endereco.cidade || '',
+          streetAddress: data.endereco.rua || '',
+          numberAddress: data.endereco.numero || '',
+          stateAddress: data.endereco.uf || '',
+        }
+        setOriginalData(initialData)
+        return initialData
+      }
+      return {}
+    },
   })
 
   const { data } = useQuery({
@@ -79,31 +95,15 @@ export default function ProfileBusinessArea() {
     mutationFn: editProfileUserBusiness,
   })
 
-  useEffect(() => {
-    if (data) {
-      const initialData = {
-        email: data.email || '',
-        fantasyName: data.nome_fantasia || '',
-        cnpj: data.cnpj || '',
-        cepAddress: data.endereco.cep || '',
-        phone: data.telefone || '',
-        cityAddress: data.endereco.cidade || '',
-        streetAddress: data.endereco.rua || '',
-        numberAddress: data.endereco.numero || '',
-        stateAddress: data.endereco.uf || '',
-      }
-
-      setOriginalData(initialData) // Armazena os dados originais no estado
-      reset(initialData)
-      // fetchAndSetVehicles(data?.id_usuario)
-    }
-  }, [data, reset])
-
-  // const [vehicles, setVehicles] = useState<any[]>([])
-
-  // const fetchAndSetVehicles = async (businessId: number | undefined) => {
-  //   setVehicles(await getBusinessVehicles(businessId, 1))
-  // }
+  const { mutateAsync: exportDataFn } = useMutation({
+    mutationFn: exportUserData,
+    onSuccess: () => {
+      toast.success('Dados exportados com sucesso!')
+    },
+    onError: () => {
+      toast.error('Erro ao exportar os dados. Tente novamente.')
+    },
+  })
 
   async function handleEditProfile(data: BusinessProfileForm) {
     try {
@@ -154,176 +154,187 @@ export default function ProfileBusinessArea() {
       <div className="flex-1 bg-primary-foreground p-10 rounded-md">
         <div className="flex justify-between">
           <h2 className="text-white text-2xl">Informações da Empresa</h2>
-          <Dialog>
-            <DialogTrigger className="text-white text-sm border p-2 rounded-md">
-              Editar Perfil
-            </DialogTrigger>
-            <DialogContent>
-              <Tabs defaultValue="account" className="w-full mt-4">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="account">
-                    Informações da Empresa
-                  </TabsTrigger>
-                  <TabsTrigger value="password">Senha</TabsTrigger>
-                </TabsList>
-                <TabsContent value="account" className="mt-4">
-                  <DialogHeader>
-                    <DialogTitle>Editar Perfil</DialogTitle>
-                  </DialogHeader>
-                  <form
-                    onSubmit={handleSubmit(handleEditProfile)}
-                    className="flex flex-col"
-                  >
+          <div className="flex gap-2">
+            <Dialog>
+              <DialogTrigger className="text-white text-sm border p-2 rounded-md">
+                Editar Perfil
+              </DialogTrigger>
+              <DialogContent>
+                <Tabs defaultValue="account" className="w-full mt-4">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="account">
+                      Informações da Empresa
+                    </TabsTrigger>
+                    <TabsTrigger value="password">Senha</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="account" className="mt-4">
+                    <DialogHeader>
+                      <DialogTitle>Editar Perfil</DialogTitle>
+                    </DialogHeader>
+                    <form
+                      onSubmit={handleSubmit(handleEditProfile)}
+                      className="flex flex-col"
+                    >
+                      <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <label htmlFor="fantasyName" className="text-right">
+                            Nome Fantasia
+                          </label>
+                          <Input
+                            id="fantasyName"
+                            className="input-bordered col-span-3"
+                            {...register('fantasyName')}
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <label htmlFor="email" className="text-right">
+                            E-mail
+                          </label>
+                          <Input
+                            id="email"
+                            className="input-bordered col-span-3"
+                            {...register('email')}
+                            disabled
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <label htmlFor="CNPJ" className="text-right">
+                            CNPJ
+                          </label>
+                          <Input
+                            id="CNPJ"
+                            className="input-bordered col-span-3"
+                            {...register('cnpj')}
+                            disabled
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <label htmlFor="phone" className="text-right">
+                            Telefone Celular
+                          </label>
+                          <Input
+                            id="phone"
+                            className="input-bordered col-span-3"
+                            {...register('phone')}
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <label htmlFor="cep" className="text-right">
+                            CEP
+                          </label>
+                          <Input
+                            id="cep"
+                            className="input-bordered col-span-3"
+                            {...register('cepAddress')}
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <label htmlFor="city" className="text-right">
+                            Cidade
+                          </label>
+                          <Input
+                            id="city"
+                            className="input-bordered col-span-3"
+                            {...register('cityAddress')}
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <label htmlFor="uf" className="text-right">
+                            UF
+                          </label>
+                          <Input
+                            id="uf"
+                            className="input-bordered col-span-3"
+                            {...register('stateAddress')}
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <label htmlFor="street" className="text-right">
+                            Endereço
+                          </label>
+                          <Input
+                            id="street"
+                            className="input-bordered col-span-3"
+                            {...register('streetAddress')}
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <label htmlFor="number" className="text-right">
+                            Número
+                          </label>
+                          <Input
+                            id="number"
+                            className="input-bordered col-span-3"
+                            {...register('numberAddress')}
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <label htmlFor="photo" className="text-right">
+                            Foto
+                          </label>
+                          <Input
+                            id="photo"
+                            type="file"
+                            className="input-bordered col-span-3"
+                            {...register('photo')}
+                          />
+                        </div>
+                      </div>
+                      <Button type="submit" className="ml-auto">
+                        Salvar Perfil
+                      </Button>
+                    </form>
+                  </TabsContent>
+                  <TabsContent value="password" className="mt-4">
+                    <DialogHeader>
+                      <DialogTitle>Editar Senha</DialogTitle>
+                    </DialogHeader>
                     <div className="grid gap-4 py-4">
                       <div className="grid grid-cols-4 items-center gap-4">
-                        <label htmlFor="fantasyName" className="text-right">
-                          Nome Fantasia
+                        <label htmlFor="oldPassword" className="text-right">
+                          Senha atual
                         </label>
                         <Input
-                          id="fantasyName"
+                          id="oldPassword"
                           className="input-bordered col-span-3"
-                          {...register('fantasyName')}
                         />
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
-                        <label htmlFor="email" className="text-right">
-                          E-mail
+                        <label htmlFor="newPassword" className="text-right">
+                          Nova senha
                         </label>
                         <Input
-                          id="email"
+                          id="newPassword"
                           className="input-bordered col-span-3"
-                          {...register('email')}
-                          disabled
                         />
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
-                        <label htmlFor="CNPJ" className="text-right">
-                          CNPJ
+                        <label
+                          htmlFor="confirmPassword"
+                          className="text-right"
+                        >
+                          Confirmar senha
                         </label>
                         <Input
-                          id="CNPJ"
+                          id="confirmPassword"
                           className="input-bordered col-span-3"
-                          {...register('cnpj')}
-                          disabled
-                        />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <label htmlFor="phone" className="text-right">
-                          Telefone Celular
-                        </label>
-                        <Input
-                          id="phone"
-                          className="input-bordered col-span-3"
-                          {...register('phone')}
-                        />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <label htmlFor="cep" className="text-right">
-                          CEP
-                        </label>
-                        <Input
-                          id="cep"
-                          className="input-bordered col-span-3"
-                          {...register('cepAddress')}
-                        />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <label htmlFor="city" className="text-right">
-                          Cidade
-                        </label>
-                        <Input
-                          id="city"
-                          className="input-bordered col-span-3"
-                          {...register('cityAddress')}
-                        />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <label htmlFor="uf" className="text-right">
-                          UF
-                        </label>
-                        <Input
-                          id="uf"
-                          className="input-bordered col-span-3"
-                          {...register('stateAddress')}
-                        />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <label htmlFor="street" className="text-right">
-                          Endereço
-                        </label>
-                        <Input
-                          id="street"
-                          className="input-bordered col-span-3"
-                          {...register('streetAddress')}
-                        />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <label htmlFor="number" className="text-right">
-                          Número
-                        </label>
-                        <Input
-                          id="number"
-                          className="input-bordered col-span-3"
-                          {...register('numberAddress')}
-                        />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <label htmlFor="photo" className="text-right">
-                          Foto
-                        </label>
-                        <Input
-                          id="photo"
-                          type="file"
-                          className="input-bordered col-span-3"
-                          {...register('photo')}
                         />
                       </div>
                     </div>
-                    <Button type="submit" className="ml-auto">
-                      Salvar Perfil
-                    </Button>
-                  </form>
-                </TabsContent>
-                <TabsContent value="password" className="mt-4">
-                  <DialogHeader>
-                    <DialogTitle>Editar Senha</DialogTitle>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="oldPassword" className="text-right">
-                        Senha atual
-                      </label>
-                      <Input
-                        id="oldPassword"
-                        className="input-bordered col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="newPassword" className="text-right">
-                        Nova senha
-                      </label>
-                      <Input
-                        id="newPassword"
-                        className="input-bordered col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="confirmPassword" className="text-right">
-                        Confirmar senha
-                      </label>
-                      <Input
-                        id="confirmPassword"
-                        className="input-bordered col-span-3"
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button type="submit">Trocar Senha</Button>
-                  </DialogFooter>
-                </TabsContent>
-              </Tabs>
-            </DialogContent>
-          </Dialog>
+                    <DialogFooter>
+                      <Button type="submit">Trocar Senha</Button>
+                    </DialogFooter>
+                  </TabsContent>
+                </Tabs>
+              </DialogContent>
+            </Dialog>
+            <Button
+              className="text-white text-sm border p-2 rounded-md"
+              onClick={() => exportDataFn()}
+            >
+              Exportar Dados
+            </Button>
+          </div>
         </div>
         <form className="grid grid-cols-2 gap-4 mt-6">
           <div>

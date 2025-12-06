@@ -2,8 +2,11 @@ import datetime
 import os
 import threading
 import time
+import csv
+import io
 
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Form
+from fastapi.responses import StreamingResponse
 # from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
@@ -1020,6 +1023,96 @@ async def buscar_empresas_criterio(data_de_partida: datetime.date, qtd_passageir
     inicio_pag = 10 * (pagina - 1)
     fim_pag = inicio_pag + 9
     return todas_empresas[inicio_pag:fim_pag+1]
+
+# Métodos para a conformidade com a LGPD -------------------------------------
+
+@app.get("/usuario/exportar_dados/csv")
+async def exportar_dados_csv(token: str = Depends(oauth2_esquema)):
+    """
+    Gera um arquivo CSV contendo todos os dados do usuário e suas propostas.
+    (Compliance LGPD - Portabilidade de Dados)
+    """
+    db = database.conectar_bd()
+    usuario = auth.obter_usuario_atual(db, token)
+
+    # Preparar o Buffer de Memória (String IO)
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Definir o Cabeçalho do CSV
+    # unifica colunas de Cliente e Empresa para simplificar
+    headers = [
+        "ID Usuario", "Tipo Conta", "Email", "Nome/Fantasia", "Documento (CPF/CNPJ)", 
+        "Telefone", "Cidade", "UF", "Rua", "Numero",  # Dados Pessoais
+        "ID Proposta", "Veiculo", "Placa", "Data Saida", "Data Chegada", 
+        "Valor Total", "Status Proposta" # Dados de Propostas
+    ]
+    writer.writerow(headers)
+
+    # Coletar Dados do Perfil (Cliente ou Empresa)
+    dados_pessoais = []
+    
+    if usuario.tipo_conta == "cliente":
+        cliente = crud_usuario.buscar_dados_cliente(db, usuario)
+        dados_pessoais = [
+            cliente.id_usuario, "Cliente", cliente.email, cliente.nome_completo, 
+            cliente.cpf, cliente.telefone, "N/A", "N/A", "N/A", "N/A"
+        ]
+        
+    elif usuario.tipo_conta == "empresa":
+        empresa = crud_usuario.buscar_dados_empresa(db, usuario)
+        # Extrair dados do objeto Endereco
+        cidade = empresa.endereco.cidade if empresa.endereco else ""
+        uf = empresa.endereco.uf if empresa.endereco else ""
+        rua = empresa.endereco.rua if empresa.endereco else ""
+        num = empresa.endereco.numero if empresa.endereco else ""
+        
+        dados_pessoais = [
+            empresa.id_usuario, "Empresa", empresa.email, empresa.nome_fantasia, 
+            empresa.cnpj, empresa.telefone, cidade, uf, rua, num
+        ]
+
+    # Buscar e Escrever as Propostas
+    alugueis = crud_aluguel.buscar_alugueis_usuario_id(db, usuario.id_usuario, usuario.tipo_conta)
+
+    if not alugueis:
+        # se não tiver propostas, escreve apenas uma linha com os dados do usuári preenchendo o resto com vazio
+        writer.writerow(dados_pessoais + ["", "", "", "", "", "", ""])
+    else:
+        for aluguel in alugueis:
+            # Buscar detalhes do veículo para o CSV
+            veiculo = crud_veiculo.buscar_veiculo(db, aluguel.id_veiculo)
+            
+            # calcula valor final se necessário
+            valor_total = aluguel.valor_total
+            if veiculo and valor_total == 0:
+                aluguel.calcular_valor_total(veiculo.custo_por_km, veiculo.custo_base)
+                valor_total = aluguel.valor_total
+
+            dados_proposta = [
+                aluguel.id_aluguel,
+                veiculo.nome_veiculo if veiculo else "Veículo Removido",
+                veiculo.placa_veiculo if veiculo else "",
+                aluguel.data_inicio,
+                aluguel.data_fim,
+                f"R$ {valor_total:.2f}",
+                aluguel.estado_aluguel
+            ]
+            
+            # Escreve a linha combinada: Dados Pessoais + Dados da Proposta
+            writer.writerow(dados_pessoais + dados_proposta)
+
+    # Preparar o ponteiro do arquivo para leitura
+    output.seek(0)
+
+    # Retornar como StreamingResponse (Download)
+    filename = f"meus_dados_lgpd_{usuario.id_usuario}.csv"
+    
+    return StreamingResponse(
+        output,
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 @app.get("/cidades/lista_de_cidades")
 async def busca_lista_cidades():
