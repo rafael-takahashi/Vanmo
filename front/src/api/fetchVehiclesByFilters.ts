@@ -21,6 +21,7 @@ interface Car {
   nome_veiculo: string
   placa_veiculo: string
   custo_da_viagem: number
+  foto_url: string
 }
 
 export async function fetchVehiclesByFilters({
@@ -33,14 +34,6 @@ export async function fetchVehiclesByFilters({
   qtd_passageiros,
 }: FetchBusinessByFiltersParams): Promise<Car[]> {
   try {
-    console.log("Data de Chegada: ",data_de_chegada)
-    console.log("Data de Partida: ", data_de_partida)
-    console.log("Local Chegada: ",local_chegada)
-    console.log("Local Saida: ", local_saida)
-    console.log("Id Empresa: ",id_empresa)
-    console.log("Pagina: ",pagina)
-    console.log("Qtd passageiros: ", qtd_passageiros)
-
     const response = await api.get(
       `/veiculos/buscar_veiculos_empresa/criterio/${id_empresa}/${data_de_partida}/${data_de_chegada}/${qtd_passageiros}/${local_saida}/${local_chegada}/${pagina}`,
     )

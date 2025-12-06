@@ -165,7 +165,7 @@ def cadastrar_cliente(db: connection, cliente: Cliente):
     
     cur = db.cursor()
 
-    dados_cliente = (id_usr, cliente.nome_completo, cliente.cpf, cliente.data_nascimento)
+    dados_cliente = (id_usr, cliente.nome_completo, cliente.cpf, cliente.data_nascimento, cliente.foto_url)
     cur.execute(QueriesDB.query_inserir_cliente_novo, dados_cliente)
     
     db.commit()
@@ -189,7 +189,7 @@ def cadastrar_empresa(db: connection, empresa: Empresa):
     cur.execute(QueriesDB.query_inserir_endereco_novo, dados_endereco)
     id_endereco = cur.fetchone()[0]
 
-    dados = (id_usr, empresa.cnpj, empresa.nome_fantasia, id_endereco, id_local, 0, 0)
+    dados = (id_usr, empresa.cnpj, empresa.nome_fantasia, id_endereco, id_local, 0, 0, empresa.foto_url)
 
     cur.execute(QueriesDB.query_inserir_empresa_nova, dados)
 
@@ -214,7 +214,8 @@ def buscar_dados_cliente(db: connection, usuario: Usuario) -> Cliente:
     resultados = cur.fetchone()
 
     cur.close()
-    return Cliente(usuario.id_usuario, usuario.email, usuario.senha_hashed, usuario.tipo_conta, utils.carrega_foto_base64(usuario.foto), resultados[1], resultados[2], resultados[3], usuario.telefone)
+    foto_url = resultados[4] if len(resultados) > 4 else None
+    return Cliente(usuario.id_usuario, usuario.email, usuario.senha_hashed, usuario.tipo_conta, utils.carrega_foto_base64(usuario.foto), resultados[1], resultados[2], resultados[3], usuario.telefone, foto_url)
 
 def buscar_dados_empresa(db: connection, usuario: Usuario) -> Empresa:
     cur = db.cursor()
@@ -225,10 +226,12 @@ def buscar_dados_empresa(db: connection, usuario: Usuario) -> Empresa:
 
     local : Local =  buscar_local_por_id(db, resultados[4])
     endereco : Endereco = buscar_endereco_por_id(db, resultados[3])
+    
+    foto_url = resultados[7] if len(resultados) > 7 else None
 
     empresa = Empresa(id_usuario=usuario.id_usuario, email=usuario.email, senha_hashed=usuario.senha_hashed, 
                       tipo_conta=usuario.tipo_conta, foto=utils.carrega_foto_base64(usuario.foto), 
-                      nome_fantasia=resultados[2], cnpj=resultados[1], endereco=endereco, local=local, telefone=usuario.telefone)
+                      nome_fantasia=resultados[2], cnpj=resultados[1], endereco=endereco, local=local, telefone=usuario.telefone, foto_url=foto_url)
 
     empresa.num_avaliacoes = resultados[5]
     empresa.soma_avaliacoes = resultados[6]
@@ -300,6 +303,9 @@ def buscar_todas_empresas (db: connection) -> list[Empresa]:
         # empresa.num_avaliacoes = resultado[5]
         # empresa.soma_avaliacoes = resultado[6]
         # empresa.telefone = telefone
+        
+        foto_url = resultado[7] if len(resultado) > 7 else None
+        empresa.foto_url = foto_url
 
         empresa.foto = utils.carrega_foto_base64(empresa.foto)
 
@@ -343,6 +349,9 @@ def buscar_empresa_por_id (db: connection, id_empresa: int) -> Empresa:
     # empresa.soma_avaliacoes = resultado_empresa[6]
     # empresa.telefone = telefone
 
+    foto_url = resultado_empresa[7] if len(resultado_empresa) > 7 else None
+    empresa.foto_url = foto_url
+    
     empresa.foto = utils.carrega_foto_base64(empresa.foto)
     
     cur.close()
@@ -425,7 +434,7 @@ def buscador_empresas_nome(db: connection, string_busca: str):
 def atualizar_cliente(db: connection, cliente: Cliente):
     cur = db.cursor()
 
-    dados = (cliente.nome_completo, cliente.cpf, cliente.data_nascimento, cliente.id_usuario)
+    dados = (cliente.nome_completo, cliente.cpf, cliente.data_nascimento, cliente.foto_url, cliente.id_usuario)
 
     cur.execute(QueriesDB.query_atualizar_cliente, dados)
 
@@ -436,7 +445,7 @@ def atualizar_cliente(db: connection, cliente: Cliente):
 
 def atualizar_empresa(db: connection, empresa: Empresa):
     cur = db.cursor()
-    dados = (empresa.cnpj, empresa.nome_fantasia, empresa.id_usuario)
+    dados = (empresa.cnpj, empresa.nome_fantasia, empresa.foto_url, empresa.id_usuario)
 
     cur.execute(QueriesDB.query_atualizar_empresa, dados)
 

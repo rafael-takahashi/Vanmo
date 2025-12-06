@@ -7,3 +7,5 @@ bcrypt==4.0.1
 pillow
 psycopg2-binary
 python-dotenv
+supabase
+httpx

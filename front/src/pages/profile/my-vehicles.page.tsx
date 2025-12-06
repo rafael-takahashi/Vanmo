@@ -33,6 +33,7 @@ export default function MyVehiclesPage() {
         typeAccount={'empresa'}
         fullName={data?.nome_fantasia}
         idUsuario={data?.id_usuario}
+        photo={data?.foto_url}
       />
 
       <div className="flex-1 bg-primary-foreground p-10 rounded-md">

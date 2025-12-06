@@ -9,7 +9,7 @@ export interface registerVehicleBody {
   color: string
   year: number
   capacity: number
-  photo: File | null
+  photo?: FileList | null
 }
 
 export async function registerVehicle({
@@ -23,20 +23,27 @@ export async function registerVehicle({
   capacity,
   photo,
 }: registerVehicleBody) {
-  const jsonBody = JSON.stringify({
-    nome_veiculo: name,
-    placa_veiculo: licensePlate,
-    custo_por_km: costPerKm,
-    custo_base: baseCost,
-    cor: color,
-    ano_fabricacao: year,
-    capacidade: capacity,
-    foto: photo,
-  })
+  const formData = new FormData()
+
+  // 1. Adiciona campos de texto e converte números para String
+  formData.append('nome_veiculo', name)
+  formData.append('placa_veiculo', licensePlate)
+  formData.append('custo_por_km', String(costPerKm))
+  formData.append('custo_base', String(baseCost))
+  formData.append('cor', color)
+  formData.append('ano_fabricacao', String(year))
+  formData.append('capacidade', String(capacity))
+
+  // 2. Adiciona o arquivo apenas se ele não for nulo
+  if (photo) {
+    formData.append('foto', photo[0])
+  }
+
   try {
-    const response = await api.post('/veiculos/cadastrar_veiculo/', jsonBody, {
+    const response = await api.post('/veiculos/cadastrar_veiculo/', formData, {
       headers: {
-        'Content-Type': 'application/json',
+        // Removemos o 'Content-Type': 'application/json'
+        // O Axios gerencia o boundary do multipart automaticamente
         Authorization: `Bearer ${token}`,
       },
     })

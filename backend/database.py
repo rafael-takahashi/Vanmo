@@ -55,8 +55,20 @@ def criar_tabelas(conexao: connection):
             id_usuario INTEGER REFERENCES Usuario(id_usuario) ON DELETE CASCADE,
             nome_completo VARCHAR(255) NOT NULL,
             cpf VARCHAR(14) NOT NULL,
-            data_nascimento DATE
+            data_nascimento DATE,
+            foto_url TEXT
         )
+    """)
+    
+    # Adiciona coluna foto_url se não existir (para tabelas já criadas)
+    cur.execute("""
+        DO $$ 
+        BEGIN 
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                          WHERE table_name='cliente' AND column_name='foto_url') THEN
+                ALTER TABLE Cliente ADD COLUMN foto_url TEXT;
+            END IF;
+        END $$;
     """)
     
     cur.execute("""
@@ -88,8 +100,20 @@ def criar_tabelas(conexao: connection):
             id_endereco INTEGER REFERENCES Endereco(id_endereco),
             id_local INTEGER REFERENCES Local(id_local),
             num_avaliacoes INTEGER DEFAULT 0,
-            soma_avaliacoes DECIMAL(10, 2) DEFAULT 0
+            soma_avaliacoes DECIMAL(10, 2) DEFAULT 0,
+            foto_url TEXT
         )
+    """)
+    
+    # Adiciona coluna foto_url se não existir (para tabelas já criadas)
+    cur.execute("""
+        DO $$ 
+        BEGIN 
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                          WHERE table_name='empresa' AND column_name='foto_url') THEN
+                ALTER TABLE Empresa ADD COLUMN foto_url TEXT;
+            END IF;
+        END $$;
     """)
     
     cur.execute("""
@@ -103,8 +127,20 @@ def criar_tabelas(conexao: connection):
             custo_base DECIMAL(10, 2) NOT NULL,
             path_foto TEXT,
             cor VARCHAR(50),
-            ano_de_fabricacao INTEGER
+            ano_de_fabricacao INTEGER,
+            foto_url TEXT
         )
+    """)
+    
+    # Adiciona coluna foto_url se não existir (para tabelas já criadas)
+    cur.execute("""
+        DO $$ 
+        BEGIN 
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                          WHERE table_name='veiculo' AND column_name='foto_url') THEN
+                ALTER TABLE Veiculo ADD COLUMN foto_url TEXT;
+            END IF;
+        END $$;
     """)
     
     cur.execute("""
@@ -172,16 +208,16 @@ class QueriesDB:
     query_remover_usuario = "DELETE FROM Usuario WHERE id_usuario = %s"
     query_atualizar_usuario = "UPDATE Usuario SET email=%s, senha_hashed=%s, path_foto=%s, telefone = %s WHERE id_usuario=%s"
     
-    query_inserir_cliente_novo = "INSERT INTO Cliente (id_usuario, nome_completo, cpf, data_nascimento) VALUES (%s, %s, %s, %s)"
+    query_inserir_cliente_novo = "INSERT INTO Cliente (id_usuario, nome_completo, cpf, data_nascimento, foto_url) VALUES (%s, %s, %s, %s, %s)"
     query_remover_cliente = "DELETE FROM Cliente WHERE id_usuario = %s"
     query_buscar_cliente = "SELECT * FROM Cliente WHERE id_usuario = %s"
-    query_atualizar_cliente = "UPDATE Cliente SET nome_completo=%s, cpf=%s, data_nascimento=%s WHERE id_usuario = %s"
+    query_atualizar_cliente = "UPDATE Cliente SET nome_completo=%s, cpf=%s, data_nascimento=%s, foto_url=%s WHERE id_usuario = %s"
 
-    query_inserir_empresa_nova = "INSERT INTO Empresa (id_usuario, cnpj, nome_fantasia, id_endereco, id_local, num_avaliacoes, soma_avaliacoes) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+    query_inserir_empresa_nova = "INSERT INTO Empresa (id_usuario, cnpj, nome_fantasia, id_endereco, id_local, num_avaliacoes, soma_avaliacoes, foto_url) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
     query_remover_empresa = "DELETE FROM Empresa WHERE id_usuario = %s"
     query_buscar_empresa = "SELECT * FROM Empresa WHERE id_usuario = %s"
     query_atualizar_avaliacoes_empresa = "UPDATE Empresa SET num_avaliacoes = %s, soma_avaliacoes = %s WHERE id_usuario = %s"
-    query_atualizar_empresa = "UPDATE Empresa SET cnpj = %s, nome_fantasia = %s WHERE id_usuario = %s"
+    query_atualizar_empresa = "UPDATE Empresa SET cnpj = %s, nome_fantasia = %s, foto_url = %s WHERE id_usuario = %s"
     query_buscar_empresa_por_data = "SELECT DISTINCT e.id_usuario FROM Empresa e JOIN Veiculo v ON e.id_usuario = v.id_empresa WHERE v.id_veiculo NOT IN (SELECT c.id_veiculo FROM Calendario c WHERE c.data_indisponivel = %s)"
     query_buscar_empresa_por_passageiros = "SELECT DISTINCT e.id_usuario FROM Empresa e JOIN Veiculo v ON e.id_usuario = v.id_empresa WHERE v.capacidade >= %s"
     query_buscar_empresa_por_local = "SELECT DISTINCT e.id_usuario FROM Empresa e JOIN Local l ON e.id_local = l.id_local WHERE (ABS(l.latitude - %s) <= 0.00001 AND ABS(l.longitude - %s) <= 0.00001)"
@@ -197,14 +233,14 @@ class QueriesDB:
     query_remover_endereco = "DELETE FROM Endereco WHERE id_endereco = %s"
     query_atualizar_endereco = "UPDATE Endereco SET cep=%s, rua=%s, numero=%s, bairro=%s, cidade=%s, estado=%s WHERE id_endereco=%s"
 
-    query_inserir_veiculo_novo = "INSERT INTO Veiculo (id_empresa, nome_veiculo, placa_veiculo, capacidade, custo_por_km, custo_base, path_foto, cor, ano_de_fabricacao) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id_veiculo"
+    query_inserir_veiculo_novo = "INSERT INTO Veiculo (id_empresa, nome_veiculo, placa_veiculo, capacidade, custo_por_km, custo_base, path_foto, cor, ano_de_fabricacao, foto_url) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id_veiculo"
     query_buscar_veiculo = "SELECT * FROM Veiculo WHERE id_veiculo = %s"
     query_buscar_veiculos_empresa = "SELECT * FROM Veiculo WHERE id_empresa = %s"
     query_buscar_alugueis_veiculo = "SELECT * FROM Aluguel WHERE id_veiculo = %s"
     query_remover_veiculo = "DELETE FROM Veiculo WHERE id_veiculo = %s"
     query_verificar_veiculo_empresa = "SELECT id_veiculo FROM Veiculo WHERE id_veiculo = %s AND id_empresa = %s"
     query_verificar_disponibilidade_veiculo = "SELECT data_indisponivel FROM Calendario WHERE id_veiculo = %s AND (data_indisponivel BETWEEN %s AND %s)"
-    query_atualizar_veiculo = "UPDATE Veiculo SET id_empresa=%s, nome_veiculo=%s, placa_veiculo=%s, capacidade=%s, custo_por_km=%s, custo_base=%s, path_foto=%s, cor=%s, ano_de_fabricacao=%s WHERE id_veiculo = %s"
+    query_atualizar_veiculo = "UPDATE Veiculo SET id_empresa=%s, nome_veiculo=%s, placa_veiculo=%s, capacidade=%s, custo_por_km=%s, custo_base=%s, path_foto=%s, cor=%s, ano_de_fabricacao=%s, foto_url=%s WHERE id_veiculo = %s"
 
     query_inserir_aluguel_novo = "INSERT INTO Aluguel (id_empresa, id_cliente, id_veiculo, valor_total, estado_aluguel, data_inicio, data_fim, distancia_trajeto, distancia_extra, id_local_partida, id_local_chegada) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
     query_buscar_aluguel = "SELECT * FROM Aluguel WHERE id_aluguel = %s"

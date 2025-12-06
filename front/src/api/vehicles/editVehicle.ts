@@ -10,7 +10,7 @@ export interface editVehicleBody {
   color: string
   year: number
   capacity: number
-  photo: File | null
+  photo?: FileList
 }
 
 export async function editVehicle({
@@ -25,24 +25,29 @@ export async function editVehicle({
   capacity,
   photo,
 }: editVehicleBody) {
-  const jsonBody = JSON.stringify({
-    id_veiculo: id,
-    nome_veiculo: name,
-    placa_veiculo: licensePlate,
-    custo_por_km: costPerKm,
-    custo_base: baseCost,
-    cor: color,
-    ano_fabricacao: year,
-    capacidade: capacity,
-    foto: photo,
-  })
+  const formData = new FormData()
+
+  formData.append('id_veiculo', String(id))
+  formData.append('nome_veiculo', name)
+  formData.append('placa_veiculo', licensePlate)
+  formData.append('custo_por_km', String(costPerKm))
+  formData.append('custo_base', String(baseCost))
+  formData.append('cor', color)
+  formData.append('ano_fabricacao', String(year))
+  formData.append('capacidade', String(capacity))
+
+  if (photo && photo[0]) {
+    formData.append('foto', photo[0])
+  }
+
   try {
-    const response = await api.put('/veiculos/editar_veiculo', jsonBody, {
+    const response = await api.put('/veiculos/editar_veiculo', formData, {
       headers: {
-        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
     })
+
+    return response.data
   } catch (error: any) {
     console.error('Error:', error.response?.data || error.message)
     throw error

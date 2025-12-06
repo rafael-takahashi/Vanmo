@@ -39,6 +39,11 @@ export default function Profile() {
             : dataClient?.nome_completo
         }
         idUsuario={data?.id_usuario}
+        photo={
+          data?.tipo_usuario === 'empresa'
+            ? dataBusiness?.foto_url
+            : dataClient?.foto_url
+        }
       />
 
       {data?.tipo_usuario === 'cliente' && <ProfileClientArea />}

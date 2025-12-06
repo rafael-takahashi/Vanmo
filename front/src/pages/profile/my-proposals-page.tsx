@@ -38,6 +38,11 @@ export default function MyProposalsPage() {
             : dataClient?.nome_completo
         }
         idUsuario={data?.id_usuario}
+        photo={
+          data?.tipo_usuario === 'empresa'
+            ? dataBusiness?.foto_url
+            : dataClient?.foto_url
+        }
       />
 
       <div className="flex-1 bg-primary-foreground p-10 rounded-md">

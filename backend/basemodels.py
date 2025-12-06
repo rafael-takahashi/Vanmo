@@ -40,7 +40,7 @@ class CadastroEmpresa(BaseModel):
 class AlterarDadosCliente(BaseModel):
     email: str | None = None
     senha: str | None = None
-    foto: str | None = None
+    # foto será recebida separadamente como UploadFile na rota
     nome_completo: str | None = None
     cpf: str | None = None
     data_nascimento: str | None = None
@@ -49,7 +49,7 @@ class AlterarDadosCliente(BaseModel):
 class AlterarDadosEmpresa(BaseModel):
     email: str | None = None
     senha: str | None = None
-    foto: str | None = None
+    # foto será recebida separadamente como UploadFile na rota
     nome_fantasia: str | None = None
     cnpj: str | None = None
     uf: str | None = None

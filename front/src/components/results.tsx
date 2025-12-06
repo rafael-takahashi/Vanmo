@@ -42,7 +42,7 @@ export function Results() {
             phone={empresa.telefone}
             rate={empresa.soma_avaliacoes}
             key={empresa.id_usuario}
-            photo={empresa.foto}
+            photo={empresa.foto_url}
           />
         ))
       ) : (

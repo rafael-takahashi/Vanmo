@@ -1,7 +1,6 @@
+import Cookies from 'js-cookie'
+
 import { api } from '@/lib/axios'
-interface getUserBusinessBody {
-  token: string | undefined
-}
 
 interface Endereco {
   bairro: string
@@ -17,7 +16,7 @@ interface getUserBusinessResponse {
   cnpj: string
   email: string
   endereco: Endereco
-  foto: string
+  foto_url: string
   id_usuario: number
   nome_fantasia: string
   num_avaliacoes: number
@@ -26,7 +25,9 @@ interface getUserBusinessResponse {
   tipo_conta: string
 }
 
-export async function getUserBusiness({ token }: getUserBusinessBody) {
+export async function getUserBusiness() {
+  const token = Cookies.get('auth_token')
+  console.log('Token:', token)
   const response = await api.get<getUserBusinessResponse>(
     '/usuario/buscar_dados_cadastrais/empresa',
     {

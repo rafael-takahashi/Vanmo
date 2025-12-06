@@ -7,7 +7,7 @@ interface getUserClientResponse {
   cpf: string
   data_nascimento: string
   email: string
-  foto: string
+  foto_url: string
   id: number
   nome_completo: string
   telefone: string
@@ -17,7 +17,7 @@ interface getUserClientResponse {
 export async function getUserClient({ token }: getUserClientBody) {
   try {
     const response = await api.get<getUserClientResponse>(
-    '/usuario/buscar_dados_cadastrais/cliente',
+      '/usuario/buscar_dados_cadastrais/cliente',
       {
         headers: {
           Authorization: `Bearer ${token}`,

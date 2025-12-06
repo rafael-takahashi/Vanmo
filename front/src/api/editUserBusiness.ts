@@ -1,9 +1,10 @@
+import Cookies from 'js-cookie'
+
 import { api } from '@/lib/axios'
 
 export interface editProfileUserBusinessBody {
   email?: string
   password?: string
-  photo?: File
   fantasyName?: string
   stateAddress?: string
   cityAddress?: string
@@ -12,7 +13,7 @@ export interface editProfileUserBusinessBody {
   streetAddress?: string
   numberAddress?: string
   phone?: string
-  token?: string
+  photo?: FileList
 }
 
 export async function editProfileUserBusiness({
@@ -27,40 +28,29 @@ export async function editProfileUserBusiness({
   streetAddress,
   numberAddress,
   phone,
-  token,
 }: editProfileUserBusinessBody) {
-  console.log(email)
-  console.log(password)
-  console.log(photo)
-  console.log(fantasyName)
-  console.log(stateAddress)
-  console.log(cityAddress)
-  console.log(districtAddress)
-  console.log(cep)
-  console.log(streetAddress)
-  console.log(numberAddress)
-  console.log(phone)
-  console.log(token)
+  const token = Cookies.get('auth_token')
 
-  await api.put(
-    '/usuario/alterar_dados/empresa',
-    {
-      email,
-      senha: password,
-      foto: photo,
-      nome_fantasia: fantasyName,
-      uf: stateAddress,
-      cidade: cityAddress,
-      bairro: districtAddress,
-      cep,
-      rua: streetAddress,
-      numero: numberAddress,
-      telefone: phone,
+  const formData = new FormData()
+
+  if (email) formData.append('email', email)
+  if (password) formData.append('senha', password)
+  if (fantasyName) formData.append('nome_fantasia', fantasyName)
+  if (stateAddress) formData.append('uf', stateAddress)
+  if (cityAddress) formData.append('cidade', cityAddress)
+  if (districtAddress) formData.append('bairro', districtAddress)
+  if (cep) formData.append('cep', cep)
+  if (streetAddress) formData.append('rua', streetAddress)
+  if (numberAddress) formData.append('numero', numberAddress)
+  if (phone) formData.append('telefone', phone)
+
+  if (photo?.[0]) {
+    formData.append('foto', photo[0])
+  }
+
+  await api.put('/usuario/alterar_dados/empresa', formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
     },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  )
+  })
 }

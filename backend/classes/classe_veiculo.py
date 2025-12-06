@@ -14,12 +14,14 @@ class Veiculo():
         self.calendario_disponibilidade = Calendario([])
         
     def adicionar_custos(self, custo_por_km, custo_base):
-        self.custo_por_km: float = custo_por_km
-        self.custo_base: float = custo_base
+        # Converte Decimal para float (PostgreSQL retorna valores numéricos como Decimal)
+        self.custo_por_km: float = float(custo_por_km)
+        self.custo_base: float = float(custo_base)
 
-    def adicionar_dados(self, caminho_foto: str | None, cor: str, ano_fabricacao: int, capacidade: int):
+    def adicionar_dados(self, caminho_foto: str | None, cor: str, ano_fabricacao: int, capacidade: int, foto_url: str | None = None):
         self.caminho_foto: str | None = caminho_foto
         self.cor: str = cor
         self.ano_fabricacao: int = ano_fabricacao
         self.capacidade: int = capacidade
+        self.foto_url: str | None = foto_url
     

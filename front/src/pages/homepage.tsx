@@ -11,8 +11,6 @@ import { FaqArea } from '@/components/faq-area'
 import SearchArea from '@/components/search-area'
 import { Skeleton } from '@/components/ui/skeleton'
 
-import garcia from '../assets/garcia.jpg'
-
 export function HomePage() {
   const navigate = useNavigate()
 
@@ -53,11 +51,15 @@ export function HomePage() {
                 <SwiperSlide key={empresa.id_usuario} className="p-2">
                   <div
                     onClick={() => handleNavigate(empresa.id_usuario)}
-                    className="cursor-pointer text-primary-foreground transition-transform duration-200 hover:scale-105"
+                    className="bg-white cursor-pointer text-primary-foreground transition-transform duration-200 hover:scale-105"
                   >
-                    <img src={garcia} alt="" className="rounded-t-md " />
-                    <div className="grid grid-cols-3 items-center justify-between mt-1">
-                      <h3 className="col-span-2 font-bold text-2xl">
+                    <img
+                      src={empresa.foto_url}
+                      alt=""
+                      className="rounded-t-md max-h-40 w-full object-cover"
+                    />
+                    <div className="px-4 pb-4 grid grid-cols-3 items-center justify-between mt-1">
+                      <h3 className="col-span-2 font-bold text-xl">
                         {empresa.nome_fantasia}
                       </h3>
                       <span className="col-span-1 flex justify-center items-center gap-1 text-sm">

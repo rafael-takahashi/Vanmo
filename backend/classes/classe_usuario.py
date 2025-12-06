@@ -16,17 +16,18 @@ class Usuario():
         self.telefone: str = telefone
 
 class Cliente(Usuario):
-    def __init__(self, id_usuario, email, senha_hashed, tipo_conta, foto, nome_completo: str, cpf: str, data_nascimento: str, telefone: str):
+    def __init__(self, id_usuario, email, senha_hashed, tipo_conta, foto, nome_completo: str, cpf: str, data_nascimento: str, telefone: str, foto_url: str | None = None):
         super().__init__(email, senha_hashed, tipo_conta, foto, telefone, id_usuario)
         self.nome_completo: str = nome_completo
         self.cpf: str = cpf
         self.data_nascimento: str = data_nascimento
+        self.foto_url: str | None = foto_url
         
     def __repr__(self):
         return f"[Cliente] Id: {self.id_usuario} email: {self.email} nome: {self.nome_completo} cpf: {self.cpf}"
     
 class Empresa(Usuario):
-    def __init__(self, id_usuario, email, senha_hashed, tipo_conta, foto, nome_fantasia: str, cnpj: str, endereco: Endereco, local: Local, telefone: str):
+    def __init__(self, id_usuario, email, senha_hashed, tipo_conta, foto, nome_fantasia: str, cnpj: str, endereco: Endereco, local: Local, telefone: str, foto_url: str | None = None):
         super().__init__(email, senha_hashed, tipo_conta, foto, telefone, id_usuario)
         self.nome_fantasia: str = nome_fantasia
         self.cnpj: str = cnpj
@@ -34,6 +35,7 @@ class Empresa(Usuario):
         self.local: Local = local
         self.num_avaliacoes = 0
         self.soma_avaliacoes = 0
+        self.foto_url: str | None = foto_url
 
     def __repr__(self):
         return f"[Empresa] Id: {self.id_usuario} email: {self.email} nome fantasia: {self.nome_fantasia} cnpj: {self.cnpj} endereco: {self.endereco} local: {self.local} num avls {self.num_avaliacoes} soma avls {self.soma_avaliacoes}"

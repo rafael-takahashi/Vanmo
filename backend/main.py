@@ -3,7 +3,7 @@ import os
 import threading
 import time
 
-from fastapi import FastAPI, Depends, HTTPException #, File, UploadFile
+from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Form
 # from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,6 +17,7 @@ from cruds import crud_aluguel, crud_usuario, crud_veiculo, crud_local
 from utils import *
 from basemodels import *
 from popular_bd import inserir_dados
+from supabase_storage import upload_foto_cliente, upload_foto_empresa, upload_foto_veiculo
 
 lista_cidades = []
 objeto_cidades = []
@@ -161,7 +162,16 @@ async def apagar_usuario(token: str = Depends(oauth2_esquema)):
     return {"detail": "Usuario removido com sucesso"}
 
 @app.put("/usuario/alterar_dados/cliente")
-async def editar_dados_cliente(dados: AlterarDadosCliente, token: str = Depends(oauth2_esquema)):
+async def editar_dados_cliente(
+    email: str | None = Form(None),
+    senha: str | None = Form(None),
+    nome_completo: str | None = Form(None),
+    cpf: str | None = Form(None),
+    data_nascimento: str | None = Form(None),
+    telefone: str | None = Form(None),
+    foto: UploadFile | None = File(None),
+    token: str = Depends(oauth2_esquema)
+):
     
     db = database.conectar_bd()
 
@@ -169,34 +179,34 @@ async def editar_dados_cliente(dados: AlterarDadosCliente, token: str = Depends(
 
     cliente = crud_usuario.buscar_dados_cliente(db, usuario)
 
-    if dados.email:
-        if crud_usuario.verificar_se_dados_ja_cadastrados(db, dados.email):
+    if email:
+        if crud_usuario.verificar_se_dados_ja_cadastrados(db, email):
             raise HTTPException(status_code=400, detail="O email já está cadastrado no sistema")
-        cliente.email = dados.email
+        cliente.email = email
 
-    if dados.senha:
-        cliente.senha = auth.gerar_hash_senha(dados.senha)
+    if senha:
+        cliente.senha = auth.gerar_hash_senha(senha)
 
-    if dados.foto:
-        
-        valida_foto(dados.foto)
+    if foto and foto.filename:
+        # Faz upload da foto para o Supabase Storage
+        foto_url = await upload_foto_cliente(cliente.id_usuario, foto)
+        cliente.foto_url = foto_url
 
-        path_foto = f"imagens/usuarios/{usuario.id_usuario}.png"
-        salva_foto(path_foto, dados.foto)
+    if nome_completo: 
+        cliente.nome_completo = nome_completo
 
-    if dados.nome_completo: 
-        cliente.nome_completo = dados.nome_completo
+    if cpf:
+        cliente.cpf = cpf
 
-    if dados.cpf:
-        cliente.cpf = dados.cpf
-
-    if dados.data_nascimento:
-        cliente.data_nascimento = dados.data_nascimento
+    if data_nascimento:
+        cliente.data_nascimento = data_nascimento
     
-    if dados.telefone:
-        cliente.telefone = dados.telefone
+    if telefone:
+        cliente.telefone = telefone
 
-    crud_usuario.atualizar_cliente(db, cliente)    
+    crud_usuario.atualizar_cliente(db, cliente)
+    
+    return {"detail": "Dados atualizados com sucesso"}    
 
 @app.get("/usuario/verifica_tipo_usuario")
 async def buscar_tipo_usuario(token: str = Depends(oauth2_esquema)):
@@ -207,59 +217,73 @@ async def buscar_tipo_usuario(token: str = Depends(oauth2_esquema)):
     return {"tipo_usuario": usuario.tipo_conta, "id_usuario": usuario.id_usuario}
 
 @app.put("/usuario/alterar_dados/empresa")
-async def editar_dados_empresa(dados: AlterarDadosEmpresa, token: str = Depends(oauth2_esquema)):
+async def editar_dados_empresa(
+    email: str | None = Form(None),
+    senha: str | None = Form(None),
+    nome_fantasia: str | None = Form(None),
+    cnpj: str | None = Form(None),
+    uf: str | None = Form(None),
+    cidade: str | None = Form(None),
+    bairro: str | None = Form(None),
+    cep: str | None = Form(None),
+    rua: str | None = Form(None),
+    numero: str | None = Form(None),
+    telefone: str | None = Form(None),
+    foto: UploadFile | None = File(None),
+    token: str = Depends(oauth2_esquema)
+):
     db = database.conectar_bd()
 
     usuario: classe_usuario.Usuario = auth.obter_usuario_atual(db, token)
 
     empresa: classe_usuario.Empresa = crud_usuario.buscar_dados_empresa(db, usuario)
 
-    if dados.email:
-        if crud_usuario.verificar_se_dados_ja_cadastrados(db, dados.email):
+    if email:
+        if crud_usuario.verificar_se_dados_ja_cadastrados(db, email):
             raise HTTPException(status_code=400, detail="O email já está cadastrado no sistema")
-        empresa.email = dados.email
+        empresa.email = email
 
-    if dados.senha:
-        empresa.senha = auth.gerar_hash_senha(dados.senha)
+    if senha:
+        empresa.senha = auth.gerar_hash_senha(senha)
 
-    if dados.foto:
-        
-        valida_foto(dados.foto)
+    if foto and foto.filename:
+        # Faz upload da foto para o Supabase Storage
+        foto_url = await upload_foto_empresa(empresa.id_usuario, foto)
+        empresa.foto_url = foto_url
 
-        path_foto = f"imagens/usuarios/{usuario.id_usuario}.png"
-        salva_foto(path_foto, dados.foto)
-    
-    if dados.telefone:
-        empresa.telefone = dados.telefone
+    if telefone:
+        empresa.telefone = telefone
 
-    if dados.nome_fantasia:
-        empresa.nome_fantasia = dados.nome_fantasia
+    if nome_fantasia:
+        empresa.nome_fantasia = nome_fantasia
 
-    if dados.cnpj:
-        empresa.cnpj = dados.cnpj
+    if cnpj:
+        empresa.cnpj = cnpj
 
-    if dados.uf:
-        empresa.endereco.uf = dados.uf
+    if uf:
+        empresa.endereco.uf = uf
 
-    if dados.cidade:
-        if not valida_cidade(dados.cidade):
+    if cidade:
+        if not valida_cidade(cidade):
             raise HTTPException(status_code=400, detail="Cidade inválida")
         
-        empresa.endereco.cidade = dados.cidade
+        empresa.endereco.cidade = cidade
 
-    if dados.bairro:
-        empresa.endereco.bairro = dados.bairro
+    if bairro:
+        empresa.endereco.bairro = bairro
 
-    if dados.cep:
-        empresa.endereco.cep = dados.cep
+    if cep:
+        empresa.endereco.cep = cep
 
-    if dados.rua:
-        empresa.endereco.rua = dados.rua
+    if rua:
+        empresa.endereco.rua = rua
 
-    if dados.numero:
-        empresa.endereco.numero = dados.numero
+    if numero:
+        empresa.endereco.numero = numero
 
     crud_usuario.atualizar_empresa(db, empresa)
+    
+    return {"detail": "Dados atualizados com sucesso"}
 
 @app.get("/usuario/buscar_dados_cadastrais/cliente")
 async def buscar_dados_cadastrais_cliente(token: str = Depends(oauth2_esquema)):
@@ -597,7 +621,17 @@ async def verificar_custo_proposta(dados: CriarProposta, token: str = Depends(oa
 # Métodos de veículos ----------------------------------------
 
 @app.post("/veiculos/cadastrar_veiculo/")
-async def cadastrar_veiculo(dados: CadastrarVeiculo, token: str = Depends(oauth2_esquema)):
+async def cadastrar_veiculo(
+    nome_veiculo: str = Form(...),
+    placa_veiculo: str = Form(...),
+    custo_por_km: float = Form(...),
+    custo_base: float = Form(...),
+    cor: str = Form(...),
+    ano_fabricacao: int = Form(...),
+    capacidade: int = Form(...),
+    foto: UploadFile | None = File(None),
+    token: str = Depends(oauth2_esquema)
+):
     """
     Cadastra um veículo para uma empresa
 
@@ -608,6 +642,7 @@ async def cadastrar_veiculo(dados: CadastrarVeiculo, token: str = Depends(oauth2
     @param foto: A foto do veículo
     @param cor: A cor do veículo
     @param ano_fabricacao: O ano de fabricação do veículo
+    @param capacidade: A capacidade do veículo
     @param token: O token de acesso do usuário
     """
     db = database.conectar_bd()
@@ -617,36 +652,49 @@ async def cadastrar_veiculo(dados: CadastrarVeiculo, token: str = Depends(oauth2
     if usuario.tipo_conta != "empresa":
         raise HTTPException(status_code=400, detail="Tipo de usuário não é empresa")
     
-    if dados.foto == "":
-        raise HTTPException(status_code=400, detail="Foto inválida")
+    if not foto or not foto.filename:
+        raise HTTPException(status_code=400, detail="Foto é obrigatória")
     
-    if (dados.custo_por_km <= 0) or (dados.custo_base <= 0):
+    if (custo_por_km <= 0) or (custo_base <= 0):
         raise HTTPException(status_code=400, detail="Valores de custo negativos")
     
-    if dados.capacidade < 1:
+    if capacidade < 1:
         raise HTTPException(status_code=400, detail="Capacidade do veículo inválida")
     
-    if (dados.ano_fabricacao < 1970) or (dados.ano_fabricacao > datetime.date.today().year):
+    if (ano_fabricacao < 1970) or (ano_fabricacao > datetime.date.today().year):
         raise HTTPException(status_code=400, detail="Ano de fabricação inválido")
     
-    placa_veiculo = dados.placa_veiculo.upper()
+    placa_veiculo = placa_veiculo.upper()
     if not valida_placa(placa_veiculo):
         raise HTTPException(status_code=400, detail="Placa do veículo inválida")
 
-    veiculo: classe_veiculo.Veiculo = classe_veiculo.Veiculo(None, usuario.id_usuario, dados.nome_veiculo, placa_veiculo)
-    veiculo.adicionar_custos(dados.custo_por_km, dados.custo_base)
-    veiculo.adicionar_dados(None, dados.cor, dados.ano_fabricacao, dados.capacidade)
+    veiculo: classe_veiculo.Veiculo = classe_veiculo.Veiculo(None, usuario.id_usuario, nome_veiculo, placa_veiculo)
+    veiculo.adicionar_custos(custo_por_km, custo_base)
+    veiculo.adicionar_dados(None, cor, ano_fabricacao, capacidade)
     
     id_veiculo = crud_veiculo.criar_veiculo(db, veiculo)
 
-    caminho_da_foto = f"imagens/veiculos/{usuario.id_usuario}-{id_veiculo}.png"
-    
-    if dados.foto is not None: salva_foto(caminho_da_foto, dados.foto)
+    # Faz upload da foto para o Supabase Storage
+    if foto and foto.filename:
+        foto_url = await upload_foto_veiculo(usuario.id_usuario, id_veiculo, foto)
+        veiculo.foto_url = foto_url
+        veiculo.id_veiculo = id_veiculo
+        crud_veiculo.atualizar_veiculo(db, veiculo)
 
     return {"detail": "Veículo cadastrado com sucesso!"}
 
 @app.put("/veiculos/editar_veiculo")
-async def editar_veiculo(dados: EditarVeiculo, token: str = Depends(oauth2_esquema)):
+async def editar_veiculo(
+    id_veiculo: int = Form(...),
+    nome_veiculo: str | None = Form(None),
+    placa_veiculo: str | None = Form(None),
+    custo_por_km: float | None = Form(None),
+    custo_base: float | None = Form(None),
+    cor: str | None = Form(None),
+    ano_fabricacao: int | None = Form(None),
+    foto: UploadFile | None = File(None),
+    token: str = Depends(oauth2_esquema)
+):
     """
     Altera o veículo de uma empresa
 
@@ -667,31 +715,29 @@ async def editar_veiculo(dados: EditarVeiculo, token: str = Depends(oauth2_esque
     if usuario.tipo_conta != "empresa":
         raise HTTPException(status_code=400, detail="Tipo de usuário não é empresa")
 
-    if not crud_veiculo.verificar_veiculo_empresa(db, dados.id_veiculo, usuario.id_usuario):
+    if not crud_veiculo.verificar_veiculo_empresa(db, id_veiculo, usuario.id_usuario):
         raise HTTPException(status_code=400, detail="O veículo não pertence à empresa")
 
-    veiculo: classe_veiculo.Veiculo = crud_veiculo.buscar_veiculo(db, dados.id_veiculo)
+    veiculo: classe_veiculo.Veiculo = crud_veiculo.buscar_veiculo(db, id_veiculo)
 
-    # tentando fugir de criar vários if's
+    # Atualiza os valores se fornecidos
     novos_valores: dict[str, any | None] = {
-        "nome_veiculo": dados.nome_veiculo,
-        "placa_veiculo": dados.placa_veiculo,
-        "custo_por_km": dados.custo_por_km,
-        "custo_base": dados.custo_base,
-        "cor": dados.cor,
-        "ano_fabricacao": dados.ano_fabricacao
+        "nome_veiculo": nome_veiculo,
+        "placa_veiculo": placa_veiculo,
+        "custo_por_km": custo_por_km,
+        "custo_base": custo_base,
+        "cor": cor,
+        "ano_fabricacao": ano_fabricacao
     }
 
     for atributo, valor in novos_valores.items():
         if valor is not None:
             setattr(veiculo, atributo, valor)
 
-    if dados.foto:
-
-        valida_foto(dados.foto)
-
-        caminho_da_nova_foto = f"imagens/veiculos/{veiculo.id_empresa}-{veiculo.id_veiculo}.png"
-        salva_foto(caminho_da_nova_foto, dados.foto)
+    if foto and foto.filename:
+        # Faz upload da foto para o Supabase Storage
+        foto_url = await upload_foto_veiculo(veiculo.id_empresa, veiculo.id_veiculo, foto)
+        veiculo.foto_url = foto_url
 
     crud_veiculo.atualizar_veiculo(db, veiculo)
 

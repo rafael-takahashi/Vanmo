@@ -89,7 +89,8 @@ def buscar_aluguel(db: connection, id_aluguel: int) -> Aluguel | None:
         return None
     
     aluguel = Aluguel(id_aluguel, resultado[2], resultado[1], resultado[3])
-    aluguel.adicionar_datas(datetime.strptime(resultado[6], "%Y-%m-%d"), datetime.strptime(resultado[7], "%Y-%m-%d"))
+    # As datas já vêm como objetos date do PostgreSQL, não precisam de strptime
+    aluguel.adicionar_datas(resultado[6], resultado[7])
     local_partida: Local = buscar_local_por_id(db, resultado[10])
     local_chegada: Local = buscar_local_por_id(db, resultado[11])
     aluguel.adicionar_locais(local_partida, local_chegada)

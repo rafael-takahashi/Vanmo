@@ -2,8 +2,6 @@ import { MapPin, Phone, Star } from '@phosphor-icons/react'
 import { format } from 'date-fns'
 import { useNavigate, useSearchParams } from 'react-router'
 
-import garcia from '../assets/garcia.jpg'
-
 interface Endereco {
   bairro: string
   cep: string
@@ -83,7 +81,7 @@ export function SearchResults({
     >
       <div className="w-full h-[180px] overflow-hidden">
         <img
-          src={garcia}
+          src={photo}
           alt=""
           className="w-full h-full object-cover object-center rounded-t-md shadow-lg"
         />

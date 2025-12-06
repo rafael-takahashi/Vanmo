@@ -15,7 +15,7 @@ import base64
 
 def criar_veiculo(db: connection, veiculo: classe_veiculo.Veiculo) -> int:
     cur = db.cursor()
-    dados = (veiculo.id_empresa, veiculo.nome_veiculo, veiculo.placa_veiculo, veiculo.capacidade, veiculo.custo_por_km, veiculo.custo_base, veiculo.caminho_foto, veiculo.cor, veiculo.ano_fabricacao)
+    dados = (veiculo.id_empresa, veiculo.nome_veiculo, veiculo.placa_veiculo, veiculo.capacidade, veiculo.custo_por_km, veiculo.custo_base, veiculo.caminho_foto, veiculo.cor, veiculo.ano_fabricacao, veiculo.foto_url)
 
     cur.execute(QueriesDB.query_inserir_veiculo_novo, dados)
     id_veiculo: int = cur.fetchone()[0]
@@ -56,7 +56,8 @@ def buscar_veiculo(db: connection, id_veiculo: int) -> classe_veiculo.Veiculo:
     
     veiculo = classe_veiculo.Veiculo(id_veiculo, resultado[1], resultado[2], resultado[3])
     veiculo.adicionar_custos(resultado[5], resultado[6])
-    veiculo.adicionar_dados(resultado[7], resultado[8], resultado[9], resultado[4])
+    foto_url = resultado[10] if len(resultado) > 10 else None
+    veiculo.adicionar_dados(resultado[7], resultado[8], resultado[9], resultado[4], foto_url)
 
     veiculo.calendario_disponibilidade = classe_calendario.Calendario([])
 
@@ -95,7 +96,7 @@ def listar_veiculos(db: connection, id_empresa: int) -> list[classe_veiculo.Veic
 
 def atualizar_veiculo(db: connection, veiculo: classe_veiculo.Veiculo):
     cur = db.cursor()
-    dados = (veiculo.id_empresa, veiculo.nome_veiculo, veiculo.placa_veiculo, veiculo.capacidade, veiculo.custo_por_km, veiculo.custo_base, veiculo.caminho_foto, veiculo.cor, veiculo.ano_fabricacao, veiculo.id_veiculo)
+    dados = (veiculo.id_empresa, veiculo.nome_veiculo, veiculo.placa_veiculo, veiculo.capacidade, veiculo.custo_por_km, veiculo.custo_base, veiculo.caminho_foto, veiculo.cor, veiculo.ano_fabricacao, veiculo.foto_url, veiculo.id_veiculo)
 
     if veiculo.caminho_foto is not None:
         utils.salva_foto(f"imagens/veiculos/{veiculo.id_empresa}-{veiculo.id_veiculo}.png", veiculo.caminho_foto)

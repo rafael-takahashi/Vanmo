@@ -63,6 +63,14 @@ const VehicleSchema = z.object({
       (val) => !isNaN(parseInt(val)),
       'Capacidade deve ser um número válido',
     ),
+  photo: z
+    .any()
+    .optional()
+    .refine((file) => {
+      if (!file) return true
+      if (file.length === 0) return true
+      return file instanceof FileList && file.length > 0
+    }, 'Envie um arquivo válido'),
 })
 
 type vehicleForm = z.infer<typeof VehicleSchema>
@@ -117,7 +125,7 @@ export default function AddVehicleForm({
           color: data.color,
           year: parseInt(data.year),
           capacity: parseInt(data.capacity),
-          photo: null, // Assuming photo is optional or handled separately
+          photo: data.photo, // Assuming photo is optional or handled separately
         })
       } else {
         // If in register mode, pass only the formData
@@ -130,7 +138,7 @@ export default function AddVehicleForm({
           color: data.color,
           year: parseInt(data.year),
           capacity: parseInt(data.capacity),
-          photo: null, // Assuming photo is optional or handled separately
+          photo: data.photo, // Assuming photo is optional or handled separately
         })
       }
     },
@@ -147,7 +155,7 @@ export default function AddVehicleForm({
       color: data.color,
       year: data.year,
       capacity: data.capacity,
-      photo: null, // If there's no photo to upload or if it's optional
+      photo: data.photo, // If there's no photo to upload or if it's optional
     }
     try {
       await mutateAsync(vehicleData)
@@ -243,6 +251,17 @@ export default function AddVehicleForm({
               className="input-bordered"
               type="text"
               {...register('capacity')}
+            />
+          </div>
+          <div>
+            <label htmlFor="photo" className="text-white">
+              Foto
+            </label>
+            <Input
+              id="photo"
+              type="file"
+              className="input-bordered col-span-3"
+              {...register('photo')}
             />
           </div>
           <div className="col-span-2 flex justify-center mt-4">

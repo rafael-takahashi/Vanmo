@@ -1,6 +1,6 @@
+import { useQuery } from '@tanstack/react-query'
 import Cookies from 'js-cookie'
 import { useNavigate } from 'react-router'
-import { useQuery } from '@tanstack/react-query'
 
 import { getTypeAccount } from '../api/getTypeAccount'
 import garcia from '../assets/garcia.jpg'
@@ -18,6 +18,7 @@ interface VehicleBoxProps {
   placa_veiculo: string
   custo_da_viagem: number
   proposal: object
+  foto_url?: string
 }
 
 export function VehicleBox({
@@ -32,9 +33,10 @@ export function VehicleBox({
   nome_veiculo,
   placa_veiculo,
   proposal,
+  foto_url,
 }: VehicleBoxProps) {
   const token = Cookies.get('auth_token')
-  
+
   const { data } = useQuery({
     queryKey: ['user', token],
     queryFn: async () => await getTypeAccount({ token }),
@@ -58,7 +60,7 @@ export function VehicleBox({
     <div className="bg-white rounded-md p-4 flex shadow-lg">
       <div className="w-[280px] h-[180px] overflow-hidden">
         <img
-          src={garcia}
+          src={foto_url || garcia}
           alt=""
           className="w-full h-full object-cover object-center rounded-md "
         />
@@ -88,7 +90,7 @@ export function VehicleBox({
         <Button
           className="mt-auto h-8 flex justify-center items-center text-sm font-semibold self-end shadow-lg"
           onClick={handleProposalButtonClick}
-          disabled={data?.tipo_usuario === 'cliente' ? false : true}
+          disabled={data?.tipo_usuario !== 'cliente'}
         >
           Proposta
         </Button>

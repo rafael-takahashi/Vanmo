@@ -257,20 +257,20 @@ def carrega_foto_base64(path_foto, veiculo=False) -> str:
     @param veiculo: Indica se a imagem padrão é de um veículo (True) ou perfil (False).
     @return: String representando a imagem codificada em base64.
     """
-    try:
-        with open(path_foto, "rb") as file:
-            photo_bytes = file.read()
-            photo_base64 = base64.b64encode(photo_bytes).decode("utf-8")
-            return photo_base64
-    except FileNotFoundError:
-        path_padrao = "imagens/imagem_perfil_padrao.png"
-        if veiculo:
-            path_padrao = "imagens/imagem_veiculo_padrao.png"
+    # try:
+    #     with open(path_foto, "rb") as file:
+    #         photo_bytes = file.read()
+    #         photo_base64 = base64.b64encode(photo_bytes).decode("utf-8")
+    #         return photo_base64
+    # except FileNotFoundError:
+    #     path_padrao = "imagens/imagem_perfil_padrao.png"
+    #     if veiculo:
+    #         path_padrao = "imagens/imagem_veiculo_padrao.png"
         
-        with open(path_padrao, "rb") as file:
-            photo_bytes = file.read()
-            photo_base64 = base64.b64encode(photo_bytes).decode("utf-8")
-            return photo_base64
+    #     with open(path_padrao, "rb") as file:
+    #         photo_bytes = file.read()
+    #         photo_base64 = base64.b64encode(photo_bytes).decode("utf-8")
+    #         return photo_base64
 
 import base64
 import os

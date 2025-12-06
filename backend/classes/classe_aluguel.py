@@ -24,7 +24,8 @@ class Aluguel():
         self.data_fim = data_fim
     
     def adicionar_distancia_extra(self, distancia_extra: float):
-        self.distancia_extra = distancia_extra
+        # Converte Decimal para float (PostgreSQL retorna valores numéricos como Decimal)
+        self.distancia_extra: float = float(distancia_extra)
     
     def calcular_distancia_trajeto_haversine(self) -> float:
         """

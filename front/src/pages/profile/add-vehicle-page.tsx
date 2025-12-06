@@ -25,7 +25,8 @@ export default function AddVehiclePage() {
       <SideMenuProfile
         typeAccount={dataBusiness?.tipo_conta}
         fullName={dataBusiness?.nome_fantasia}
-        idUsuario={dataBusiness.id}
+        idUsuario={dataBusiness?.id}
+        photo={dataBusiness?.foto_url}
       />
 
       <div className="flex-1 bg-primary-foreground p-10 rounded-md">

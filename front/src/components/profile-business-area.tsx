@@ -1,10 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus } from '@phosphor-icons/react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Cookies from 'js-cookie'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate, useSearchParams } from 'react-router'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { editProfileUserBusiness } from '@/api/editUserBusiness'
@@ -28,7 +29,7 @@ import { Input } from './ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 import VehicleItem from './vehicle-item'
 
-const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/jpg']
+// const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/jpg']
 
 const BusinessProfile = z.object({
   fantasyName: z.string().optional(),
@@ -40,39 +41,21 @@ const BusinessProfile = z.object({
   stateAddress: z.string().optional(),
   streetAddress: z.string().optional(),
   numberAddress: z.string().optional(),
+  photo: z
+    .any()
+    .optional()
+    .refine((file) => {
+      if (!file) return true
+      if (file.length === 0) return true
+      return file instanceof FileList && file.length > 0
+    }, 'Envie um arquivo válido'),
 })
 
 type BusinessProfileForm = z.infer<typeof BusinessProfile>
 
 export default function ProfileBusinessArea() {
-  const [photo, setPhoto] = useState<File | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [preview, setPreview] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-
-    // Validate the file
-    if (!file) {
-      setError('Please select a file.')
-      setPhoto(null)
-      setPreview(null)
-      return
-    }
-
-    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-      setError('Only JPEG, PNG, and JPG files are allowed.')
-      setPhoto(null)
-      setPreview(null)
-      return
-    }
-
-    setPhoto(file)
-    setError(null)
-    setPreview(URL.createObjectURL(file))
-  }
-
-  const token = Cookies.get('auth_token')
   const [searchParams, setSearchParams] = useSearchParams()
   const [originalData, setOriginalData] = useState<BusinessProfileForm | null>(
     null,
@@ -83,8 +66,8 @@ export default function ProfileBusinessArea() {
   })
 
   const { data } = useQuery({
-    queryKey: ['userBusiness', token],
-    queryFn: () => getUserBusiness({ token }),
+    queryKey: ['userBusiness'],
+    queryFn: () => getUserBusiness(),
   })
 
   // const { data: proposalsList } = useQuery({
@@ -144,14 +127,20 @@ export default function ProfileBusinessArea() {
         updatedFields.stateAddress = data.stateAddress
 
       // Se houver alterações, envia apenas os campos modificados
-      if (Object.keys(updatedFields).length > 0 || photo) {
+      if (Object.keys(updatedFields).length > 0 || data.photo) {
         await mutateAsync({
           ...updatedFields,
-          token,
-          photo,
+          photo: data.photo,
         })
 
         toast.success('Perfil editado com sucesso.')
+
+        queryClient.invalidateQueries({ queryKey: ['userBusiness'] })
+
+        setOriginalData((prevData) => ({
+          ...prevData,
+          ...updatedFields,
+        }))
       } else {
         toast.error('Nenhuma alteração detectada. Tente novamente.')
       }
@@ -279,28 +268,15 @@ export default function ProfileBusinessArea() {
                         />
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
-                        <label htmlFor="phone" className="text-right">
+                        <label htmlFor="photo" className="text-right">
                           Foto
                         </label>
-                        <input
+                        <Input
                           id="photo"
                           type="file"
-                          accept={ALLOWED_MIME_TYPES.join(',')}
-                          multiple
-                          onChange={handleFileChange}
+                          className="input-bordered col-span-3"
+                          {...register('photo')}
                         />
-                        {error && (
-                          <p className="text-red-500 text-sm mt-1">{error}</p>
-                        )}
-                        {preview && (
-                          <div className="mt-2">
-                            <img
-                              src={preview}
-                              alt="Preview"
-                              className="h-20 w-20 object-cover rounded"
-                            />
-                          </div>
-                        )}
                       </div>
                     </div>
                     <Button type="submit" className="ml-auto">
