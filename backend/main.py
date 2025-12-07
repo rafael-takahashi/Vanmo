@@ -5,7 +5,7 @@ import time
 import csv
 import io
 
-from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Form
+from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Form, Request
 from fastapi.responses import StreamingResponse
 # from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
@@ -62,6 +62,20 @@ async def iniciar_app(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=iniciar_app)
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    
+    # Fix X-Frame-Options (Clickjacking protection)
+    # 'DENY' blocks all framing. Use 'SAMEORIGIN' if your own frontend frames this API.
+    response.headers["X-Frame-Options"] = "DENY"
+    
+    # Fix X-Content-Type-Options (MIME sniffing protection)
+    # Prevents the browser from interpreting files as a different MIME type (e.g., text as JS)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    
+    return response
 
 # Configuração do CORS
 app.add_middleware(
