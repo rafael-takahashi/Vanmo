@@ -21,6 +21,7 @@ from utils import *
 from basemodels import *
 from popular_bd import inserir_dados
 from supabase_storage import upload_foto_cliente, upload_foto_empresa, upload_foto_veiculo
+import string
 
 lista_cidades = []
 objeto_cidades = []
@@ -154,6 +155,26 @@ async def registrar_cliente(dados: CadastroCliente):
     # OBS: Assim como o CNPJ, optamos por deixar essa implementação inativa pra apresentação por motivos de testagem
     # valida_cpf(dados.cpf)
 
+    senha = dados.senha
+    erros_senha = []
+
+    if len(senha) < 8:
+        erros_senha.append("A senha deve ter pelo menos 8 caracteres.")
+
+    if not any(c.isupper() for c in senha):
+        erros_senha.append("A senha deve conter pelo menos uma letra maiúscula.")
+    
+    if not any(c.islower() for c in senha):
+        erros_senha.append("A senha deve conter pelo menos uma letra minúscula.")
+
+    if not any(c.isdigit() for c in senha):
+        erros_senha.append("A senha deve conter pelo menos um número.")
+
+    if not any(c in string.punctuation for c in senha):
+        erros_senha.append("A senha deve conter pelo menos um caractere especial (@, #, $, etc).")
+
+    if erros_senha:
+        raise HTTPException(status_code=400, detail={"mensagem": "Senha inválida", "erros": erros_senha})
     dados.senha = auth.gerar_hash_senha(dados.senha)
 
     cliente: classe_usuario.Cliente = classe_usuario.Cliente(0, dados.email, dados.senha, "cliente", "", dados.nome_completo, dados.cpf, dados.data_nascimento, dados.telefone)
