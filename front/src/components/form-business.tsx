@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
@@ -11,6 +11,7 @@ import { registerBusiness } from '@/api/registerBusiness'
 import { searchCEP, searchCepResponse } from '@/api/searchCEP'
 
 import { Button } from './ui/button'
+import { Checkbox } from './ui/checkbox'
 import { Input } from './ui/input'
 import MaskedInput from './ui/maskedinput'
 
@@ -35,6 +36,9 @@ const registerUserBusinessSchema = z
       .min(8, 'A senha é muito curta')
       .nonempty('Senha é obrigatória'),
     confirmPassword: z.string().nonempty('Confirme sua senha'),
+    privacyTerms: z.boolean().refine((value) => value === true, {
+      message: 'Você deve aceitar os termos de privacidade para continuar.',
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'As senhas devem ser iguais',
@@ -48,6 +52,7 @@ interface FormBusinessProps {
 
 export default function FormBusiness({ setSuccess }: FormBusinessProps) {
   const navigate = useNavigate()
+  const [privacyTerms, setPrivacyTerms] = useState(false)
   const {
     register: registerUserBusiness,
     handleSubmit: handleSubmitUserBusiness,
@@ -56,6 +61,9 @@ export default function FormBusiness({ setSuccess }: FormBusinessProps) {
     formState: { errors },
   } = useForm<RegisterUserBusinessForm>({
     resolver: zodResolver(registerUserBusinessSchema),
+    defaultValues: {
+      privacyTerms: false,
+    },
   })
 
   useEffect(() => {
@@ -211,22 +219,31 @@ export default function FormBusiness({ setSuccess }: FormBusinessProps) {
       </div>
 
       <div className="flex items-center gap-2 mt-[32px] mb-[16px]">
-        <label className="text-base">
-          Ao continuar, você concorda com nossos{' '}
-          <a href="" className="underline underline-offset-4 text-primary">
-            termos de serviço
-          </a>{' '}
-          e{' '}
-          <a href="" className="underline underline-offset-4 text-primary">
-            políticas de privacidade
+        <Checkbox
+          id="privacyTerms"
+          checked={privacyTerms}
+          onCheckedChange={() => {
+            const newValue = !privacyTerms
+            setPrivacyTerms(newValue)
+            setValue('privacyTerms', newValue)
+          }}
+        />
+        <label htmlFor="privacyTerms" className="text-base">
+          Eu li e aceito os{' '}
+          <a
+            href="/termos_de_privacidade.pdf"
+            download
+            className="underline underline-offset-4 text-primary"
+          >
+            Termos de privacidade
           </a>
-          .
         </label>
       </div>
       <Button
         className="font-bold px-24 text-xl py-6 max-w-[96px] mx-auto"
         size={'lg'}
         type="submit"
+        disabled={!privacyTerms}
       >
         Continuar
       </Button>
